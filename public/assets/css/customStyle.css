@@ -1,0 +1,71 @@
+/* Start Select2 CSS */
+.select2-selection {
+    border-radius: 1.5rem !important;
+    height: 40px !important;
+    vertical-align: middle !important;
+}
+.select2-selection__rendered,
+.select2-selection__arrow {
+    margin-top: 5px !important;
+}
+.select2-dropdown {
+    border-radius: 1.5rem !important;
+    overflow: hidden !important;
+}
+.select2-search__field {
+    border-top-left-radius: 1.3rem !important;
+    border-top-right-radius: 1.3rem !important;
+    font-size: 16px;
+    padding: 5px !important;
+}
+/* Stop Select2 CSS */
+
+/* Start Datatables CSS */
+.dataTables_filter {
+    align-items: end !important;
+}
+.dataTables_filter input {
+    border-radius: 1.5rem !important;
+    padding-left: 10px !important;
+}
+.table {
+    width: 100% !important;
+}
+/* Stop Datatables CSS */
+body {
+    font-size: 12px;
+}
+.nav-tabs {
+    position: relative;
+}
+
+.icon-bars,
+.icon-bars:before,
+.icon-bars:after {
+    content: "";
+    position: relative;
+    display: inline-block;
+    width: 22px;
+    height: 3px;
+    background-color: #333;
+    vertical-align: middle;
+}
+
+.icon-bars:before,
+.icon-bars:after {
+    position: absolute;
+    top: -6px;
+    left: 0;
+}
+
+.icon-bars:after {
+    top: 6px;
+}
+
+li.tabdrop > a {
+    margin-right: 0;
+    z-index: 3;
+}
+.form-control {
+    font-size: 12px !important;
+}
