@@ -14,24 +14,14 @@ return new class extends Migration
     {
         Schema::create('m_study', function (Blueprint $table) {
             $table->id();
+            $table->string('klienfk', 30);
             $table->string('name');
+            $table->string('kdkemenkes', 30);
             $table->integer('grade')->nullable();
+            $table->string('reportdisplay', 30);
+            $table->timestamps();
+            $table->softDeletes();
         });
-
-        $data = [
-            ["name" => "SD" , "grade" => 0],
-            ["name" => "SMP", "grade" => 0],
-            ["name" => "SMA", "grade" => 1],
-            ["name" => "D1", "grade" => 2],
-            ["name" => "D2", "grade" => 2],
-            ["name" => "D3", "grade" => 2],
-            ["name" => "D4", "grade" => 3],
-            ["name" => "S1", "grade" => 3],
-            ["name" => "S2", "grade" => 4],
-            ["name" => "S3", "grade" => 5],
-        ];
-
-        Study::insert($data);
     }
 
     /**

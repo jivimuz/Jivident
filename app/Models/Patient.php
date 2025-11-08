@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Patient extends Model
 {
-    use HasFactory;
-    protected $table = 'm_patient';
+    use HasFactory, SoftDeletes;
+    protected $table = 'm_pasien';
     protected $guarded = ["id"];
     public $timestamps = true;
 }

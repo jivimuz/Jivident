@@ -15,11 +15,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $this->call(\Database\Seeders\Pasien\KlienSeeder::class);
+        $this->call(\Database\Seeders\Pasien\AgamaSeeder::class);
+        $this->call(\Database\Seeders\Pasien\EtnisSeeder::class);
+        $this->call(\Database\Seeders\Pasien\JenisKelaminSeeder::class);
+        $this->call(\Database\Seeders\Pasien\KebangsaanSeeder::class);
+        $this->call(\Database\Seeders\Pasien\ProvinsiSeeder::class);
+        $this->call(\Database\Seeders\Pasien\KotaKabupatenSeeder::class);
+        $this->call(\Database\Seeders\Pasien\KecamatanSeeder::class);
+        $this->call(\Database\Seeders\Pasien\KelurahanSeeder::class);
+        $this->call(\Database\Seeders\Pasien\NegaraSeeder::class);
+        $this->call(\Database\Seeders\Pasien\PasienSeeder::class);
+        $this->call(\Database\Seeders\Pasien\PekerjaanSeeder::class);
+        $this->call(\Database\Seeders\Pasien\PendidikanSeeder::class);
+        $this->call(\Database\Seeders\Pasien\StatusPerkawinanSeeder::class);
+        $this->call(\Database\Seeders\Pasien\KoordinatSeeder::class);
     }
 }

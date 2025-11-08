@@ -26,8 +26,8 @@
                         data-iq-duration=".6" data-iq-delay=".6" data-iq-trigger="scroll" data-iq-ease="none"
                         style="padding-left: 40px; padding-right:40px">
 
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover" id="main-table">
+                        <div class="app-datatable-default overflow-auto">
+                            <table class="display app-data-table default-data-table table-hover" id="main-table">
                                 <thead>
                                     <tr>
                                         <th>No</th>

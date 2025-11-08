@@ -96,21 +96,9 @@
                                     placeholder="Username" />
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">New Password: <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control " id="pwd" name="pwd"
-                                    placeholder="Password" />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">New Confirm Password: <span
-                                        class="text-danger">*</span></label>
-                                <input type="password" class="form-control " id="cpwd" name="cpwd"
-                                    placeholder="Confirm Password" />
-                            </div>
-                        </div>
+
+
+
                     </div>
                 </div>
 
@@ -215,7 +203,8 @@
                                     <option hidden value="" selected>Choose one</option>
                                     @foreach ($ptkp as $i)
                                         <option value="{{ $i->id }}"
-                                            {{ $data->fk_ptkp == $i->id ? 'selected' : '' }}>{{ $i->name }}
+                                            {{ $data->fk_ptkp == $i->id ? 'selected' : '' }}>
+                                            {{ $i->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -353,7 +342,8 @@
                                     <option hidden value="" selected>Choose one</option>
                                     @foreach ($bk as $i)
                                         <option value="{{ $i->id }}"
-                                            {{ $data->fk_bank == $i->id ? 'selected' : '' }}>{{ $i->name }}
+                                            {{ $data->fk_bank == $i->id ? 'selected' : '' }}>
+                                            {{ $i->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -411,7 +401,7 @@
     </div>
 </div>
 
-<script src="../assets/js/form-wizard.js"></script>
+<script src="{{ url('') }}/assets/js/form-wizard.js"></script>
 <script>
     $(document).ready(function() {
 
@@ -424,7 +414,7 @@
             $('.step1').attr('hidden', true)
             return;
         }
-        if (!$('#email').val() || !$('#username').val() || !$('#pwd').val() || !$('#cpwd').val()) {
+        if (!$('#email').val() || !$('#username').val()) {
             var notif = 'Please insert ('
             if (!$('#email').val()) {
                 notif += 'Email'
@@ -436,33 +426,13 @@
                 notif += 'Username'
             }
 
-            if (!$('#pwd').val()) {
-                if (notif != 'Please insert (') {
-                    notif += ', '
-                }
-                notif += 'Password'
-            }
-            if (!$('#cpwd').val()) {
-                if (notif != 'Please insert (') {
-                    notif += ', '
-                }
-                notif += 'Confirm Password'
-            }
+
             notif += ') before next step'
 
             $('#ainfo1').html(notif)
             $('#alert1').attr('hidden', false)
             $('.step1').attr('hidden', true)
 
-        } else {
-            if ($('#pwd').val() != $('#cpwd').val()) {
-                $('#ainfo1').html("Password & Confirm Password didn't same!")
-                $('#alert1').attr('hidden', false)
-                $('.step1').attr('hidden', true)
-            } else {
-                $('#alert1').attr('hidden', true)
-                $('.step1').attr('hidden', false)
-            }
         }
     }
 

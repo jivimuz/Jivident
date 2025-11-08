@@ -55,7 +55,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                         <div class="col-12 p-0">
                             <div class="login-form-container">
                                 <div class="mb-4">
-                                    <a class="logo d-inline-block" href="index-2.html">
+                                    <a class="logo d-inline-block">
                                         <img alt="#" src="{{ $logo }}" width="250">
                                     </a>
                                 </div>
@@ -70,13 +70,23 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                                         <div class="mb-3">
                                             <label class="form-label">Username/Email address</label>
                                             <input class="form-control" type="text" id="username">
-                                            <div class="form-text text">We'll never share your account with anyone else.
-                                            </div>
+
                                         </div>
-                                        <div class="mb-3">
+                                        <div class="mb-3 position-relative">
                                             <label class="form-label">Password</label>
                                             <input class="form-control" type="password" id="password">
+                                            <button type="button"
+                                                class="btn btn-xs mt-1 btn-outline-secondary position-absolute top-50 end-0 translate-middle-y me-2"
+                                                id="togglePassword">
+                                                <i class="iconoir-eye-solid"
+                                                    style="font-size: 20px; margin-top:2px"></i>
+                                            </button>
+                                            <a href="https://wa.me/6282120741970?text=Hello,%20i%20am%20directed%20by%20jivident"
+                                                target="_blank" class="form-text text">Chat admin to register or forgot
+                                                account
+                                            </a>
                                         </div>
+
                                         <div class="mb-3 form-check">
                                             <input class="form-check-input" id="formCheck1" type="checkbox">
                                             <label class="form-check-label" for="formCheck1">remember me</label>
@@ -178,6 +188,22 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
         });
 
     })
+
+    $('#togglePassword').on('click', function() {
+        var $password = $('#password');
+        var type = $password.attr('type') === 'password' ? 'text' : 'password';
+        $password.attr('type', type);
+
+        // toggle icon
+        var $icon = $(this).find('i');
+        $icon.toggleClass('iconoir-eye-solid iconoir-eye-closed');
+
+        // animasi kecil
+        $(this).css('transform', 'translateY(-50%) scale(1.2)');
+        setTimeout(() => {
+            $(this).css('transform', 'translateY(-50%) scale(1)');
+        }, 150);
+    });
 </script>
 
 </html>

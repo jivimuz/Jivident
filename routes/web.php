@@ -19,6 +19,13 @@ Route::get('/test', function () {
     return view('3dglb');
 });
 
+Route::prefix('monitor')->group(function () {
+    Route::get('antrian', function () {
+        return view('public/monitor-antrian');
+    });
+});
+
+
 //Group By Auth
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -101,5 +108,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['checkAccess:PAT'])->prefix('patient')->group(function () {
         Route::get('/', [PatientController::class, 'index']);
+        Route::post('getList', [PatientController::class, 'getList']);
     });
 });

@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class UserListController extends Controller
 {
@@ -29,6 +30,8 @@ class UserListController extends Controller
     {
         $data = User::select([
             'm_users.id',
+            'm_users.email',
+            'm_users.username',
             'm_employee.nik',
             'm_employee.fullname',
             DB::raw("coalesce(m_designation.name, '-') as designation"),
@@ -115,7 +118,8 @@ class UserListController extends Controller
 
             User::insert([
                 'fk_employee' => $id,
-                'username' => $request->email,
+                'display_name' => $request->fullname,
+                'username' => $request->username,
                 'email' => $request->email,
                 'email_verified_at' => now(),
                 'password' =>  Hash::make($request->pwd),
@@ -123,6 +127,17 @@ class UserListController extends Controller
                 'is_active' => true,
                 'access' => 1
             ]);
+            $rawPassword = Str::random(8);
+
+            $details = [
+                'name'   => $request->fullname,
+                'title'   => 'PENDAFTARAN ADMIN BMW',
+                'subject' => 'Jivident Notification',
+                'username' => $request->username,
+                'password' =>  $rawPassword,
+            ];
+            // Mail::to($request->email)
+            //     ->send(new SendMail($details, 'adminResetPass'));
 
             DB::commit();
             return response()->json(["message" => 'success', 'data' => null], 200);
@@ -165,6 +180,9 @@ class UserListController extends Controller
                 "fk_bank" => $request->fk_bank,
                 "accountnumber" =>  $request->accountnumber,
             ]);
+            User::where('id', $request->id)->update([
+                'display_name' => $request->fullname,
+            ],);
             DB::commit();
             return response()->json(["message" => 'success', 'data' => null], 200);
         } catch (\Throwable $th) {
@@ -265,5 +283,44 @@ class UserListController extends Controller
             return response()->json(["message" => 'success', 'data' => null], 200);
         }
         return response()->json(["error" => 'Delete Failure', 'data' => null], 400);
+    }
+
+    public function resetPass(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            if ($request->pass) {
+                User::where('id', $request->id)->update([
+                    'password' =>  Hash::make($request->pass),
+                    'is_active' => true,
+                ],);
+            }
+            $data = User::select([
+                'm_users.id',
+                'm_users.email',
+                'm_users.username',
+                'm_employee.fullname',
+            ])
+                ->join('m_employee', "m_users.fk_employee", "m_employee.id")
+                ->where('m_users.id', $request->id)->first();
+
+            $rawPassword = Str::random(8);
+
+            $details = [
+                'name'   => $data->fullname,
+                'title'   => 'RESET PASSWORD',
+                'subject' => 'Jivident Notification',
+                'username' => $data->username,
+                'password' =>  $rawPassword,
+            ];
+            // Mail::to($data->email)
+            //     ->send(new SendMail($details, 'adminResetPass'));
+            DB::commit();
+            return response()->json(["message" => 'success', 'data' => null], 200);
+        } catch (\Throwable $th) {
+            DB::rollback();
+            return response()->json(["message" => 'error', 'data' => null, 'error' => $th->getMessage()], 400);
+        }
     }
 }

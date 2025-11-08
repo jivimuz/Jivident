@@ -69,3 +69,6 @@ li.tabdrop > a {
 .form-control {
     font-size: 12px !important;
 }
+.default-data-table{
+    width: 100% !important;
+}

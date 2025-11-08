@@ -26,8 +26,10 @@ return new class extends Migration
             $table->boolean('force_pass_reset')->default(true);
             $table->string('access')->default('1');
             $table->boolean('is_active')->default(false);
+            $table->boolean('is_resetpass')->default(false);
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

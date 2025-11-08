@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('m_kecamatan', function (Blueprint $table) {
+            $table->id(); // INT(11) unsigned auto_increment
+            $table->string('klienfk', 30);
+            $table->unsignedBigInteger('provinsifk');
+            $table->unsignedBigInteger('kotakabupatenfk');
+            $table->string('kecamatan', 255);
+            $table->string('kdkecamatan', 30);
+            $table->integer('urutan')->nullable();
+            $table->timestamps(); // created_at & updated_at
+            $table->softDeletes(); // deleted_at
+
+            // Optional foreign keys:
+            // $table->foreign('provinsifk')->references('id')->on('provinsi_m')->onDelete('cascade');
+            // $table->foreign('kotakabupatenfk')->references('id')->on('kotakabupaten_m')->onDelete('cascade');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('m_kecamatan');
+    }
+};

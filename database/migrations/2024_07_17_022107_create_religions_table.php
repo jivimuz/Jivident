@@ -14,18 +14,15 @@ return new class extends Migration
     {
         Schema::create('m_religion', function (Blueprint $table) {
             $table->id();
+
+            $table->string('klienfk', 30);
+            $table->string('kdkemenkes', 30);
             $table->string('name');
+
+            $table->string('reportdisplay', 30);
+            $table->timestamps();
+            $table->softDeletes();
         });
-        $data = [
-            ["name" => "Islam"],
-            ["name" => "Katholik"],
-            ["name" => "Kristen"],
-            ["name" => "Hindu"],
-            ["name" => "Budha"],
-            ["name" => "Atheis"],
-            ["name" => "Lainnya"],
-        ];
-        Religion::insert($data);
     }
 
     /**

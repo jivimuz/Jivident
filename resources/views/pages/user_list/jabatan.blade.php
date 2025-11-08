@@ -32,8 +32,8 @@
         </div>
     </div>
 </div>
-<div class="table-responsive">
-    <table class="table table-striped" id="jabatan-table">
+<div class="app-datatable-default overflow-auto">
+    <table class="display app-data-table default-data-table table-hover" id="jabatan-table">
         <thead>
             <tr>
                 <th>No</th>

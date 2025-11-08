@@ -19,39 +19,67 @@ class PatientController extends Controller
         $offset = $request->input('start', 0);
         $limit = $request->input('length', 10);
         $searchValue = $request->input('search.value', '');
-        $orderColumnIndex = $request->input('order.1.column', 0);
-        $orderDirection = $request->input('order.1.dir', 'desc'); // default desc 👈
+        $orderColumnIndex = $request->input('order.0.column', 0);
+        $orderDirection = $request->input('order.0.dir', 'desc');
+        // $nik = $request->post('nik_search');
 
         $columns = [
-            '*',
+            'id',
+            'nama',
+            'norm',
+            'nik',
+            'nobpjs',
+            'nohp',
+            'tgllahir',
         ];
-        $orderColumnName = $columns[$orderColumnIndex] ?? 'm_agents.id';
 
-        $query = Patient::query()
-            ->select(
-                '*',
+        $orderColumnName = $columns[$orderColumnIndex] ?? 'id';
 
+        // Base query
+        $query = Patient::query()->select($columns);
 
-            );
+        // Filter by NIK (kalau ada)
+        // if ($nik) {
+        //     $query->where('nik', $nik);
+        // }
 
+        // Search global
         if (!empty($searchValue)) {
-            $query->where(function ($q) use ($searchValue) {
-                $q->where('*', 'like', "%{$searchValue}%");
+            $query->where(function ($q) use ($columns, $searchValue) {
+                foreach ($columns as $col) {
+                    $q->orWhere($col, 'like', "%{$searchValue}%");
+                }
             });
         }
 
-        $totalData = $query->count();
+        // Total record sebelum filter
+        $totalData = Patient::count();
 
-        // Urutan default DESC by id
-        $query->orderBy($orderColumnName, $orderDirection ?? 'desc');
+        // Total setelah filter
+        $filteredData = $query->count();
 
-        $data = $query->skip($offset)->take($limit)->get();
+        // Sorting dan pagination
+        $query->orderBy($orderColumnName, $orderDirection)
+            ->skip($offset)
+            ->take($limit);
+
+        $data = $query->get();
+
+        // Convert tanggal ke WIB
+        $data->transform(function ($item) {
+            if ($item->tgllahir) {
+                $item->tgllahir = \Carbon\Carbon::parse($item->tgllahir)
+                    ->setTimezone('Asia/Jakarta')
+                    ->translatedFormat('d M Y H:i'); // pakai bahasa Indo otomatis
+            }
+            return $item;
+        });
 
         return response()->json([
-            "draw" => intval($request->input('draw')),
-            "recordsTotal" => intval($totalData),
-            "recordsFiltered" => intval($totalData),
-            "data" => $data,
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => $totalData,
+            'recordsFiltered' => $filteredData,
+            'data' => $data,
         ]);
     }
 }

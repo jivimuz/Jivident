@@ -22,7 +22,7 @@
                     <div class="card-header">
                         <div class="float-end">
                             <a class="btn btn-sm btn-outline-primary rounded-pill mt-2 ml-2" onclick="addModal()">
-                                <svg width="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg width="23" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path opacity="0.4"
                                         d="M21.101 9.58786H19.8979V8.41162C19.8979 7.90945 19.4952 7.5 18.999 7.5C18.5038 7.5 18.1 7.90945 18.1 8.41162V9.58786H16.899C16.4027 9.58786 16 9.99731 16 10.4995C16 11.0016 16.4027 11.4111 16.899 11.4111H18.1V12.5884C18.1 13.0906 18.5038 13.5 18.999 13.5C19.4952 13.5 19.8979 13.0906 19.8979 12.5884V11.4111H21.101C21.5962 11.4111 22 11.0016 22 10.4995C22 9.99731 21.5962 9.58786 21.101 9.58786Z"
                                         fill="currentColor"></path>
@@ -35,7 +35,7 @@
                                 </svg> Add User
                             </a>
                             <a class="btn btn-sm btn-outline-warning rounded-pill mt-2 ml-2" onclick="jabatanModal()">
-                                <svg width="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg width="23" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path
                                         d="M11.9488 14.54C8.49884 14.54 5.58789 15.1038 5.58789 17.2795C5.58789 19.4562 8.51765 20.0001 11.9488 20.0001C15.3988 20.0001 18.3098 19.4364 18.3098 17.2606C18.3098 15.084 15.38 14.54 11.9488 14.54Z"
                                         fill="currentColor"></path>
@@ -64,15 +64,14 @@
                         data-iq-duration=".6" data-iq-delay=".6" data-iq-trigger="scroll" data-iq-ease="none"
                         style="padding-left: 40px; padding-right:40px">
 
-                        <div class="table-responsive">
-                            <table class="table table-striped" id="main-table">
+                        <div class="app-datatable-default overflow-auto">
+                            <table class="display app-data-table default-data-table table-hover" id="main-table">
                                 <thead>
                                     <tr>
                                         <th>No</th>
                                         <th>NIK</th>
                                         <th>Name</th>
-                                        <th>Designation</th>
-                                        <th>Department</th>
+                                        <th>Email</th>
                                         <th>Active</th>
                                         <th>-</th>
                                     </tr>
@@ -102,24 +101,23 @@
             let noD = 1
             const columns = [{
                     data: "id",
-                    render: function(data, b, c) {
-
-                        return `${noD++}.`
+                    render: function(data, type, row, meta) {
+                        // meta.row = index di halaman
+                        // meta.settings._iDisplayStart = offset (start) dari serverSide
+                        return meta.row + meta.settings._iDisplayStart + 1;
                     },
                     className: 'text-center'
                 },
                 {
-                    data: "nik",
+                    data: "username",
                 },
                 {
                     data: "fullname",
                 },
                 {
-                    data: "designation",
+                    data: "email",
                 },
-                {
-                    data: "department",
-                },
+
                 {
                     data: "is_active",
                     render: function(data, b, c) {
@@ -136,15 +134,18 @@
                 {
                     data: "id",
                     render: function(data, b, c) {
-                        return `<a  class="btn btn-sm btn-outline-primary rounded-pill  ml-2" style="margin-right:5px !important" onclick="editModal(${data})">
+                        return `<a  class="btn btn-sm btn-outline-primary rounded-pill mt-2 ml-2" style="margin-right:5px !important" onclick="editModal(${data})">
                                 <svg width="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path opacity="0.4" d="M19.9927 18.9534H14.2984C13.7429 18.9534 13.291 19.4124 13.291 19.9767C13.291 20.5422 13.7429 21.0001 14.2984 21.0001H19.9927C20.5483 21.0001 21.0001 20.5422 21.0001 19.9767C21.0001 19.4124 20.5483 18.9534 19.9927 18.9534Z" fill="currentColor"></path>
                                     <path d="M10.309 6.90385L15.7049 11.2639C15.835 11.3682 15.8573 11.5596 15.7557 11.6929L9.35874 20.0282C8.95662 20.5431 8.36402 20.8344 7.72908 20.8452L4.23696 20.8882C4.05071 20.8903 3.88775 20.7613 3.84542 20.5764L3.05175 17.1258C2.91419 16.4915 3.05175 15.8358 3.45388 15.3306L9.88256 6.95545C9.98627 6.82108 10.1778 6.79743 10.309 6.90385Z" fill="currentColor"></path>
                                     <path opacity="0.4" d="M18.1208 8.66544L17.0806 9.96401C16.9758 10.0962 16.7874 10.1177 16.6573 10.0124C15.3927 8.98901 12.1545 6.36285 11.2561 5.63509C11.1249 5.52759 11.1069 5.33625 11.2127 5.20295L12.2159 3.95706C13.126 2.78534 14.7133 2.67784 15.9938 3.69906L17.4647 4.87078C18.0679 5.34377 18.47 5.96726 18.6076 6.62299C18.7663 7.3443 18.597 8.0527 18.1208 8.66544Z" fill="currentColor"></path>
                                     </svg>
                                                </a>` +
+                            `<a  class="btn btn-sm btn-outline-warning rounded-pill mt-2 ml-2" style="margin-right:5px !important" onclick="resetPass(${data})">
+                            <svg width="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M20.8064 7.62361L20.184 6.54352C19.6574 5.6296 18.4905 5.31432 17.5753 5.83872V5.83872C17.1397 6.09534 16.6198 6.16815 16.1305 6.04109C15.6411 5.91402 15.2224 5.59752 14.9666 5.16137C14.8021 4.88415 14.7137 4.56839 14.7103 4.24604V4.24604C14.7251 3.72922 14.5302 3.2284 14.1698 2.85767C13.8094 2.48694 13.3143 2.27786 12.7973 2.27808H11.5433C11.0367 2.27807 10.5511 2.47991 10.1938 2.83895C9.83644 3.19798 9.63693 3.68459 9.63937 4.19112V4.19112C9.62435 5.23693 8.77224 6.07681 7.72632 6.0767C7.40397 6.07336 7.08821 5.98494 6.81099 5.82041V5.82041C5.89582 5.29601 4.72887 5.61129 4.20229 6.52522L3.5341 7.62361C3.00817 8.53639 3.31916 9.70261 4.22975 10.2323V10.2323C4.82166 10.574 5.18629 11.2056 5.18629 11.8891C5.18629 12.5725 4.82166 13.2041 4.22975 13.5458V13.5458C3.32031 14.0719 3.00898 15.2353 3.5341 16.1454V16.1454L4.16568 17.2346C4.4124 17.6798 4.82636 18.0083 5.31595 18.1474C5.80554 18.2866 6.3304 18.2249 6.77438 17.976V17.976C7.21084 17.7213 7.73094 17.6516 8.2191 17.7822C8.70725 17.9128 9.12299 18.233 9.37392 18.6717C9.53845 18.9489 9.62686 19.2646 9.63021 19.587V19.587C9.63021 20.6435 10.4867 21.5 11.5433 21.5H12.7973C13.8502 21.5001 14.7053 20.6491 14.7103 19.5962V19.5962C14.7079 19.088 14.9086 18.6 15.2679 18.2407C15.6272 17.8814 16.1152 17.6807 16.6233 17.6831C16.9449 17.6917 17.2594 17.7798 17.5387 17.9394V17.9394C18.4515 18.4653 19.6177 18.1544 20.1474 17.2438V17.2438L20.8064 16.1454C21.0615 15.7075 21.1315 15.186 21.001 14.6964C20.8704 14.2067 20.55 13.7894 20.1108 13.5367V13.5367C19.6715 13.284 19.3511 12.8666 19.2206 12.3769C19.09 11.8873 19.16 11.3658 19.4151 10.928C19.581 10.6383 19.8211 10.3982 20.1108 10.2323V10.2323C21.0159 9.70289 21.3262 8.54349 20.8064 7.63277V7.63277V7.62361Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>                                    <circle cx="12.1747" cy="11.8891" r="2.63616" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></circle>                                </svg>
+                                               </a>` +
 
-                            `<a  class="btn btn-sm btn-outline-danger rounded-pill  ml-2" onclick="deleteUser(${data})">
+                            `<a  class="btn btn-sm btn-outline-danger rounded-pill mt-2 ml-2" onclick="deleteUser(${data})">
                                                 <svg width="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M20.2871 5.24297C20.6761 5.24297 21 5.56596 21 5.97696V6.35696C21 6.75795 20.6761 7.09095 20.2871 7.09095H3.71385C3.32386 7.09095 3 6.75795 3 6.35696V5.97696C3 5.56596 3.32386 5.24297 3.71385 5.24297H6.62957C7.22185 5.24297 7.7373 4.82197 7.87054 4.22798L8.02323 3.54598C8.26054 2.61699 9.0415 2 9.93527 2H14.0647C14.9488 2 15.7385 2.61699 15.967 3.49699L16.1304 4.22698C16.2627 4.82197 16.7781 5.24297 17.3714 5.24297H20.2871ZM18.8058 19.134C19.1102 16.2971 19.6432 9.55712 19.6432 9.48913C19.6626 9.28313 19.5955 9.08813 19.4623 8.93113C19.3193 8.78413 19.1384 8.69713 18.9391 8.69713H5.06852C4.86818 8.69713 4.67756 8.78413 4.54529 8.93113C4.41108 9.08813 4.34494 9.28313 4.35467 9.48913C4.35646 9.50162 4.37558 9.73903 4.40755 10.1359C4.54958 11.8992 4.94517 16.8102 5.20079 19.134C5.38168 20.846 6.50498 21.922 8.13206 21.961C9.38763 21.99 10.6811 22 12.0038 22C13.2496 22 14.5149 21.99 15.8094 21.961C17.4929 21.932 18.6152 20.875 18.8058 19.134Z" fill="currentColor"></path>
                                                     </svg>
@@ -322,17 +323,19 @@
             });
         }
 
+
+
         function deleteUser(id) {
             Swal.fire({
                 title: "Anda yakin?",
-                text: "Do you want to delete with employee data!",
+                text: "Do you want to delete this data?",
                 icon: "warning",
                 showCancelButton: true,
-                showDenyButton: true,
+                // showDenyButton: false,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, Delete With Employee Data",
-                denyButtonText: `No, Delete User Only!`
+                confirmButtonText: "Yes, Delete this Data?",
+                // denyButtonText: `No, Delete User Only!`
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
@@ -355,17 +358,59 @@
 
                         }
                     });
-                } else if (result.isDenied) {
+                }
+                // else if (result.isDenied) {
+                //     $.ajax({
+                //         url: "{{ url('users/deleteUser') }}",
+                //         method: 'POST',
+                //         headers: {
+                //             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                //         },
+                //         data: {
+                //             id: id
+                //         },
+                //         success: function(data) {
+                //             getList()
+                //         },
+                //         error: function(xhr, status, error) {
+                //             Toast.fire({
+                //                 icon: "error",
+                //                 title: JSON.parse(xhr.responseText).error
+                //             });
+
+                //         }
+                //     });
+                // };
+            });
+        }
+
+        function resetPass(id) {
+            var newPass = buatPasswordAcak();
+            Swal.fire({
+                title: "You sure to reset the password!?",
+                text: "New Password : " + newPass,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes"
+            }).then((result) => {
+                if (result.isConfirmed) {
                     $.ajax({
-                        url: "{{ url('users/deleteUser') }}",
+                        url: "{{ url('users/resetPass') }}",
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         data: {
-                            id: id
+                            id: id,
+                            pass: newPass,
                         },
                         success: function(data) {
+                            Toast.fire({
+                                icon: "success",
+                                title: "Password has reset"
+                            });
                             getList()
                         },
                         error: function(xhr, status, error) {
@@ -376,8 +421,40 @@
 
                         }
                     });
-                };
+                }
             });
+        }
+
+        function buatPasswordAcak(toID = null, panjang = 10, sertakanHurufBesar = true, sertakanAngka = true,
+            sertakanSimbol =
+            false) {
+            const hurufKecil = 'abcdefghijklmnopqrstuvwxyz';
+            const hurufBesar = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const angka = '0123456789';
+            const simbol = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+            let kumpulanKarakter = hurufKecil;
+            if (sertakanHurufBesar) kumpulanKarakter += hurufBesar;
+            if (sertakanAngka) kumpulanKarakter += angka;
+            if (sertakanSimbol) kumpulanKarakter += simbol;
+
+            let password = '';
+            for (let i = 0; i < panjang; i++) {
+                const indeksAcak = Math.floor(Math.random() * kumpulanKarakter.length);
+                password += kumpulanKarakter[indeksAcak];
+            }
+            if (Array.isArray(toID)) {
+                toID.map(index => {
+                    $('#' + index).val(password);
+                })
+                return true
+            } else if (toID) {
+                return $('#' + toID).val(password);
+
+            } else {
+                return password;
+
+            }
         }
     </script>
 @endsection

@@ -3,7 +3,7 @@ use App\Models\Setting;
 // ys note: tidak semua user adalah employee
 $LoginName = auth()->user()->load('employee')->employee->fullname;
 
-$logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/assets/images/logo.png');
+$logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/assets/logo.png');
 // $app_name = Setting::where('parameter', 'app_name')->first()->value ?: 'AppName';
 // $company_name = Setting::where('parameter', 'company_name')->first()->value ?: 'Company Name';
 ?>
@@ -307,7 +307,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                                             <span
                                                 class="bg-secondary h-35 w-35 d-flex-center b-r-10 position-relative">
                                                 <img alt="avtar" class="img-fluid b-r-10"
-                                                    src="{{ url('') }}/assets/images/ai_avtar/6.jpg">
+                                                    src="{{ url('') }}/assets/images/avtar/7.png">
                                                 <span
                                                     class="position-absolute bottom-30 end-0 p-1 bg-secondary border border-light rounded-circle notification-avtar"></span>
                                             </span>
@@ -318,10 +318,12 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                                                 target="_blank"><span class="f-w-500 text-secondary">You</span>
                                                 Anda berhasil login</a>
                                             <div>
-                                                <a class="d-inline-block f-w-500 text-success me-1"
-                                                    href="#">{{ request()->ip() }}</a>
+                                                <a class="d-inline-block f-w-500 text-success me-1" href="#">IP
+                                                    Anda: {{ request()->ip() }}</a>
                                             </div>
-                                            <span class="badge text-light-primary mt-2"> {{ date('Y-m-d H-i-s') }}
+                                            <span class="badge text-light-primary mt-2">
+                                                {{ WIB(date('Y-m-d H:i:s')) }}
+
                                             </span>
 
                                         </div>

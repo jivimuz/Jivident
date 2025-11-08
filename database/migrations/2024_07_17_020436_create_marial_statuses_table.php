@@ -14,17 +14,13 @@ return new class extends Migration
     {
         Schema::create('m_marialstatus', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('klienfk', 30);
+            $table->string('kdkemenkes', 30);
+            $table->string('name', 30);
+            $table->string('reportdisplay', 30);
+            $table->timestamps();
+            $table->softDeletes();
         });
-
-        $data = [
-            ["name" => "Belum Menikah"],
-            ["name" => "Menikah"],
-            ["name" => "Duda / Janda"],
-
-        ];
-
-        MarialStatus::insert($data);
     }
 
     /**
