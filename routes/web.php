@@ -106,8 +106,11 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    Route::middleware(['checkAccess:PAT'])->prefix('patient')->group(function () {
+    Route::middleware(['checkAccess:PA'])->prefix('patient')->group(function () {
         Route::get('/', [PatientController::class, 'index']);
         Route::post('getList', [PatientController::class, 'getList']);
+        Route::get('add_patient', [PatientController::class, 'addPatient']);
+        Route::post('searchAddress', [PatientController::class, 'searchAddress']);
+        Route::post('saveData', [PatientController::class, 'saveData']);
     });
 });

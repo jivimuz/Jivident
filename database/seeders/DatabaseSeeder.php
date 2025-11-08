@@ -23,9 +23,9 @@ class DatabaseSeeder extends Seeder
         $this->call(\Database\Seeders\Pasien\ProvinsiSeeder::class);
         $this->call(\Database\Seeders\Pasien\KotaKabupatenSeeder::class);
         $this->call(\Database\Seeders\Pasien\KecamatanSeeder::class);
-        $this->call(\Database\Seeders\Pasien\KelurahanSeeder::class);
+        $this->call(KelurahanSeeder::class);
+        $this->call(PasienSeeder::class);
         $this->call(\Database\Seeders\Pasien\NegaraSeeder::class);
-        $this->call(\Database\Seeders\Pasien\PasienSeeder::class);
         $this->call(\Database\Seeders\Pasien\PekerjaanSeeder::class);
         $this->call(\Database\Seeders\Pasien\PendidikanSeeder::class);
         $this->call(\Database\Seeders\Pasien\StatusPerkawinanSeeder::class);

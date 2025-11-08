@@ -1,15 +1,6 @@
 @extends('layout/main')
 @section('style')
     <style>
-        .menu-list:hover {
-            background-color: #B6E2FF;
-        }
-
-        .menu-list {
-            width: 100%;
-            height: 130px;
-            vertical-align: middle;
-        }
     </style>
 @endsection
 
@@ -22,30 +13,45 @@
                 <div class="card" data-iq-gsap="onStart" data-iq-opacity="0" data-iq-position-y="-40" data-iq-duration=".6"
                     data-iq-delay=".2" data-iq-trigger="scroll" data-iq-ease="none">
                     <div class="card-body">
-                        <!-- [UBAH] Modifikasi layout grid untuk tombol baru -->
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="form-group">
-                                    <!-- [UBAH] Ganti label dan id -->
                                     <label for="global-search" class="form-label"><strong>Cari Pasien
                                             (Global)</strong></label>
+                                    <div class="input-group">
+                                        <input type="search" class="form-control b-r-left" id="global-search"
+                                            maxlength="50" placeholder="Ketik NIK, Nama, No RM, No HP..."
+                                            onchange="this.value = this.value.replace(/[^0-9a-zA-Z\s]/g, '');">
+                                        <a onclick="getList()" class="btn b-r-right btn-outline-primary ">
+                                            <i class="iconoir-search" style="font-size: 15px"></i>
+                                        </a>
+                                        <button class="btn  btn-outline-info b-r-right" id="clear-global-search"
+                                            style="display: none;">
+                                            <svg width="16" viewBox="0 0 24 24" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg" stroke="currentColor" class="me-1">
+                                                <path
+                                                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C14.3857 3 16.5291 4.09381 18 5.61765"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M21 3V8H16" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                            </svg>
+                                            Tampilkan Semua Pasien
+                                        </button>
+                                    </div>
+                                    <!-- [UBAH] Ganti label dan id -->
+                                    <small>Ketik NIK atau Nama Pasien untuk Cek Data Pasien </small>
                                     <!-- [UBAH] Ganti id, placeholder, dan hapus batasan NIK -->
-                                    <input type="text" class="form-control" id="global-search" maxlength="50"
-                                        placeholder="Ketik NIK, Nama, No RM, No HP..."
-                                        onchange="this.value = this.value.replace(/[^0-9a-zA-Z\s]/g, '');">
-                                    <small>Ketik untuk memfilter tabel di bawah secara global.</small>
+
                                 </div>
+
                             </div>
-                            <!-- [BARU] Kolom untuk tombol "Tampilkan Semua Pasien" -->
-                            <div class="col-md-2 d-flex align-items-center">
+                            {{-- <div class="col-md-2 d-flex align-items-center">
                                 <div class="form-group mt-2"> <!-- mt-4 agar sejajar dengan input box -->
-                                    <!-- [UBAH] Ganti id tombol -->
                                     <a onclick="getList()" class="btn btn-sm btn-outline-primary rounded-pill">
                                         <i class="iconoir-search" style="font-size: 15px"></i>
                                     </a>
                                 </div>
                             </div>
-                            <!-- [BARU] Kolom untuk tombol "Tampilkan Semua Pasien" -->
                             <div class="col-md-4 d-flex align-items-center">
                                 <div class="form-group mt-2"> <!-- mt-4 agar sejajar dengan input box -->
                                     <!-- [UBAH] Ganti id tombol -->
@@ -62,7 +68,7 @@
                                         Tampilkan Semua Pasien
                                     </button>
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -76,7 +82,8 @@
                     data-iq-duration=".6" data-iq-delay=".4" data-iq-trigger="scroll" data-iq-ease="none">
                     <div class="card-header">
                         <div class="float-end">
-                            <a class="btn btn-sm btn-outline-primary rounded-pill mt-2 ml-2">
+                            <a class="btn btn-sm btn-outline-primary rounded-pill mt-2 ml-2"
+                                href="{{ url('patient/add_patient') }}">
                                 <svg width="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path opacity="0.4"
                                         d="M21.101 9.58786H19.8979V8.41162C19.8979 7.90945 19.4952 7.5 18.999 7.5C18.5038 7.5 18.1 7.90945 18.1 8.41162V9.58786H16.899C16.4027 9.58786 16 9.99731 16 10.4995C16 11.0016 16.4027 11.4111 16.899 11.4111H18.1V12.5884C18.1 13.0906 18.5038 13.5 18.999 13.5C19.4952 13.5 19.8979 13.0906 19.8979 12.5884V11.4111H21.101C21.5962 11.4111 22 11.0016 22 10.4995C22 9.99731 21.5962 9.58786 21.101 9.58786Z"

@@ -199,12 +199,12 @@
                         val: $('#val-' + id).val(),
                     },
                     success: function(data) {
+                        cancelVal(id)
+                        getList()
                         Toast.fire({
                             icon: "success",
                             title: "Data Updated"
                         });
-                        cancelVal(id)
-                        getList()
                     },
                     error: function(xhr, status, error) {
                         Toast.fire({

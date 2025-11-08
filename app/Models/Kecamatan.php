@@ -7,6 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Kecamatan extends Model
 {
     protected $table = "m_kecamatan";
-    protected $guarded = ["id"];
+    protected $guarded = [];
     public $timestamps = false;
 }

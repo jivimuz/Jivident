@@ -9,6 +9,6 @@ class Provinsi extends Model
 {
     use HasFactory;
     protected $table = 'm_provinsi';
-    protected $guarded = ["id"];
+    protected $guarded = [];
     public $timestamps = false;
 }

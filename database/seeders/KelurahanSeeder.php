@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders\Pasien;
+namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +28,9 @@ class KelurahanSeeder extends Seeder
             $data = array_map(function ($arr) use ($now) {
                 unset($arr['lat'], $arr['long'], $arr['pos']);
 
-                $kecamatan = Kecamatan::select('provinsifk', 'kotakabupatenfk')->find($arr['kecamatanfk']);
+                $kecamatan = \App\Models\Kecamatan::select('provinsifk', 'kotakabupatenfk')
+                    ->where('id', $arr['kecamatanfk'])
+                    ->first();
 
                 if (!$kecamatan) return null; // Skip kalau data tidak ditemukan
 
@@ -40,17 +42,24 @@ class KelurahanSeeder extends Seeder
                     'provinsifk' => $kecamatan->provinsifk,
                     'kelurahan' => $arr['kelurahan'],
                     'kdkelurahan' => substr($arr['id'], 0, 2) . '.' . substr($arr['id'], 2, 2) . '.' . substr($arr['id'], 4, 2) . '.' . substr($arr['id'], 6, 4),
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ];
             }, $data);
 
-            // Hapus null dari array (kalau ada yang gagal)
-            $data = array_filter($data);
+            // Hapus null dari array
+            $data = array_values(array_filter($data));
 
-            // Insert batch
-            DB::table('m_kelurahan')->insert($data);
-            $this->command->info(count($data) . " data dari" . $filePath . " berhasil diimport.");
+            // Pecah ke batch 500
+            $chunks = array_chunk($data, 500);
+
+            foreach ($chunks as $i => $chunk) {
+                DB::table('m_kelurahan')->insert($chunk);
+                $this->command->info("Batch " . ($i + 1) . " dari file {$file} berhasil diimport (" . count($chunk) . " baris).");
+
+                // Delay 0.5 detik antar batch
+                usleep(500000);
+            }
+
+            $this->command->info("File {$file} selesai diimport total: " . count($data) . " baris.\n");
         }
     }
 
@@ -61,7 +70,9 @@ class KelurahanSeeder extends Seeder
 
         $file = fopen($filename, 'r');
         while (($data = fgetcsv($file, 1000, ',')) !== false) {
-            $rows[] = array_combine($header, $data);
+            if (count($data) === count($header)) {
+                $rows[] = array_combine($header, $data);
+            }
         }
         fclose($file);
         return $rows;

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('nik', 30);
             $table->string('nama', 255);
             $table->string('umur', 30)->nullable();
-            $table->string('nobpjs', 30);
+            $table->string('nobpjs', 30)->nullable();
             $table->string('nohp', 30)->nullable();
             $table->integer('jeniskelaminfk')->nullable();
             $table->string('tempatlahir', 255)->nullable();

@@ -1,28 +1,3 @@
-//  -----------------------------------------------------------------------------------
-
-//     Template Name: axelit Admin
-//     Template URI: http://admin.la-themes.com/axelit/theme
-//     Description: This is Admin theme
-//     Author: la-themes
-//     Author URI: https://themeforest.net/user/la-themes
-
-// -----------------------------------------------------------------------------------
-
-// 01. Horizontal Nav js
-// 02. Flag  Icon Js
-// 03. copy js
-// 04. sidebar toggle js
-// 05. List page js
-// 06. Sidebar scroll js
-// 07. Loader JS
-// 08. tap on top
-// 09. flag dropdown
-// 10. hide-show
-// 11. dark mode js
-// 12. close on click js
-// 13. searchbar js
-// 14. closeCollapse js
-// 15. Modal js
 
 
 // >>-- 01 Horizontal Nav Js --<<

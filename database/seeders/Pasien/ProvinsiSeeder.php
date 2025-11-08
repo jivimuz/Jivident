@@ -19,6 +19,7 @@ class ProvinsiSeeder extends Seeder
                 $rowData = array_combine($header, $row);
 
                 $data[] = [
+                    'id'        => $rowData['id'],
                     'klienfk'     => 1,
                     'kdprovinsi'  => $rowData['id'],
                     'provinsi'    => $rowData['provinsi'],

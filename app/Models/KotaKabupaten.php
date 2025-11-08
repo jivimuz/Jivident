@@ -10,6 +10,6 @@ class KotaKabupaten extends Model
     use HasFactory;
 
     protected $table = "m_kotakabupaten";
-    protected $guarded = ["id"];
+    protected $guarded = [];
     public $timestamps = false;
 }

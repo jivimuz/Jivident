@@ -17230,10 +17230,10 @@ header.header-main .container-fluid .header-right .header-searchbar .header-sear
   padding: 1.5rem 1.5rem 0;
 }
 header.header-main .container-fluid .header-right .header-searchbar .form-control {
-  padding: 0.5rem 0.75rem;
-  margin: -0.1rem 0;
-  padding-left: 2rem;
-  border-radius: var(--app-border-radius);
+  padding: 0.5rem 0.75rem !important;
+  margin: -0.1rem 0 !important;
+  padding-left: 2rem !important;
+  border-radius: var(--app-border-radius) !important;
 }
 header.header-main .container-fluid .header-right .header-searchbar .app-dropdown .dropdown-menu {
   transform: translate(-16px, 63px) !important;
@@ -29509,12 +29509,12 @@ body[class="ltr dark"] .card.card-bordered .card-body {
 
 .app-form .form-select,
 .app-form .form-control {
-  color: rgba(var(--secondary), 1);
-  font-size: 14px;
-  padding: 0.8rem 0.75rem;
-  border: 1px solid rgba(var(--secondary), 0.4);
-  text-overflow: ellipsis;
-  border-radius: var(--app-border-radius);
+  color: rgba(var(--secondary), 1) !important;
+  font-size: 14px !important;
+  padding: 0.8rem 0.75rem !important;
+  border: 1px solid rgba(var(--secondary), 0.4) !important;
+  text-overflow: ellipsis !important;
+  border-radius: var(--app-border-radius) !important;
 }
 .app-form .form-select:focus,
 .app-form .form-control:focus {
@@ -29525,8 +29525,8 @@ body[class="ltr dark"] .card.card-bordered .card-body {
   transition: var(--app-transition);
 }
 .app-form .form-select::-moz-placeholder, .app-form .form-control::-moz-placeholder {
-  color: rgba(var(--dark), 0.6) !important;
-  opacity: 1;
+  color: rgba(var(--dark), 0.6) !important ;
+  opacity: 1 !important;
 }
 .app-form .form-select::placeholder,
 .app-form .form-control::placeholder {
@@ -29535,23 +29535,23 @@ body[class="ltr dark"] .card.card-bordered .card-body {
 }
 .app-form .form-select.is-invalid,
 .app-form .form-control.is-invalid {
-  border-color: rgba(var(--danger), 1);
+  border-color: rgba(var(--danger), 1) !important;
 }
 .app-form .form-select.is-invalid:focus,
 .app-form .form-control.is-invalid:focus {
-  box-shadow: 0 0 0 0.25rem rgba(var(--danger), 0.3);
+  box-shadow: 0 0 0 0.25rem rgba(var(--danger), 0.3) !important;
 }
 .app-form .form-select.form-control-lg,
 .app-form .form-control.form-control-lg {
-  min-height: calc(1.5em + 1rem + var(--bs-border-width) * 2);
-  padding: 0.5rem 1rem;
-  font-size: 1.25rem;
+  min-height: calc(1.5em + 1rem + var(--bs-border-width) * 2) !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 1.25rem !important;
 }
 .app-form .form-select.form-control-sm,
 .app-form .form-control.form-control-sm {
-  min-height: calc(1.5em + 0.5rem + var(--bs-border-width) * 2);
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
+  min-height: calc(1.5em + 0.5rem + var(--bs-border-width) * 2) !important;
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.875rem !important;
 }
 .app-form .form-label {
   color: rgba(var(--dark), 0.8);
@@ -29585,7 +29585,7 @@ body[class="ltr dark"] .card.card-bordered .card-body {
 }
 .app-form.rounded-control .form-select,
 .app-form.rounded-control .form-control {
-  border-radius: 20px;
+  border-radius: 20px !important;
 }
 .app-form.rounded-control .btn {
   border-radius: var(--app-border-radius);
@@ -29614,14 +29614,14 @@ body[class="ltr dark"] .card.card-bordered .card-body {
   visibility: hidden;
 }
 .app-form.app-icon-form .form-control {
-  padding: 0.5rem 0.75rem;
-  padding-left: 2rem;
-  border: 2px solid rgba(var(--secondary), 0.4);
+  padding: 0.5rem 0.75rem !important;
+  padding-left: 2rem !important;
+  border: 2px solid rgba(var(--secondary), 0.4) !important;
 }
 .app-form.app-icon-form .form-control:focus {
-  border-color: rgba(var(--primary), 1);
-  box-shadow: none;
-  box-shadow: 0 0 0 0.25rem rgba(var(--primary), 0.3);
+  border-color: rgba(var(--primary), 1) !important;
+  box-shadow: none !important;
+  box-shadow: 0 0 0 0.25rem rgba(var(--primary), 0.3) !important;
 }
 .app-form.app-icon-form i {
   position: absolute;
@@ -29642,13 +29642,13 @@ body[class="ltr dark"] .card.card-bordered .card-body {
   color: rgb(var(--primary), 1);
 }
 .app-form.was-validated .form-control:invalid {
-  border-color: rgba(var(--danger), 1);
+  border-color: rgba(var(--danger), 1) !important;
 }
 .app-form.was-validated .form-control:valid {
-  border-color: rgb(var(--success), 1);
+  border-color: rgb(var(--success), 1) !important;
 }
 .app-form.was-validated .invalid-feedback {
-  color: rgba(var(--danger), 1);
+  color: rgba(var(--danger), 1) !important;
 }
 .app-form .icon-form {
   position: relative;
@@ -33179,7 +33179,7 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .search-lg .app-icon-form.app-icon-form .form-control {
-  padding: 0.8rem 0.75rem;
+  padding: 0.8rem 0.75rem !important;
 }
 .search-lg .app-icon-form.app-icon-form i {
   top: 12px;
@@ -33461,8 +33461,8 @@ input[type=range]::-webkit-slider-thumb {
   min-width: 50%;
 }
 .coming-soon .app-form .form-control-lg {
-  min-width: 50%;
-  max-width: 75%;
+  min-width: 50% !important;
+  max-width: 75% !important;
   background: transparent;
 }
 .coming-soon h3 {
@@ -54445,8 +54445,8 @@ select#model {
   right: 12px;
 }
 .rtl .app-form .icon-form .form-control {
-  padding-left: 0;
-  padding-right: 34px;
+  padding-left: 0 !important;
+  padding-right: 34px !important;
 }
 .rtl .app-form .contact-input {
   direction: rtl;

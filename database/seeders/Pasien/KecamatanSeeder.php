@@ -31,6 +31,7 @@ class KecamatanSeeder extends Seeder
             if (!$kotakabupaten) continue;
 
             $data[] = [
+                'id'        => $arr['id'],
                 'klienfk'          => 1,
                 'provinsifk'       => $kotakabupaten->provinsifk,
                 'kotakabupatenfk'  => $arr['kotakabupatenfk'],

@@ -8,6 +8,6 @@ class Kelurahan extends Model
 {
 
     protected $table = "m_kelurahan";
-    protected $guarded = ["id"];
+    protected $guarded = [];
     public $timestamps = false;
 }
