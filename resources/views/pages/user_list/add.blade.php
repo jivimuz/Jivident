@@ -127,6 +127,7 @@
                 </div>
 
 
+                <br>
                 <button type="button" name="next"
                     class="btn btn-primary next action-button float-end rounded step1" hidden value="Next">Next <svg
                         width="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -166,6 +167,16 @@
                                 <label class="form-label">NIK: <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control required" id="nik" name="nik"
                                     value="{{ $top }}" placeholder="Contact No." />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Doctor or Nurse?: <span class="text-danger">*</span></label>
+                                <select class="form-control select2modal required" id="is_pemeriksapasien"
+                                    name="is_pemeriksapasien" style="width:100% !important">
+                                    <option value="0" selected>Tidak</option>
+                                    <option value="1">Ya</option>
+                                </select>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -320,6 +331,7 @@
 
                     </div>
                 </div>
+                <br>
                 <button type="button" name="next" class="btn btn-primary next action-button float-end rounded"
                     value="Next"> Next <svg width="25" viewBox="0 0 24 24" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
@@ -360,6 +372,7 @@
                         </div>
                     </div>
                 </div>
+                <br>
                 <button type="button" name="next" class="btn btn-primary next action-button float-end rounded">
                     Next <svg width="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -385,6 +398,7 @@
                         <h5 class="purple-text text-center">Save the data?</h5>
                     </div>
                 </div>
+                <br>
                 <button type="submit" name="next" class="btn btn-success  float-end rounded"> Submit <svg
                         width="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path

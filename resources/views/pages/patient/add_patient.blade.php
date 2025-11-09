@@ -157,7 +157,7 @@
                                     <select class="form-control select2" name="pekerjaanfk" id="pekerjaanfk">
                                         <option disabled selected>Pilih</option>
                                         @foreach ($pekerjaan as $pk)
-                                            <option value="{{ $pk->id }}">{{ $pk->name }}</option>
+                                            <option value="{{ $pk->id }}">{{ $pk->pekerjaan }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -283,7 +283,7 @@
 
                             <div class="mt-4 text-end">
                                 <button type="submit" class="btn btn-primary px-4">
-                                    <i class="ti-save me-2"></i> Simpan Data
+                                    <i class="iconoir-send"></i> Simpan Data
                                 </button>
                                 <button type="reset" class="btn btn-light border px-4">Reset</button>
                             </div>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Website\AntrianController;
 use App\Http\Controllers\Website\HomeController;
 use App\Http\Controllers\Website\ModuleController;
 use App\Http\Controllers\Website\UserListController;
@@ -8,6 +9,9 @@ use App\Http\Controllers\Website\profileController;
 use App\Http\Controllers\Website\SettingController;
 use App\Http\Controllers\Website\EmployeesController;
 use App\Http\Controllers\Website\PatientController;
+use App\Http\Controllers\Website\RuangPraktekController;
+use App\Http\Controllers\Website\RuangTungguController;
+use App\Models\RuangPraktek;
 use Illuminate\Support\Facades\Route;
 
 Route::get('login', [AuthController::class, 'index'])->name('login');
@@ -69,6 +73,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('saveSettingF', [SettingController::class, 'saveSettingF']);
     });
 
+    Route::middleware(['checkAccess:MTR'])->prefix('ruang-praktek')->group(function () {
+        Route::get('/', [RuangPraktekController::class, 'index']);
+        Route::post('addRoom', [RuangPraktekController::class, 'addRoom']);
+        Route::post('getRooms', [RuangPraktekController::class, 'getRooms']);
+        Route::post('getDokterList', [RuangPraktekController::class, 'getDokterList']);
+        Route::post('updateRoom', [RuangPraktekController::class, 'updateRoom']);
+        Route::post('deleteRoom', [RuangPraktekController::class, 'deleteRoom']);
+    });
+
     Route::middleware(['checkAccess:MTE'])->prefix('employees')->group(function () {
         Route::get('/', [EmployeesController::class, 'index']);
         Route::post('getEmployees', [EmployeesController::class, 'getEmployees']);
@@ -112,5 +125,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('add_patient', [PatientController::class, 'addPatient']);
         Route::post('searchAddress', [PatientController::class, 'searchAddress']);
         Route::post('saveData', [PatientController::class, 'saveData']);
+    });
+
+    Route::middleware(['checkAccess:RTP'])->prefix('ruang-tunggu')->group(function () {
+        Route::get('/', [RuangTungguController::class, 'index']);
+    });
+
+    Route::middleware(['checkAccess:RTA'])->prefix('antrian')->group(function () {
+        Route::get('/', [AntrianController::class, 'index']);
     });
 });

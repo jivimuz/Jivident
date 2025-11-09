@@ -37,6 +37,7 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->integer('fk_bank')->nullable();
             $table->string('accountnumber')->nullable();
+            $table->boolean('is_pemeriksapasien')->default(false);
             $table->timestamps();
         });
 
@@ -44,7 +45,8 @@ return new class extends Migration
             [
                 'nik' => 123213131,
                 'fullname' => "Superadmin",
-                'fk_designation' => 1
+                'fk_designation' => 1,
+                'is_pemeriksapasien' => 1
             ],
             [
                 'nik' => 123255132,

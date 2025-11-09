@@ -259,7 +259,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                                             </div>
                                             <div class="search-list-content">
                                                 <a href="data_table.html" target="_blank">
-                                                    <h6 class="mb-0 text-dark">lAPORAN</h6>
+                                                    <h6 class="mb-0 text-dark">Laporan</h6>
                                                 </a>
                                                 <p class="f-s-13 mb-0 text-secondary">#YE615</p>
                                             </div>

@@ -8,6 +8,7 @@ use App\Models\JenisKelamin;
 use App\Models\Kebangsaan;
 use App\Models\Kelurahan;
 use App\Models\MarialStatus;
+use App\Models\Negara;
 use App\Models\Patient;
 use App\Models\Pekerjaan;
 use App\Models\Religion;
@@ -103,7 +104,7 @@ class PatientController extends Controller
         $pekerjaan  = Pekerjaan::all();
         $kebangsaan   = Kebangsaan::all();
         $etnis    = Etnis::all();
-        $negara    = Etnis::all();
+        $negara    = Negara::all();
         return view('pages/patient/add_patient', compact('jk', 'agama', 'statusperkawinan', 'pendidikan', 'pekerjaan', 'kebangsaan', 'etnis', 'negara'));
     }
 

@@ -38,6 +38,7 @@ class NegaraSeeder extends Seeder
             ['klienfk' => 1, 'negara' => 'Swiss', 'reportdisplay' => 'Swiss'],
             ['klienfk' => 1, 'negara' => 'Italia', 'reportdisplay' => 'Italia'],
             ['klienfk' => 1, 'negara' => 'Spanyol', 'reportdisplay' => 'Spanyol'],
+            ['klienfk' => 1, 'negara' => 'Lainnya', 'reportdisplay' => 'Lainnya'],
         ];
 
         foreach ($negara as &$n) {
