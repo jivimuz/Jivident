@@ -29,6 +29,10 @@ class RuangPraktekController extends Controller
     public function addRoom()
     {
         try {
+            $cek = RuangPraktek::whereNull('fk_dokter')->first();
+            if ($cek) {
+                throw new \Exception("Masih ada ruangan kosong.");
+            }
             RuangPraktek::insert([
                 'klienfk' => Auth::user()->klienfk ?? 1,
                 'name' => 'Ruang - ' . substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 2) .

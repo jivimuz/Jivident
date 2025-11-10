@@ -10,6 +10,19 @@
 @section('content')
     <div class="content-inner mt-5 py-0">
         <div class="row">
+            <div class="col-md-12 mb-3">
+                <div class="bg-white w-100 rounded-pill p-2 d-flex align-items-center justify-content-between shadow-sm">
+                    {{-- <a href="javascript:history.back()"
+                        class="btn btn-primary rounded-pill d-flex align-items-center justify-content-center"
+                        style="width:45px; height:45px;">
+                        <i class="iconoir-fast-arrow-left" style="font-size:20px;"></i>
+                    </a> --}}
+                    <span class="text-primary fw-bold text-center flex-grow-1" style="font-size:24px;">
+                        Ruang Praktek
+                    </span>
+                    <div style="width:45px;"></div> <!-- spacer biar teks tetap di tengah -->
+                </div>
+            </div>
             <div class="col-md-12">
                 <div class="card" data-iq-gsap="onStart" data-iq-opacity="0" data-iq-position-y="-40" data-iq-duration=".6"
                     data-iq-delay=".4" data-iq-trigger="scroll" data-iq-ease="none">
@@ -17,7 +30,7 @@
                         <div class="float-end">
 
                         </div>
-                        <h4 class="card-title">Ruang Praktek</h4>
+                        <h4 class="card-title">Master Ruang Praktek</h4>
                         <small>List Ruang Praktek</small>
                     </div>
                     <div class="card-body" data-iq-gsap="onStart" data-iq-opacity="0" data-iq-position-y="-40"

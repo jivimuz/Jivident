@@ -10,19 +10,19 @@ return new class extends Migration
     {
         Schema::create('m_alamat', function (Blueprint $table) {
             $table->id(); // INT(11) unsigned auto_increment primary key
-            $table->string('klienfk', 30);
+            $table->string('klienfk', 30)->default(1);
             $table->string('kodepos', 30)->nullable();
-            $table->integer('provinsifk');
-            $table->integer('kotakabupatenfk');
-            $table->integer('kecamatanfk');
-            $table->bigInteger('kelurahanfk');
-            $table->string('alamat', 255);
-            $table->string('rt', 3);
-            $table->string('rw', 3);
-            $table->string('kelurahan', 255);
-            $table->string('kecamatan', 255);
-            $table->string('kotakabupaten', 255);
-            $table->string('provinsi', 255);
+            $table->integer('provinsifk')->nullable();
+            $table->integer('kotakabupatenfk')->nullable();
+            $table->integer('kecamatanfk')->nullable();
+            $table->bigInteger('kelurahanfk')->nullable();
+            $table->string('alamat', 255)->nullable();
+            $table->string('rt', 3)->nullable();
+            $table->string('rw', 3)->nullable();
+            $table->string('kelurahan', 255)->nullable();
+            $table->string('kecamatan', 255)->nullable();
+            $table->string('kotakabupaten', 255)->nullable();
+            $table->string('provinsi', 255)->nullable();
             $table->integer('pasienfk');
             $table->timestamps(); // created_at & updated_at
             $table->softDeletes(); // deleted_at

@@ -9,6 +9,20 @@
 
         <!-- Card untuk Filter NIK -->
         <div class="row">
+
+            <div class="col-md-12 mb-3">
+                <div class="bg-white w-100 rounded-pill p-2 d-flex align-items-center justify-content-between shadow-sm">
+                    {{-- <a href="javascript:history.back()"
+                        class="btn btn-primary rounded-pill d-flex align-items-center justify-content-center"
+                        style="width:45px; height:45px;">
+                        <i class="iconoir-fast-arrow-left" style="font-size:20px;"></i>
+                    </a> --}}
+                    <span class="text-primary fw-bold text-center flex-grow-1" style="font-size:24px;">
+                        Data Pasien
+                    </span>
+                    <div style="width:45px;"></div> <!-- spacer biar teks tetap di tengah -->
+                </div>
+            </div>
             <div class="col-md-12">
                 <div class="card" data-iq-gsap="onStart" data-iq-opacity="0" data-iq-position-y="-40" data-iq-duration=".6"
                     data-iq-delay=".2" data-iq-trigger="scroll" data-iq-ease="none">
@@ -227,11 +241,9 @@
                 {
                     data: "id",
                     render: function(data, b, c) {
-                        // [UBAH] Pastikan URL dan btoa() digunakan dengan benar
-                        // Menggunakan 'c' (data row lengkap) jika 'b' adalah 'display'
-                        // let detailUrl = `{{ url('') }}/${btoa(c.id)}`;
+                        let urlReg = `{{ url('patient/register-patient') }}/${btoa(btoa(c.id))}`;
                         let a = '';
-                        a += `<a class="btn btn-xs btn-outline-success rounded-pill mt-1 " style="margin-right:5px" href="#">
+                        a += `<a class="btn btn-xs btn-outline-success rounded-pill mt-1 " style="margin-right:5px" href="${urlReg}">
                                  <i class="iconoir-fast-arrow-right" style="font-size:15px; padding-top:2px; "></i>
                                 </a>`;
                         a += `<a class="btn btn-xs btn-outline-primary rounded-pill mt-1 " style="margin-right:5px"  href="#">

@@ -50,6 +50,7 @@
     <link href="{{ url('') }}/assets/css/responsive.css" rel="stylesheet" type="text/css">
 
 
+    <link href="{{ url('') }}/assets/vendor/datepikar/flatpickr.min.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="{{ url('') }}/assets/css/datatables.min.css">
     <link rel="stylesheet" href="{{ url('') }}/assets/css/select2.min.css">
     <link rel="stylesheet" href="{{ url('') }}/assets/css/sweetalert2.min.css">

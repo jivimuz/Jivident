@@ -40,6 +40,11 @@ return new class extends Migration
             $table->string('nomorkk', 255)->nullable();
             $table->string('alergi', 255)->nullable();
             $table->string('catatanpasien', 255)->nullable();
+            $table->boolean('is_diabet')->default(0);
+            $table->boolean('is_hipertensi')->default(0);
+            $table->boolean('is_tbc')->default(0);
+            $table->boolean('is_diare')->default(0);
+            $table->boolean('is_pnemonea')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });

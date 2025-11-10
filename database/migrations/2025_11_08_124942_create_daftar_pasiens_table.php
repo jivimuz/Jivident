@@ -16,25 +16,21 @@ return new class extends Migration
             $table->unsignedBigInteger('klienfk');
             $table->string('noregistrasi', 20);
             $table->unsignedBigInteger('dokterfk')->nullable();
+            $table->unsignedBigInteger('dokterpenanganfk')->nullable();
             $table->integer('pegawaifk')->nullable();
             $table->unsignedBigInteger('ruanganfk');
-            $table->unsignedBigInteger('kelasfk');
             $table->unsignedBigInteger('pasienfk');
-            $table->unsignedBigInteger('jenispembayaranfk');
+            $table->enum('jenispembayaran', ['UMUM', 'BPJS'])->default('UMUM');
             $table->dateTime('tglregistrasi');
             $table->dateTime('tglpulang')->nullable();
             $table->enum('statuspasien', ['LAMA', 'BARU'])->default('BARU');
-            $table->enum('status', ['Didaftarkan', 'Dipanggil', 'Diperiksa', 'Diranapkan', 'Farmasi', 'Selesai'])->default('Didaftarkan');
-            $table->dateTime('tgldipanggil')->nullable();
-            $table->string('keluhan', 255);
-            $table->integer('asalrujukanfk');
-            $table->integer('tipelayananfk');
+            $table->enum('status', ['Dalam Antrian', 'Di Periksa',  'Farmasi', 'Selesai'])->default('Dalam Antrian');
+            $table->dateTime('tgldiperiksa')->nullable();
+            $table->string('keluhan', 255)->nullable();
             $table->string('noantrian', 10);
-            $table->unsignedBigInteger('departemenfk');
             $table->enum('statuspembayaran', ['Belum Verifikasi', 'Verifikasi Sebagian', 'Verifikasi', 'Lunas'])->default('Belum Verifikasi');
-            $table->string('reportdisplay', 255);
-            $table->string('encounter_id', 255)->nullable();
-            $table->string('conditionmeninggalkanfaskes_id', 255)->nullable();
+            $table->string('kondisi_kepulangan', 255)->nullable();
+            $table->string('reportdisplay', 255)->nullable();
 
             $table->timestamps(); // otomatis buat created_at & updated_at
             $table->softDeletes(); // buat deleted_at

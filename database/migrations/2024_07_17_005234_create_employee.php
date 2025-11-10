@@ -46,17 +46,19 @@ return new class extends Migration
                 'nik' => 123213131,
                 'fullname' => "Superadmin",
                 'fk_designation' => 1,
-                'is_pemeriksapasien' => 1
+                'is_pemeriksapasien' => true
             ],
             [
                 'nik' => 123255132,
                 'fullname' => "User1",
-                'fk_designation' => 2
+                'fk_designation' => 2,
+                'is_pemeriksapasien' => true
             ],
             [
                 'nik' => 122113133,
                 'fullname' => "User2",
-                'fk_designation' => 3
+                'fk_designation' => 3,
+                'is_pemeriksapasien' => true
             ],
 
         ];

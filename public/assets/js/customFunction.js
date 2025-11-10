@@ -134,3 +134,16 @@ function openPopup(url) {
     var popupWindow = window.open(url, windowName, windowFeatures);
     // popupWindow.focus();
 }
+function countAge(tanggalLahir) {
+  const today = new Date();
+  const birthDate = new Date(tanggalLahir);
+  let umur = today.getFullYear() - birthDate.getFullYear();
+  const bulan = today.getMonth() - birthDate.getMonth();
+
+  // kalau belum lewat ulang tahun di tahun ini, umur dikurangi 1
+  if (bulan < 0 || (bulan === 0 && today.getDate() < birthDate.getDate())) {
+    umur--;
+  }
+
+  return umur;
+}

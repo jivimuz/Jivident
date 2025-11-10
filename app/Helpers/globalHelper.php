@@ -11,8 +11,11 @@ if (! function_exists('WIB')) {
      * @param string $format
      * @return string
      */
-    function WIB($time, $format = 'Y-m-d H:i:s')
+    function WIB($time = null, $format = 'Y-m-d H:i:s')
     {
+        if ($time === null) {
+            $time = date('Y-m-d H:i:s');
+        }
         return Carbon::parse($time)->timezone('Asia/Jakarta')->format($format);
     }
 
@@ -27,6 +30,17 @@ if (! function_exists('WIB')) {
         // Ambil 4 digit dari patient ID, pad kiri dengan 0
         $idPart = str_pad($patientId, 4, '0', STR_PAD_LEFT);
 
-        return "JD{$klienPart}-{$idPart}";
+        return "JD{$klienPart}{$idPart}";
+    }
+
+    function countAge($tanggalLahir)
+    {
+        if (!$tanggalLahir) return null; // kalau kosong, langsung null biar aman
+
+        $tglLahir = new DateTime($tanggalLahir);
+        $sekarang = new DateTime('today');
+
+        $umur = $tglLahir->diff($sekarang)->y; // ambil perbedaan tahun
+        return $umur;
     }
 }

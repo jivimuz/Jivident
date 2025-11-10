@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
+use App\Models\Alamat;
+use App\Models\DaftarPasien;
 use App\Models\Etnis;
 use App\Models\JenisKelamin;
 use App\Models\Kebangsaan;
@@ -12,6 +14,7 @@ use App\Models\Negara;
 use App\Models\Patient;
 use App\Models\Pekerjaan;
 use App\Models\Religion;
+use App\Models\RuangPraktek;
 use App\Models\Study;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -165,7 +168,7 @@ class PatientController extends Controller
         try {
             $data = [
                 'klienfk' => Auth::user()->klienfk ?? 1,
-                'norm' => generateNoRM(date('i:s') . ($lastId ? $lastId->id + 1 : 1)),
+                'norm' => generateNoRM(date('is') . ($lastId ? $lastId->id + 1 : 1)),
                 'nobpjs' => $request->nobpjs,
                 'nik' => $request->nik,
                 'nama' => $request->nama,
@@ -187,6 +190,15 @@ class PatientController extends Controller
                 'noasuransilain' => $request->noasuransilain,
                 'notelprumah' => $request->notelprumah,
                 'bahasadikuasai' => $request->bahasadikuasai,
+                'kebangsaanfk' => $request->kebangsaanfk,
+                'etnisfk' => $request->etnisfk,
+                'negarafk' => $request->negarafk,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ];
+            $insert = Patient::create($data);
+            $alamat = Alamat::insert([
+                'klienfk' => Auth::user()->klienfk ?? 1,
                 'alamat' => $request->alamat,
                 'kodepos' => $request->kodepos,
                 'rt' => $request->rt,
@@ -199,21 +211,86 @@ class PatientController extends Controller
                 'kotakabupaten' => $request->kotakabupaten,
                 'provinsifk' => $request->provinsifk,
                 'provinsi' => $request->provinsi,
-                'kebangsaanfk' => $request->kebangsaanfk,
-                'etnisfk' => $request->etnisfk,
-                'negarafk' => $request->negarafk,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ];
+                'pasienfk' => $insert->id,
+            ]);
 
-            Patient::create($data);
 
-            return response()->json(['success' => true, 'message' => 'Data pasien berhasil disimpan.']);
+            return response()->json(['success' => true, 'message' => 'Data pasien berhasil disimpan.', 'data' => $insert]);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Gagal menyimpan data: ' . $e->getMessage(),
                 'message' => 'Gagal menyimpan data: ' . $e->getMessage()
             ], 400);
         }
+    }
+    public function registerPatient($id)
+    {
+        $pasien = Patient::select(
+            'm_pasien.*',
+            'm_jeniskelamin.jeniskelamin',
+            'm_alamat.alamat',
+            'm_alamat.kelurahan',
+            'm_alamat.kecamatan',
+            'm_alamat.kotakabupaten',
+            'm_alamat.provinsi',
+            DB::raw('COALESCE(m_study.name, "") as pendidikan'),
+            DB::raw('COALESCE(m_pekerjaan.pekerjaan, "") as pekerjaan')
+        )
+            ->leftJoin('m_jeniskelamin', 'm_jeniskelamin.id', 'm_pasien.jeniskelaminfk')
+            ->leftJoin('m_alamat', 'm_alamat.pasienfk', 'm_pasien.id')
+            ->leftJoin('m_study', 'm_study.id', 'm_pasien.fk_study')
+            ->leftJoin('m_pekerjaan', 'm_pekerjaan.id', 'm_pasien.pekerjaanfk')
+            ->where('m_pasien.id', base64_decode(base64_decode($id)))->first();
+
+        $ruangan = RuangPraktek::select(['m_ruangpraktek.*', 'm_users.id as dokterid', 'm_users.display_name as dokter'])
+            ->join('m_users', 'm_ruangpraktek.fk_dokter', 'm_users.id')
+            ->where('m_ruangpraktek.klienfk', Auth::user()->klienfk ?? 1)->get();
+
+        return view('pages/patient/register_patient', compact('id', 'pasien', 'ruangan'));
+    }
+
+    public function processPatient(Request $request, $id)
+    {
+        $ruangan = RuangPraktek::select(['fk_dokter', 'code'])
+            ->where('klienfk', Auth::user()->klienfk ?? 1)->where('id', $request->ruanganfk)->first();
+        if (!$ruangan || !$ruangan->fk_dokter) {
+            return response()->json([
+                'error' => 'Tidak ada dokter di ruangan terpilih ',
+                'message' => 'Tidak ada dokter di ruangan terpilih '
+            ], 400);
+        }
+        $cek = DaftarPasien::select('id')->where('pasienfk', base64_decode(base64_decode($id)))->whereDate('tglregistrasi', Carbon::parse($request->tglregistrasi)->format('Y-m-d'))->first();
+        if ($cek) {
+            return response()->json([
+                'error' => 'Pasien sudah mendaftar hari ini',
+                'message' => 'Pasien sudah mendaftar hari ini'
+            ], 400);
+        }
+        $cekstatus = DaftarPasien::select('id')->where('pasienfk', base64_decode(base64_decode($id)))->first();
+        $cekAntrian = DaftarPasien::where('ruanganfk', $request->ruanganfk)
+            ->whereDate('tglregistrasi', Carbon::parse($request->tglregistrasi)->format('Y-m-d'))
+            ->count();
+        $time = Carbon::now();
+        $insert = DaftarPasien::insertGetId([
+            'klienfk' => Auth::user()->klienfk ?? 1,
+            'noregistrasi' => 'RGX' . $time->format('Ymd') .  '-' . $time->format('Hi') . substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'), 0, 4),
+            'dokterfk' => $ruangan->fk_dokter,
+            'pegawaifk' => Auth::user()->id ?? null,
+            'ruanganfk' => $request->ruanganfk,
+            'pasienfk' => base64_decode(base64_decode($id)),
+            'jenispembayaran' => $request->jenispembayaran,
+            'tglregistrasi' => Carbon::parse($request->tglregistrasi),
+            'statuspasien' => $cekstatus ? 'LAMA' : 'BARU',
+            'keluhan' => $request->keluhan,
+            'noantrian' => ($ruangan->code ?? 'A') . '-' . sprintf('%003s', ($cekAntrian + 1)),
+
+        ]);
+        if ($insert) {
+            return response()->json(['success' => true, 'message' => 'Data pasien berhasil disimpan.', 'data' => $insert]);
+        }
+        return response()->json([
+            'error' => 'Data gagal ditambahkan ',
+            'message' => 'Data gagal ditambahkan '
+        ], 400);
     }
 }

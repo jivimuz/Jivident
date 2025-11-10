@@ -74,3 +74,15 @@ li.tabdrop > a {
 .default-data-table{
     width: 100% !important;
 }
+
+table{
+    width: 100% !important;
+}
+
+input[readonly],
+textarea[readonly],
+select[readonly] {
+    background-color: #f0f0f0; /* abu lembut */
+    color: #555; /* teks sedikit gelap */
+    cursor: not-allowed;
+}

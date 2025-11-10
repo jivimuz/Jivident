@@ -1,6 +1,6 @@
 <button class="customizer-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#customizerOptions"
         aria-controls="customizerOptions">
-  <i class="iconoir-settings"></i>
+  <i class="fa fa-tooth"></i>
 </button>
 
 <div class="offcanvas offcanvas-end app-customizer" data-bs-scroll="true" tabindex="-1" id="customizerOptions"

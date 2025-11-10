@@ -36,10 +36,25 @@
 @section('content')
     <div class="content-inner mt-4 py-0">
         <div class="row">
+
+            <div class="col-md-12 mb-3">
+                <div class="bg-white w-100 rounded-pill p-2 d-flex align-items-center justify-content-between shadow-sm">
+                    {{-- <a href="javascript:history.back()"
+                        class="btn btn-primary rounded-pill d-flex align-items-center justify-content-center"
+                        style="width:45px; height:45px;">
+                        <i class="iconoir-fast-arrow-left" style="font-size:20px;"></i>
+                    </a> --}}
+                    <span class="text-primary fw-bold text-center flex-grow-1" style="font-size:24px;">
+                        Pendataan Pasien Baru
+                    </span>
+                    <div style="width:45px;"></div> <!-- spacer biar teks tetap di tengah -->
+                </div>
+            </div>
             <div class="col-md-12">
                 <div class="card shadow-sm">
                     <div class="card-header  d-flex align-items-center justify-content-between">
-                        <h5 class="mb-0"><i class="iconoir-user-plus me-2" style="font-size: 25px"></i>Formulir Data Pasien
+                        <h5 class="mb-0"><i class="iconoir-user-plus me-2" style="font-size: 25px"></i>Formulir Data
+                            Pasien
                         </h5>
                     </div>
 
@@ -59,12 +74,14 @@
 
                                 <div class="col-md-2">
                                     <label class="form-label">NIK / No Dokumen <span class="text-danger">*</span></label>
-                                    <input type="text" id="nik" name="nik" class="required form-control">
+                                    <input type="text" id="nik" name="nik" class="required form-control"
+                                        maxlength="16">
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                                    <input type="text" id="nama" name="nama" class="required form-control">
+                                    <input type="text" id="nama" name="nama" class="required form-control"
+                                        maxlength="30">
                                 </div>
 
                                 <div class="col-md-2">
@@ -75,7 +92,8 @@
 
                                 <div class="col-md-2">
                                     <label class="form-label">No HP Pasien <span class="text-danger">*</span></label>
-                                    <input type="text" id="nohp" name="nohp" class="required form-control">
+                                    <input type="text" id="nohp" name="nohp" class="required form-control"
+                                        maxlength="16">
                                 </div>
                             </div>
 
@@ -92,23 +110,23 @@
 
                                 <div class="col-md-2">
                                     <label class="form-label">Tempat Lahir <span class="text-danger">*</span></label>
-                                    <input type="text" name="tempatlahir" class="required form-control">
+                                    <input type="text" name="tempatlahir" class="required form-control"maxlength="30">
                                 </div>
 
                                 <div class="col-md-2">
                                     <label class="form-label">Tanggal Lahir <span class="text-danger">*</span></label>
                                     <input type="date" id="tgllahir" name="tgllahir" class="required form-control"
-                                        max="{{ date('Y-m-d') }}">
+                                        max="{{ date('Y-m-d') }}" maxlength="50">
                                 </div>
 
                                 <div class="col-md-2">
                                     <label class="form-label">Nama Ayah</label>
-                                    <input type="text" name="namaayah" class="form-control">
+                                    <input type="text" name="namaayah" class="form-control"maxlength="30">
                                 </div>
 
                                 <div class="col-md-2">
                                     <label class="form-label">Nama Ibu</label>
-                                    <input type="text" name="namaibu" class="form-control">
+                                    <input type="text" name="namaibu" class="form-control"maxlength="30">
                                 </div>
 
                                 <div class="col-md-2">
@@ -170,16 +188,19 @@
                                 <div class="col-md-4">
                                     <label class="form-label">Nama Penanggung Jawab <span
                                             class="text-danger">*</span></label>
-                                    <input type="text" class="form-control required" name="namapenanggungjawab">
+                                    <input type="text" class="form-control required" name="namapenanggungjawab"
+                                        maxlength="30">
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Hubungan <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control required" name="hubungandenganpasien">
+                                    <input type="text" class="form-control required" name="hubungandenganpasien"
+                                        maxlength="30">
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">No HP Penanggung Jawab <span
                                             class="text-danger">*</span></label>
-                                    <input type="text" class="form-control required" name="nohppenanggungjawab">
+                                    <input type="text" class="form-control required"
+                                        name="nohppenanggungjawab"maxlength="16">
                                 </div>
                             </div>
 
@@ -189,15 +210,15 @@
                             <div class="row g-3">
                                 <div class="col-md-2">
                                     <label class="form-label">Nomor Asuransi</label>
-                                    <input type="text" class="form-control" name="noasuransilain">
+                                    <input type="text" class="form-control" name="noasuransilain"maxlength="30">
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label">No Telp Rumah</label>
-                                    <input type="text" class="form-control" name="notelprumah">
+                                    <input type="text" class="form-control" name="notelprumah"maxlength="16">
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label">Bahasa Dikuasai</label>
-                                    <input type="text" class="form-control" name="bahasadikuasai">
+                                    <input type="text" class="form-control" name="bahasadikuasai"maxlength="30">
                                 </div>
                             </div>
 
@@ -213,15 +234,18 @@
                                 <div class="col-md-8 row">
                                     <div class="col-md-3">
                                         <label class="form-label">Kode POS</label>
-                                        <input type="text" id="kodepos" name="kodepos" class="form-control">
+                                        <input type="text" id="kodepos" name="kodepos"
+                                            class="form-control"maxlength="7">
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">RT</label>
-                                        <input type="text" id="rt" name="rt" class="form-control">
+                                        <input type="text" id="rt" name="rt"
+                                            class="form-control"maxlength="3">
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">RW</label>
-                                        <input type="text" id="rw" name="rw" class="form-control">
+                                        <input type="text" id="rw" name="rw"
+                                            class="form-control"maxlength="3">
                                     </div>
                                     <div class="col-md-5">
                                         <label class="form-label">Kelurahan <span class="text-danger">*</span></label>
@@ -236,17 +260,17 @@
                                     <div class="col-md-3">
                                         <label class="form-label">Kecamatan</label>
                                         <input type="text" id="kecamatan" name="kecamatan" class="form-control"
-                                            readonly>
+                                            maxlength="30" readonly>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Kabupaten</label>
-                                        <input type="text" id="kotakabupaten" name="kotakabupaten"
+                                        <input type="text" id="kotakabupaten" name="kotakabupaten"maxlength="30"
                                             class="form-control" readonly>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Provinsi</label>
-                                        <input type="text" id="provinsi" name="provinsi" class="form-control"
-                                            readonly>
+                                        <input type="text" id="provinsi" name="provinsi"
+                                            class="form-control"maxlength="30" readonly>
                                     </div>
 
                                     <div class="col-md-3">
@@ -397,6 +421,8 @@
                         icon: "success",
                         title: "Data pasien berhasil disimpan"
                     });
+                    location.href =
+                        `{{ url('patient/register-patient') }}/${btoa(btoa(response.data.id))}`;
                 },
                 error: function(xhr) {
                     Swal.close();

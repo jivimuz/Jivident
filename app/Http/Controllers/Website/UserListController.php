@@ -118,6 +118,7 @@ class UserListController extends Controller
             ]);
 
             User::insert([
+                'klienfk' => $request->klienfk ?? 1,
                 'fk_employee' => $id,
                 'display_name' => $request->fullname,
                 'username' => $request->username,
@@ -183,6 +184,7 @@ class UserListController extends Controller
                 "accountnumber" =>  $request->accountnumber,
             ]);
             User::where('id', $request->id)->update([
+                'klienfk' => $request->klienfk ?? 1,
                 'display_name' => $request->fullname,
             ],);
             DB::commit();

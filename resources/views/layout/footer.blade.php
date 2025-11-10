@@ -168,6 +168,10 @@
  <script src="{{ url('') }}/assets/js/script.js"></script>
 
  <script src="{{ url('') }}/assets/js/datatables.min.js"></script>
+ <script src="{{ url('') }}/assets/vendor/datepikar/flatpickr.js"></script>
+
+ <!--js-->
+ <script src="{{ url('') }}/assets/js/date_picker.js"></script>
 
  <script src="{{ url('') }}/assets/js/sweetalert2.min.js"></script>
  <script src="{{ url('') }}/assets/js/select2.min.js"></script>

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('m_klien', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('organisasifk');
+            $table->unsignedInteger('isholding')->default(1);
             $table->string('kodeklinik', 30);
             $table->string('tipe', 255);
             $table->string('nama', 255);

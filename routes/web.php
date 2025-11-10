@@ -5,10 +5,14 @@ use App\Http\Controllers\Website\HomeController;
 use App\Http\Controllers\Website\ModuleController;
 use App\Http\Controllers\Website\UserListController;
 use App\Http\Controllers\Website\AuthController;
+use App\Http\Controllers\Website\DiperiksaController;
 use App\Http\Controllers\Website\profileController;
 use App\Http\Controllers\Website\SettingController;
 use App\Http\Controllers\Website\EmployeesController;
+use App\Http\Controllers\Website\OdontogramController;
 use App\Http\Controllers\Website\PatientController;
+use App\Http\Controllers\Website\PemeriksaanController;
+use App\Http\Controllers\Website\PrintController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
 use App\Models\RuangPraktek;
@@ -125,13 +129,45 @@ Route::middleware(['auth'])->group(function () {
         Route::get('add_patient', [PatientController::class, 'addPatient']);
         Route::post('searchAddress', [PatientController::class, 'searchAddress']);
         Route::post('saveData', [PatientController::class, 'saveData']);
+        Route::get('register-patient/{id}', [PatientController::class, 'registerPatient']);
+        Route::post('register-patient/{id}', [PatientController::class, 'processPatient']);
     });
 
-    Route::middleware(['checkAccess:RTP'])->prefix('ruang-tunggu')->group(function () {
-        Route::get('/', [RuangTungguController::class, 'index']);
+    Route::middleware(['checkAccess:DPP'])->prefix('ruang-tunggu')->group(function () {
+        Route::get('', [RuangTungguController::class, 'index']);
+        Route::post('getList', [RuangTungguController::class, 'getList']);
+    });
+    Route::middleware(['checkAccess:DPP'])->prefix('pemeriksaan')->group(function () {
+        Route::prefix('pasien/{id}')->group(function () {
+            Route::get('/', [PemeriksaanController::class, 'index']);
+
+            Route::post('updateKeluhan/{idp}', [PemeriksaanController::class, 'updateKeluhan']);
+            Route::post('updateAlergi/{idp}', [PemeriksaanController::class, 'updateAlergi']);
+            Route::post('updateCatatan/{idp}', [PemeriksaanController::class, 'updateCatatan']);
+
+            Route::post('vitalsign', [PemeriksaanController::class, 'vitalsign']);
+            Route::post('vitalsign/save', [PemeriksaanController::class, 'saveVitalSign']);
+
+            Route::post('soape', [PemeriksaanController::class, 'soape']);
+            Route::post('soape/save', [PemeriksaanController::class, 'saveSoape']);
+
+            Route::prefix('odontogram')->group(function () {
+                Route::post('/', [OdontogramController::class, 'index']);
+                Route::post('field', [OdontogramController::class, 'field']);
+            });
+        });
     });
 
-    Route::middleware(['checkAccess:RTA'])->prefix('antrian')->group(function () {
+    Route::middleware(['checkAccess:DPS'])->prefix('sudah-diperiksa')->group(function () {
+        Route::get('/', [DiperiksaController::class, 'index']);
+        Route::post('getList', [DiperiksaController::class, 'getList']);
+    });
+
+    Route::middleware(['checkAccess:DPA'])->prefix('antrian')->group(function () {
         Route::get('/', [AntrianController::class, 'index']);
     });
+});
+
+Route::prefix('print')->group(function () {
+    Route::middleware(['checkAccess:PA'])->get('print-antrian/{id}', [PrintController::class, 'antrianPasien']);
 });
