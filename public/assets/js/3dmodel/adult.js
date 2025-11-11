@@ -1,7 +1,7 @@
   (function() {
             // --- Globals ---
             const ORIGINAL_HEX = 0xababab;
-            const MARKER_HEX = 0xff0000;
+            const MARKER_HEX = 0x13293d;
 
             let scene, camera, renderer, controls;
             let raycaster = new THREE.Raycaster();
@@ -14,7 +14,7 @@
 
             // Simple mapping name map (adjust to your model)
             // Simple mapping name map (adjust to your model)
-          const TOOTH_MESH_NAME_MAP = {
+             const TOOTH_MESH_NAME_MAP = {
             // --- Rahang Atas Kanan (Quadrant 1) ---
             "Box023_01_-_Default_0": "11 (Right Top) Central Incisor",
             "Box024_01_-_Default_0": "12 (Right Top) Lateral Incisor",
@@ -57,7 +57,7 @@
 
             // --- Lain-lain ---
             'Tube002_07_-_Default_0': '(Top Tube) Gums Maxilla',
-            'Tube001_07_-_Default_0': '(Bottom Tube) Mandibula',
+            'Tube001_07_-_Default_0': '(Bottom Tube) Gums Mandibula',
             'lingua_02_-_Default_0': '(Tongue) Lingua'
             };
 
@@ -140,12 +140,12 @@
                 }
 
                 toothMeshes = [];
-                const loader = new THREE.GLTFLoader();
-                const url = '/assets/3d/ip2.bin.gz'; // ensure placed under public/assets/3d/
+                const loader = new THREE.BINLoader();
+                const url = '/assets/bin/ip3.bin.gz'; // ensure placed under public/assets/3d/
 
                 try {
-                    const gltf = await loader.loadAsync(url);
-                    const model = gltf.scene;
+                    const bin = await loader.loadAsync(url);
+                    const model = bin.scene;
                     model.name = 'ArchGroup';
                     model.scale.set(1, 1, 1);
                     model.position.set(0, -2, 0);
@@ -255,37 +255,44 @@
 
                 if (mappedPoints.length === 0) {
                     el.innerHTML = '<p class="text-gray-500 italic text-sm">No points have been marked yet.</p>';
-                    document.getElementById('save-json').disabled = true;
                     document.getElementById('download-pdf').disabled = true;
                     return;
                 }
 
-                mappedPoints.slice().reverse().forEach((pt, idx) => {
+               mappedPoints.slice().reverse().forEach((pt, idx) => {
                     const li = document.createElement('div');
                     li.className =
-                        'bg-white p-3 rounded-lg shadow-sm border-l-4 border-blue-500 mb-2 flex justify-between items-start';
+                        'card mb-3 shadow-sm border-start border-4 border-primary';
                     li.innerHTML = `
-          <div class="flex-1">
-            <div class="font-bold text-lg text-blue-600">${pt.toothId}</div>
-              <div class="flex items-center gap-2 mb-2">
-                <label class="text-sm font-medium text-gray-700">Diagnosis:</label>
-                <select class="diagnosis-select border border-gray-300 rounded-md p-1 text-sm" id='pt-${pt.id}'>
-                <option value="" ${!pt.type ? 'selected' : ''}>Pilih (Opsional)</option>
-                <option value="Karies" ${pt.type === 'Karies' ? 'selected' : ''}>Karies</option>
-                <option value="Calculus" ${pt.type === 'Calculus' ? 'selected' : ''}>Calculus</option>
-                <option value="Fraktur" ${pt.type === 'Fraktur' ? 'selected' : ''}>Fraktur</option>
-                <option value="Abfraksi" ${pt.type === 'Abfraksi' ? 'selected' : ''}>Abfraksi</option>
-                <option value="Gingivitis" ${pt.type === 'Gingivitis' ? 'selected' : ''}>Gingivitis</option>
-                <option value="Pulpitis" ${pt.type === 'Pulpitis' ? 'selected' : ''}>Pulpitis</option>
-                </select>
-            </div>
-            <p class="text-xs text-gray-600 mt-1">Coordinates: (${pt.x}, ${pt.y}, ${pt.z})</p>
-            <textarea class="w-full mt-2 p-2 border border-gray-300 rounded-md text-sm text-gray-700 resize-none" rows="2" placeholder="Add description...">${pt.description || ''}</textarea>
-          </div>
-          <div class="ml-2 flex flex-col items-center">
-            <button class="delete-btn p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 mb-2">✖</button>
-          </div>
-        `;
+                    <div class='row'>
+                        <div class="col-md-12">
+                            <div class="float-end p-2">
+                                    <button class="btn btn-sm rounded-pill btn-outline-danger delete-btn " title="Hapus titik">✖</button>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="card-body  justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title text-primary fw-bold mb-2">${pt.toothId}</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small text-secondary">Diagnosis:</label>
+                                        <select class="form-select form-select-sm diagnosis-select" id="pt-${pt.id}">
+                                        <option value="" ${!pt.type ? 'selected' : ''}>Pilih (Opsional)</option>
+                                        <option value="Karies" ${pt.type === 'Karies' ? 'selected' : ''}>Karies</option>
+                                        <option value="Calculus" ${pt.type === 'Calculus' ? 'selected' : ''}>Calculus</option>
+                                        <option value="Fraktur" ${pt.type === 'Fraktur' ? 'selected' : ''}>Fraktur</option>
+                                        <option value="Abfraksi" ${pt.type === 'Abfraksi' ? 'selected' : ''}>Abfraksi</option>
+                                        <option value="Gingivitis" ${pt.type === 'Gingivitis' ? 'selected' : ''}>Gingivitis</option>
+                                        <option value="Pulpitis" ${pt.type === 'Pulpitis' ? 'selected' : ''}>Pulpitis</option>
+                                        </select>
+                                    </div>
+                                    <p class="text-muted small mb-2">Koordinat: (${pt.x}, ${pt.y}, ${pt.z})</p>
+                                    <textarea class="form-control form-control-sm" rows="2" placeholder="Tambahkan deskripsi...">${pt.description || ''}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
                     const textarea = li.querySelector('textarea');
                     textarea.addEventListener('input', (e) => {
                         pt.description = e.target.value.slice(0, 200);
@@ -297,9 +304,80 @@
                     el.appendChild(li);
                 });
 
-                document.getElementById('save-json').disabled = false;
                 document.getElementById('download-pdf').disabled = false;
             }
+
+            async function loadMarker(jsonString) {
+                try {
+                    loadingOverlay.classList.remove('hidden');
+
+                    let data;
+                    try {
+                        data = JSON.parse(jsonString);
+                    } catch (e) {
+                        console.error('Format JSON tidak valid:', e);
+                        showToast('Data marker bukan JSON valid', 'error');
+                        return;
+                    }
+
+                    if (!Array.isArray(data) || data.length === 0) {
+                        showToast('Tidak ada marker tersimpan', 'warning');
+                        return;
+                    }
+
+                    resetMapping();
+
+                    const meshesArray = Array.isArray(toothMeshes) ? toothMeshes : Array.from(toothMeshes);
+
+                    data.forEach(item => {
+                        const color = DIAGNOSIS_COLOR_MAP[item.type] || MARKER_HEX;
+
+                        // Buat marker di posisi 3D
+                        const geom = new THREE.SphereGeometry(0.05, 8, 8);
+                        const mat = new THREE.MeshBasicMaterial({ color });
+                        const marker = new THREE.Mesh(geom, mat);
+                        marker.position.set(item.x, item.y, item.z);
+                        marker.name = 'Marker-' + item.id;
+                        scene.add(marker);
+
+                        // Simpan ke mappedPoints
+                        mappedPoints.push({
+                            id: item.id,
+                            toothId: item.toothId,
+                            x: item.x,
+                            y: item.y,
+                            z: item.z,
+                            type: item.type || '',
+                            description: item.description || ''
+                        });
+
+                        // Cari gigi target
+                        const targetTooth = meshesArray.find(m =>
+                            m?.userData?.parentGroup?.userData?.toothId === item.toothId
+                        );
+
+                        if (targetTooth && targetTooth.userData?.parentGroup) {
+                            const group = targetTooth.userData.parentGroup;
+                            group.traverse(ch => {
+                                if (ch.isMesh && ch.material) ch.material.color.setHex(color);
+                            });
+                            group.userData.isMapped = true;
+                            group.userData.markerIds = [item.id];
+                        } else {
+                            console.warn('Gigi tidak ditemukan untuk toothId:', item.toothId);
+                        }
+                    });
+
+                    renderPointsList();
+                    showToast('Marker berhasil dimuat', 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Gagal memuat marker', 'error');
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            }
+
 
 
 
@@ -345,7 +423,6 @@
                 const toothId = parent.userData.toothId;
                 const point = inter.point;
                 const isMapped = parent.userData.isMapped;
-
                 if (isMapped) {
                     // remove
                     const ids = parent.userData.markerIds || [];
@@ -362,14 +439,15 @@
                 }
 
                 // add
-                const newId = Date.now();
+                const newId = parent.id;
+                console.log(newId)
                 parent.traverse(ch => {
-                    if (ch.isMesh) ch.material.color.setHex(DIAGNOSIS_COLOR_MAP['Karies'] || MARKER_HEX);
+                    if (ch.isMesh) ch.material.color.setHex( MARKER_HEX);
                 });
                 parent.userData.isMapped = true;
                 parent.userData.markerIds = [newId];
 
-                const color = DIAGNOSIS_COLOR_MAP['Karies'] || MARKER_HEX;
+                const color = MARKER_HEX;
                 const geom = new THREE.SphereGeometry(0.05, 8, 8);
                 const mat = new THREE.MeshBasicMaterial({ color });
                 const marker = new THREE.Mesh(geom, mat);
@@ -410,26 +488,7 @@
                 showToast('All mapping reset', 'success');
             }
 
-            // Save JSON to clipboard
-            function saveJSON() {
-                const data = {
-                    mappedPoints,
-                    timestamp: new Date().toISOString()
-                };
-                const json = JSON.stringify(data, null, 2);
-                // copy fallback
-                const ta = document.createElement('textarea');
-                ta.value = json;
-                document.body.appendChild(ta);
-                ta.select();
-                try {
-                    document.execCommand('copy');
-                    showToast('JSON copied to clipboard', 'success');
-                } catch (err) {
-                    showToast('Copy failed', 'error');
-                }
-                document.body.removeChild(ta);
-            }
+
 
             // Download PDF using jsPDF
             function downloadPDF() {
@@ -490,22 +549,12 @@
                 showToast('PDF saved', 'success');
             }
 
-            // fetch IP
-            async function fetchIP() {
-                try {
-                    const r = await fetch('https://api.ipify.org?format=json');
-                    const d = await r.json();
-                    document.getElementById('user-ip').textContent = d.ip || 'unknown';
-                } catch (e) {
-                    document.getElementById('user-ip').textContent = 'unavailable';
-                }
-            }
+
 
             // Wire UI events
             function wireUI() {
                 canvas.addEventListener('pointerdown', onCanvasClick);
                 document.getElementById('reset-mapping').addEventListener('click', resetMapping);
-                document.getElementById('save-json').addEventListener('click', saveJSON);
                 document.getElementById('download-pdf').addEventListener('click', downloadPDF);
             }
 
@@ -513,7 +562,6 @@
             async function boot() {
                 initThree();
                 wireUI();
-                fetchIP();
                 await loadModel();
                 renderPointsList();
             }
@@ -526,7 +574,8 @@
             // Expose for debugging
             window._jivident = {
                 sceneGetter: () => scene,
-                getMapped: () => mappedPoints
+                getMapped: () => mappedPoints,
+                loadMarker
             };
 
-        })();
+})();

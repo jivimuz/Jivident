@@ -154,6 +154,8 @@ Route::middleware(['auth'])->group(function () {
             Route::prefix('odontogram')->group(function () {
                 Route::post('/', [OdontogramController::class, 'index']);
                 Route::post('field', [OdontogramController::class, 'field']);
+                Route::post('save', [OdontogramController::class, 'saveOdonto']);
+                Route::post('loadOdonto', [OdontogramController::class, 'loadOdonto']);
             });
         });
     });

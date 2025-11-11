@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('klienfk')->default(1);
             $table->unsignedBigInteger('fk_daftarpasien')->nullable();
-            $table->enum('typeodontogram', ['-', '3D Anak (20 Gigi)', '3D Remaja (24 Gigi)', '3D Dewasa (32 Gigi)', '2D Global'])->default('-');
+            $table->enum('typeodontogram', ['-', '3D Dewasa (32 Gigi)',  '3D Anak (20 Gigi)', '2D Global'])->default('-');
+            $table->mediumText('mappeddata')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

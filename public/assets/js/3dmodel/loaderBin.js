@@ -1,6 +1,6 @@
 ( function () {
 
-	class GLTFLoader extends THREE.Loader {
+	class BINLoader extends THREE.Loader {
 
 		constructor( manager ) {
 
@@ -118,7 +118,7 @@
 
 		setDDSLoader() {
 
-			throw new Error( 'THREE.GLTFLoader: "MSFT_texture_dds" no longer supported. Please update to "KHR_texture_basisu".' );
+			throw new Error( 'THREE.BINLoader: "MSFT_texture_dds" no longer supported. Please update to "KHR_texture_basisu".' );
 
 		}
 
@@ -201,7 +201,7 @@
 
 			if ( json.asset === undefined || json.asset.version[ 0 ] < 2 ) {
 
-				if ( onError ) onError( new Error( 'THREE.GLTFLoader: Unsupported asset. glTF versions >=2.0 are supported.' ) );
+				if ( onError ) onError( new Error( 'THREE.BINLoader: Unsupported asset. glTF versions >=2.0 are supported.' ) );
 				return;
 
 			}
@@ -260,7 +260,7 @@
 						default:
 							if ( extensionsRequired.indexOf( extensionName ) >= 0 && plugins[ extensionName ] === undefined ) {
 
-								console.warn( 'THREE.GLTFLoader: Unknown extension "' + extensionName + '".' );
+								console.warn( 'THREE.BINLoader: Unknown extension "' + extensionName + '".' );
 
 							}
 
@@ -409,7 +409,7 @@
 					break;
 
 				default:
-					throw new Error( 'THREE.GLTFLoader: Unexpected light type: ' + lightDef.type );
+					throw new Error( 'THREE.BINLoader: Unexpected light type: ' + lightDef.type );
 
 			} // Some lights (e.g. spot) default to a position other than the origin. Reset the position
 			// here, because node-level parsing will only override position if explicitly specified.
@@ -669,7 +669,7 @@
 
 				if ( json.extensionsRequired && json.extensionsRequired.indexOf( this.name ) >= 0 ) {
 
-					throw new Error( 'THREE.GLTFLoader: setKTX2Loader must be called before loading KTX2 textures' );
+					throw new Error( 'THREE.BINLoader: setKTX2Loader must be called before loading KTX2 textures' );
 
 				} else {
 
@@ -732,7 +732,7 @@
 
 				if ( json.extensionsRequired && json.extensionsRequired.indexOf( name ) >= 0 ) {
 
-					throw new Error( 'THREE.GLTFLoader: WebP required by asset but unsupported.' );
+					throw new Error( 'THREE.BINLoader: WebP required by asset but unsupported.' );
 
 				} // Fall back to PNG or JPEG.
 
@@ -800,7 +800,7 @@
 
 					if ( json.extensionsRequired && json.extensionsRequired.indexOf( this.name ) >= 0 ) {
 
-						throw new Error( 'THREE.GLTFLoader: setMeshoptDecoder must be called before loading compressed files' );
+						throw new Error( 'THREE.BINLoader: setMeshoptDecoder must be called before loading compressed files' );
 
 					} else {
 
@@ -859,11 +859,11 @@
 
 			if ( this.header.magic !== BINARY_EXTENSION_HEADER_MAGIC ) {
 
-				throw new Error( 'THREE.GLTFLoader: Unsupported glTF-Binary header.' );
+				throw new Error( 'THREE.BINLoader: Unsupported glTF-Binary header.' );
 
 			} else if ( this.header.version < 2.0 ) {
 
-				throw new Error( 'THREE.GLTFLoader: Legacy binary file detected.' );
+				throw new Error( 'THREE.BINLoader: Legacy binary file detected.' );
 
 			}
 
@@ -897,7 +897,7 @@
 
 			if ( this.content === null ) {
 
-				throw new Error( 'THREE.GLTFLoader: JSON content not found.' );
+				throw new Error( 'THREE.BINLoader: JSON content not found.' );
 
 			}
 
@@ -917,7 +917,7 @@
 
 			if ( ! dracoLoader ) {
 
-				throw new Error( 'THREE.GLTFLoader: No DRACOLoader instance provided.' );
+				throw new Error( 'THREE.BINLoader: No DRACOLoader instance provided.' );
 
 			}
 
@@ -1024,7 +1024,7 @@
 
 			if ( transform.texCoord !== undefined ) {
 
-				console.warn( 'THREE.GLTFLoader: Custom UV sets in "' + this.name + '" extension not yet supported.' );
+				console.warn( 'THREE.BINLoader: Custom UV sets in "' + this.name + '" extension not yet supported.' );
 
 			}
 
@@ -1536,7 +1536,7 @@
 
 			} else {
 
-				console.warn( 'THREE.GLTFLoader: Ignoring primitive type .extras, ' + gltfDef.extras );
+				console.warn( 'THREE.BINLoader: Ignoring primitive type .extras, ' + gltfDef.extras );
 
 			}
 
@@ -1640,7 +1640,7 @@
 
 			} else {
 
-				console.warn( 'THREE.GLTFLoader: Invalid extras.targetNames length. Ignoring names.' );
+				console.warn( 'THREE.BINLoader: Invalid extras.targetNames length. Ignoring names.' );
 
 			}
 
@@ -1701,7 +1701,7 @@
 				return 1 / 65535;
 
 			default:
-				throw new Error( 'THREE.GLTFLoader: Unsupported normalized accessor component type.' );
+				throw new Error( 'THREE.BINLoader: Unsupported normalized accessor component type.' );
 
 		}
 
@@ -2075,7 +2075,7 @@
 
 			if ( bufferDef.type && bufferDef.type !== 'arraybuffer' ) {
 
-				throw new Error( 'THREE.GLTFLoader: ' + bufferDef.type + ' buffer type is not supported.' );
+				throw new Error( 'THREE.BINLoader: ' + bufferDef.type + ' buffer type is not supported.' );
 
 			} // If present, GLB container is required to be the first buffer.
 
@@ -2091,7 +2091,7 @@
 
 				loader.load( resolveURL( bufferDef.uri, options.path ), resolve, undefined, function () {
 
-					reject( new Error( 'THREE.GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".' ) );
+					reject( new Error( 'THREE.BINLoader: Failed to load buffer "' + bufferDef.uri + '".' ) );
 
 				} );
 
@@ -2230,7 +2230,7 @@
 						if ( itemSize >= 2 ) bufferAttribute.setY( index, sparseValues[ i * itemSize + 1 ] );
 						if ( itemSize >= 3 ) bufferAttribute.setZ( index, sparseValues[ i * itemSize + 2 ] );
 						if ( itemSize >= 4 ) bufferAttribute.setW( index, sparseValues[ i * itemSize + 3 ] );
-						if ( itemSize >= 5 ) throw new Error( 'THREE.GLTFLoader: Unsupported itemSize in sparse THREE.BufferAttribute.' );
+						if ( itemSize >= 5 ) throw new Error( 'THREE.BINLoader: Unsupported itemSize in sparse THREE.BufferAttribute.' );
 
 					}
 
@@ -2308,7 +2308,7 @@
 
 			} else if ( source.uri === undefined ) {
 
-				throw new Error( 'THREE.GLTFLoader: Image ' + textureIndex + ' is missing URI and bufferView' );
+				throw new Error( 'THREE.BINLoader: Image ' + textureIndex + ' is missing URI and bufferView' );
 
 			}
 
@@ -2378,7 +2378,7 @@
 				// However, we will copy UV set 0 to UV set 1 on demand for aoMap
 				if ( mapDef.texCoord !== undefined && mapDef.texCoord != 0 && ! ( mapName === 'aoMap' && mapDef.texCoord == 1 ) ) {
 
-					console.warn( 'THREE.GLTFLoader: Custom UV set ' + mapDef.texCoord + ' for texture ' + mapName + ' not yet supported.' );
+					console.warn( 'THREE.BINLoader: Custom UV set ' + mapDef.texCoord + ' for texture ' + mapName + ' not yet supported.' );
 
 				}
 
@@ -2850,7 +2850,7 @@
 
 					} else {
 
-						throw new Error( 'THREE.GLTFLoader: Primitive mode unsupported: ' + primitive.mode );
+						throw new Error( 'THREE.BINLoader: Primitive mode unsupported: ' + primitive.mode );
 
 					}
 
@@ -2902,7 +2902,7 @@
 
 			if ( ! params ) {
 
-				console.warn( 'THREE.GLTFLoader: Missing camera parameters.' );
+				console.warn( 'THREE.BINLoader: Missing camera parameters.' );
 				return;
 
 			}
@@ -3346,7 +3346,7 @@
 
 						} else {
 
-							console.warn( 'THREE.GLTFLoader: Joint "%s" could not be found.', skinEntry.joints[ j ] );
+							console.warn( 'THREE.BINLoader: Joint "%s" could not be found.', skinEntry.joints[ j ] );
 
 						}
 
@@ -3415,7 +3415,7 @@
 
 			} else {
 
-				console.warn( 'THREE.GLTFLoader: Missing min/max properties for accessor POSITION.' );
+				console.warn( 'THREE.BINLoader: Missing min/max properties for accessor POSITION.' );
 				return;
 
 			}
@@ -3465,7 +3465,7 @@
 
 					} else {
 
-						console.warn( 'THREE.GLTFLoader: Missing min/max properties for accessor POSITION.' );
+						console.warn( 'THREE.BINLoader: Missing min/max properties for accessor POSITION.' );
 
 					}
 
@@ -3566,7 +3566,7 @@
 
 			} else {
 
-				console.error( 'THREE.GLTFLoader.toTrianglesDrawMode(): Undefined position attribute. Processing not possible.' );
+				console.error( 'THREE.BINLoader.toTrianglesDrawMode(): Undefined position attribute. Processing not possible.' );
 				return geometry;
 
 			}
@@ -3613,7 +3613,7 @@
 
 		if ( newIndices.length / 3 !== numberOfTriangles ) {
 
-			console.error( 'THREE.GLTFLoader.toTrianglesDrawMode(): Unable to generate correct amount of triangles.' );
+			console.error( 'THREE.BINLoader.toTrianglesDrawMode(): Unable to generate correct amount of triangles.' );
 
 		} // build final geometry
 
@@ -3624,6 +3624,6 @@
 
 	}
 
-	THREE.GLTFLoader = GLTFLoader;
+	THREE.BINLoader = BINLoader;
 
 } )();

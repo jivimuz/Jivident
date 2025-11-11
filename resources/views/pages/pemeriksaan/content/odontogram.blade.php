@@ -9,10 +9,6 @@
                 {{ $odontogram && $odontogram->typeodontogram == '3D Dewasa (32 Gigi)' ? 'selected' : '' }}>
                 3D Dewasa (32 Gigi)
             </option>
-            <option value="3D Remaja (24 Gigi)"
-                {{ $odontogram && $odontogram->typeodontogram == '3D Remaja (24 Gigi)' ? 'selected' : '' }}>
-                3D Remaja (24 Gigi)
-            </option>
             <option value="3D Anak (20 Gigi)"
                 {{ $odontogram && $odontogram->typeodontogram == '3D Anak (20 Gigi)' ? 'selected' : '' }}>
                 3D Anak (20 Gigi)
@@ -28,7 +24,7 @@
 </div>
 <br>
 <div id="tab-odonto"></div>
-
+<!-- Three.js core -->
 <script>
     $(document).ready(function() {
         changeOdonto()

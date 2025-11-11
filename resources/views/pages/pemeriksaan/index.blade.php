@@ -42,13 +42,14 @@
                                 <button class="nav-link" id="soape" aria-selected="false"><i
                                         class="fa fa-clipboard fa-fw"></i>SOAPE</button>
                             </li>
-                            <li class="nav-item">
-                                <button class="nav-link" id="resepelektronik" aria-selected="false"><i
-                                        class="fa fa-flask fa-fw"></i>Resep Obat</button>
-                            </li>
+
                             <li class="nav-item">
                                 <button class="nav-link" id="tindakan" aria-selected="false"><i
                                         class="fa fa-list-ol fa-fw"></i>Tindakan </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="resepelektronik" aria-selected="false"><i
+                                        class="fa fa-flask fa-fw"></i>Resep Obat</button>
                             </li>
                         </ul>
 
@@ -190,6 +191,11 @@
 
 
 @section('script')
+    <script src="{{ url('') }}/assets/js/3dmodel/three.js"></script>
+    <script src="{{ url('') }}/assets/js/3dmodel/orbitControl.js"></script>
+    <script src="{{ url('') }}/assets/js/3dmodel/loaderBin.js"></script>
+    <script src="{{ url('') }}/assets/js/3dmodel/jspdf.js"></script>
+    <script src="{{ url('') }}/assets/js/3dmodel/2dglobal.js"></script>
     <script>
         var id = $('#idF').attr('value')
         // Toggle dropdowns
