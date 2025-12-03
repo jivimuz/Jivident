@@ -50,10 +50,10 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="tglregistrasi" class="form-label"><strong>Tgl Registrasi
+                                    <label for="tgldiperiksa" class="form-label"><strong>Tgl Registrasi
                                             (Rangable)</strong></label>
                                     <input class="form-control form-control-lg picker-range flatpickr-input "
-                                        id="tglregistrasi" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}"
+                                        id="tgldiperiksa" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}"
                                         placeholder="YYYY-MM-DD to YYYY-MM-DD">
                                 </div>
                             </div>
@@ -87,7 +87,7 @@
                     style="padding-left: 40px; padding-right:40px">
 
                     <div class="app-datatable-default overflow-auto">
-                        <table class="display app-data-table default-data-table table-hover" id="main-table">
+                        <table class="table display app-data-table default-data-table table-hover" id="main-table">
                             <thead>
                                 <tr>
                                     {{-- <th>No</th> --}}
@@ -139,7 +139,7 @@
                     data: "noantrian"
                 },
                 {
-                    data: "tglregistrasi",
+                    data: "tgldiperiksa",
                     render: function(data, b, c) {
                         if (!data) return '-';
                         const date = new Date(data);
@@ -183,11 +183,15 @@
                 {
                     data: "id",
                     render: function(data, b, c) {
-                        let urlReg = `{{ url('patient/register-patient') }}/${btoa(btoa(c.id))}`;
+                        let urlReg = `{{ url('pemeriksaan/pasien/') }}/${btoa(btoa(c.id))}`;
                         let a = '';
                         a += `<a class="btn btn-xs btn-outline-success rounded-pill mt-1 " style="margin-right:5px" href="${urlReg}">
-                                 <i class="iconoir-fast-arrow-right" style="font-size:15px; padding-top:2px; "></i>
+                                 <i class="iconoir-fast-arrow-right" style="font-size:15px; padding-top:2px; "></i> <br/> Periksa
                                 </a>`;
+                        // let urlAntrian = `{{ url('print/print-antrian') }}/${btoa(btoa(c.id))}`;
+                        // a += `<a class="btn btn-xs btn-outline-warning rounded-pill mt-1 " style="margin-right:5px" onclick="openPopup('${urlAntrian}')">
+                    //          <i class="iconoir-printing-page" style="font-size:15px; padding-top:2px; "></i> <br/> Antrian
+                    //         </a>`;
                         return a
 
                     },
@@ -217,7 +221,7 @@
                     data: {
                         pasienSearch: $('#global-search').val(),
                         ruanganfk: $('#ruanganfk').val(),
-                        tglregistrasi: $('#tglregistrasi').val(),
+                        tgldiperiksa: $('#tgldiperiksa').val(),
                     }
 
                 },

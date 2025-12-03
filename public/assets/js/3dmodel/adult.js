@@ -9,6 +9,7 @@
     let toothMeshes = [];
     let mappedPoints = []; // {id, toothId, x,y,z,type,description}
     let markerIdCounter = 0;
+    let isFinished = false;
     const canvas = document.getElementById("glcanvas");
     const loadingOverlay = document.getElementById("loading-overlay");
 
@@ -193,6 +194,8 @@
 
     // Remove markers helper
     function removeMarkersFromScene(markerIds) {
+        if (window._jivident.isFinished) return true;
+
         markerIds.forEach((id) => {
             const m = scene.getObjectByName("Marker-" + id);
             if (m) {
@@ -203,6 +206,7 @@
         });
     }
     document.addEventListener("change", function (e) {
+        if (window._jivident.isFinished) return true;
         if (!e.target.classList.contains("diagnosis-select")) return;
 
         const select = e.target;
@@ -268,15 +272,56 @@
             // document.getElementById("download-pdf").disabled = true;
             return;
         }
+        if (window._jivident.isFinished) {
+            mappedPoints
+                .slice()
+                .reverse()
+                .forEach((pt, idx) => {
+                    const li = document.createElement("div");
+                    li.className =
+                        "card mb-3 shadow-sm border-start border-4 border-primary";
+                    li.innerHTML = `
+                    <div class='row'>
+                        <div class="col-md-12">
+                            <div class="card-body  justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title text-primary fw-bold mb-2">${
+                                        pt.toothId
+                                    }</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small text-secondary">Diagnosis:</label>
+                                        <input disabled value="${
+                                            pt.type
+                                        }" class="form-control" >
+                                    </div>
+                                    <p class="text-muted small mb-2">Koordinat: (${
+                                        pt.x
+                                    }, ${pt.y}, ${pt.z})</p>
+                                    <textarea class="form-control form-control-sm" rows="2" placeholder="Tambahkan deskripsi..." disabled>${
+                                        pt.description || ""
+                                    }</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
 
-        mappedPoints
-            .slice()
-            .reverse()
-            .forEach((pt, idx) => {
-                const li = document.createElement("div");
-                li.className =
-                    "card mb-3 shadow-sm border-start border-4 border-primary";
-                li.innerHTML = `
+                    const textarea = li.querySelector("textarea");
+                    textarea.addEventListener("input", (e) => {
+                        pt.description = e.target.value.slice(0, 200);
+                    });
+
+                    el.appendChild(li);
+                });
+        } else {
+            mappedPoints
+                .slice()
+                .reverse()
+                .forEach((pt, idx) => {
+                    const li = document.createElement("div");
+                    li.className =
+                        "card mb-3 shadow-sm border-start border-4 border-primary";
+                    li.innerHTML = `
                     <div class='row'>
                         <div class="col-md-12">
                             <div class="float-end p-2">
@@ -340,16 +385,17 @@
                         </div>
                     </div>
                     `;
-                const textarea = li.querySelector("textarea");
-                textarea.addEventListener("input", (e) => {
-                    pt.description = e.target.value.slice(0, 200);
+                    const textarea = li.querySelector("textarea");
+                    textarea.addEventListener("input", (e) => {
+                        pt.description = e.target.value.slice(0, 200);
+                    });
+                    const del = li.querySelector(".delete-btn");
+                    del.addEventListener("click", () => {
+                        deletePoint(pt.id);
+                    });
+                    el.appendChild(li);
                 });
-                const del = li.querySelector(".delete-btn");
-                del.addEventListener("click", () => {
-                    deletePoint(pt.id);
-                });
-                el.appendChild(li);
-            });
+        }
 
         // document.getElementById("download-pdf").disabled = false;
     }
@@ -434,6 +480,7 @@
     }
 
     function deletePoint(id) {
+        if (window._jivident.isFinished) return true;
         const pt = mappedPoints.find((p) => p.id === id);
         if (!pt) return;
         const toothId = pt.toothId;
@@ -462,6 +509,7 @@
 
     // Canvas click handler
     function onCanvasClick(evt) {
+        if (window._jivident.isFinished) return true;
         const rect = canvas.getBoundingClientRect();
         pointer.x = ((evt.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((evt.clientY - rect.top) / rect.height) * 2 + 1;
@@ -494,7 +542,6 @@
 
         // add
         const newId = parent.id;
-        console.log(newId);
         parent.traverse((ch) => {
             if (ch.isMesh) ch.material.color.setHex(MARKER_HEX);
         });
@@ -524,6 +571,7 @@
 
     // Reset mapping
     function resetMapping() {
+        if (window._jivident.isFinished) return true;
         const markers = scene.children.filter(
             (c) => c.name && c.name.startsWith("Marker-")
         );
@@ -648,5 +696,6 @@
         sceneGetter: () => scene,
         getMapped: () => mappedPoints,
         loadMarker,
+        isFinished,
     };
 })();

@@ -198,10 +198,10 @@
                         a += `<a class="btn btn-xs btn-outline-success rounded-pill mt-1 " style="margin-right:5px" href="${urlReg}">
                                  <i class="iconoir-fast-arrow-right" style="font-size:15px; padding-top:2px; "></i> <br/> Periksa
                                 </a>`;
-                        let urlAntrian = `{{ url('print/print-antrian') }}/${btoa(btoa(c.id))}`;
-                        a += `<a class="btn btn-xs btn-outline-warning rounded-pill mt-1 " style="margin-right:5px" onclick="openPopup('${urlAntrian}')">
-                                 <i class="iconoir-printing-page" style="font-size:15px; padding-top:2px; "></i> <br/> Antrian
-                                </a>`;
+                        // let urlAntrian = `{{ url('print/print-antrian') }}/${btoa(btoa(c.id))}`;
+                        // a += `<a class="btn btn-xs btn-outline-warning rounded-pill mt-1 " style="margin-right:5px" onclick="openPopup('${urlAntrian}')">
+                    //          <i class="iconoir-printing-page" style="font-size:15px; padding-top:2px; "></i> <br/> Antrian
+                    //         </a>`;
                         return a
 
                     },

@@ -128,18 +128,20 @@
                                 <label class="fw-medium">Keluhan</label>
                                 <div class="input-group mb-3">
                                     <textarea name="keluhan" class="form-control bg-warning" placeholder="-" id="keluhan" readonly><?= $data->keluhan ?></textarea>
-                                    <div class="input-group-text bg-white">
-                                        <div id="div-keluhan-1">
-                                            <a class="btn btn-sm" onclick="editNotes('keluhan')"><i
-                                                    class="fa fa-pencil text-primary"></i></a>
+                                    @if ($data->status != 'Dalam Antrian' && $data->status != 'Selesai')
+                                        <div class="input-group-text bg-white">
+                                            <div id="div-keluhan-1">
+                                                <a class="btn btn-sm" onclick="editNotes('keluhan')"><i
+                                                        class="fa fa-pencil text-primary"></i></a>
+                                            </div>
+                                            <div id="div-keluhan-2" hidden>
+                                                <a onclick="sendNotes('#form-keluhan','keluhan')" class="btn btn-sm"><i
+                                                        class="fa fa-check text-success"></i></a><br>
+                                                <a class="btn btn-sm" onclick="batalNotes('keluhan')"><i
+                                                        class="fa fa-times text-danger"></i></a>
+                                            </div>
                                         </div>
-                                        <div id="div-keluhan-2" hidden>
-                                            <a onclick="sendNotes('#form-keluhan','keluhan')" class="btn btn-sm"><i
-                                                    class="fa fa-check text-success"></i></a><br>
-                                            <a class="btn btn-sm" onclick="batalNotes('keluhan')"><i
-                                                    class="fa fa-times text-danger"></i></a>
-                                        </div>
-                                    </div>
+                                    @endif
                                 </div>
                             </form>
                             <form class="form-group" id="form-alergi"
@@ -147,18 +149,20 @@
                                 <label class="fw-medium">Alergi</label>
                                 <div class="input-group mb-3">
                                     <textarea name="alergi" class="form-control bg-warning" placeholder="-" id="alergi" readonly><?= $data->alergi ?></textarea>
-                                    <div class="input-group-text bg-white">
-                                        <div id="div-alergi-1">
-                                            <a class="btn btn-sm" onclick="editNotes('alergi')"><i
-                                                    class="fa fa-pencil text-primary"></i></a>
+                                    @if ($data->status != 'Dalam Antrian' && $data->status != 'Selesai')
+                                        <div class="input-group-text bg-white">
+                                            <div id="div-alergi-1">
+                                                <a class="btn btn-sm" onclick="editNotes('alergi')"><i
+                                                        class="fa fa-pencil text-primary"></i></a>
+                                            </div>
+                                            <div id="div-alergi-2" hidden>
+                                                <a onclick="sendNotes('#form-alergi','alergi')" class="btn btn-sm"
+                                                    id="btn_alergi"><i class="fa fa-check text-success"></i></a><br>
+                                                <a class="btn btn-sm" onclick="batalNotes('alergi')"><i
+                                                        class="fa fa-times text-danger"></i></a>
+                                            </div>
                                         </div>
-                                        <div id="div-alergi-2" hidden>
-                                            <a onclick="sendNotes('#form-alergi','alergi')" class="btn btn-sm"
-                                                id="btn_alergi"><i class="fa fa-check text-success"></i></a><br>
-                                            <a class="btn btn-sm" onclick="batalNotes('alergi')"><i
-                                                    class="fa fa-times text-danger"></i></a>
-                                        </div>
-                                    </div>
+                                    @endif
                                 </div>
                             </form>
                             <form class="form-group" id="form-catatanpasien"
@@ -166,18 +170,20 @@
                                 <label class="fw-medium">Catatan Pasien</label>
                                 <div class="input-group mb-3">
                                     <textarea name="catatanpasien" class="form-control" placeholder="-" id="catatanpasien" readonly><?= $data->catatanpasien ?></textarea>
-                                    <div class="input-group-text bg-white">
-                                        <div id="div-catatanpasien-1">
-                                            <a class="btn btn-sm" onclick="editNotes('catatanpasien')"><i
-                                                    class="fa fa-pencil text-primary"></i></a>
+                                    @if ($data->status != 'Dalam Antrian' && $data->status != 'Selesai')
+                                        <div class="input-group-text bg-white">
+                                            <div id="div-catatanpasien-1">
+                                                <a class="btn btn-sm" onclick="editNotes('catatanpasien')"><i
+                                                        class="fa fa-pencil text-primary"></i></a>
+                                            </div>
+                                            <div id="div-catatanpasien-2" hidden>
+                                                <a onclick="sendNotes('#form-catatanpasien', 'catatanpasien')"
+                                                    class="btn btn-sm"><i class="fa fa-check text-success"></i></a><br>
+                                                <a class="btn btn-sm" onclick="batalNotes('catatanpasien')"><i
+                                                        class="fa fa-times text-danger"></i></a>
+                                            </div>
                                         </div>
-                                        <div id="div-catatanpasien-2" hidden>
-                                            <a onclick="sendNotes('#form-catatanpasien', 'catatanpasien')"
-                                                class="btn btn-sm"><i class="fa fa-check text-success"></i></a><br>
-                                            <a class="btn btn-sm" onclick="batalNotes('catatanpasien')"><i
-                                                    class="fa fa-times text-danger"></i></a>
-                                        </div>
-                                    </div>
+                                    @endif
                                 </div>
                             </form>
                         </div>

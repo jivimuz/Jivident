@@ -57,8 +57,9 @@ class PemeriksaanController extends Controller
 
     public function vitalsign($id)
     {
+        $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
         $vital_sign = VitalSign::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
-        return view('pages/pemeriksaan/content/vitalsign', compact('vital_sign', 'id'));
+        return view('pages/pemeriksaan/content/vitalsign', compact('vital_sign', 'id', 'status'));
     }
     public function saveVitalSign(Request $request, $id)
     {
@@ -171,6 +172,7 @@ class PemeriksaanController extends Controller
 
     public function soape($id)
     {
+        $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
         $soap = SOAPE::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
         $vitalsign = VitalSign::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
         $objective = '';
@@ -187,7 +189,7 @@ class PemeriksaanController extends Controller
         ])
             ->join('t_daftarpasien as a', 'a.pasienfk', 'm_pasien.id')
             ->where('a.id', base64_decode(base64_decode($id)))->first();
-        return view('pages/pemeriksaan/content/soape', compact('soap', 'data', 'objective', 'id'));
+        return view('pages/pemeriksaan/content/soape', compact('soap', 'data', 'objective', 'id', 'status'));
     }
 
     public function saveSoape(Request $request, $id)
@@ -237,8 +239,9 @@ class PemeriksaanController extends Controller
 
     public function tindakan($id)
     {
+        $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
         $tindakan = TindakanPasien::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
-        return view('pages/pemeriksaan/content/tindakan', compact('tindakan', 'id'));
+        return view('pages/pemeriksaan/content/tindakan', compact('tindakan', 'id', 'status'));
     }
 
     public function saveTindakan(Request $request, $id)

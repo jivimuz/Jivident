@@ -24,7 +24,7 @@ class DiperiksaController extends Controller
         $limit = $request->input('length', 10);
         $searchValue = $request->post('pasienSearch');
         $ruanganfk = $request->input('ruanganfk');
-        $tglregistrasi = $request->input('tglregistrasi');
+        $tgldiperiksa = $request->input('tgldiperiksa');
 
         $orderColumnIndex = $request->input('order.0.column', 0);
         $orderDirection = $request->input('order.0.dir', 'desc');
@@ -32,7 +32,7 @@ class DiperiksaController extends Controller
 
         $columns = [
             't_daftarpasien.noantrian',
-            't_daftarpasien.tglregistrasi',
+            't_daftarpasien.tgldiperiksa',
             'b.name as ruangan',
             'c.display_name as dokter',
             'a.norm',
@@ -57,17 +57,17 @@ class DiperiksaController extends Controller
             $query->where('t_daftarpasien.ruanganfk', $ruanganfk);
         }
         // Filter tanggal (support range)
-        if (!empty($tglregistrasi)) {
-            $tglRange = explode(' to ', $tglregistrasi);
+        if (!empty($tgldiperiksa)) {
+            $tglRange = explode(' to ', $tgldiperiksa);
 
             if (count($tglRange) === 2) {
-                $query->whereBetween('t_daftarpasien.tglregistrasi', [
+                $query->whereBetween('t_daftarpasien.tgldiperiksa', [
                     trim($tglRange[0]) . ' 00:00:00',
                     trim($tglRange[1]) . ' 23:59:59',
                 ]);
             } else {
                 // Jika hanya 1 tanggal
-                $query->whereDate('t_daftarpasien.tglregistrasi', trim($tglregistrasi));
+                $query->whereDate('t_daftarpasien.tgldiperiksa', trim($tgldiperiksa));
             }
         }
 

@@ -77,33 +77,7 @@
     $(document).ready(function() {
         getDataOdonto()
     })
-    $('#save-data').on('click', function() {
-        $.ajax({
-            url: "<?= url('pemeriksaan/pasien/' . $id) ?>/odontogram/save",
-            type: 'POST',
-            data: {
-                mapping: JSON.stringify(window._jivident.getMapped()),
-                odontotype: "{{ $odontotype }}",
-            },
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                Toast.fire({
-                    icon: "success",
-                    title: "Data berhasil disimpan"
-                });
-            },
-            error: function(xhr) {
-                Swal.close();
-                const msg = xhr.responseJSON?.error || 'Terjadi kesalahan.';
-                Toast.fire({
-                    icon: "error",
-                    title: msg
-                });
-            },
-        });
-    })
+
 
 
     function getDataOdonto() {
@@ -136,3 +110,50 @@
         });
     }
 </script>
+<script>
+    window._jivident = window._jivident || {};
+    window._jivident.isFinished = false;
+</script>
+
+@if ($status->status == 'Selesai')
+    <script>
+        // Kunci semua interaksi 3D
+        window._jivident.isFinished = true;
+
+        // Nonaktifkan tombol
+        $('#save-data').prop('hidden', true).addClass('hidden');
+        $('#reset-mapping').prop('hidden', true).addClass('hidden');
+
+        // Tutup panel diagnostic agar tidak bisa diklik
+    </script>
+@else
+    <script>
+        $('#save-data').on('click', function() {
+            $.ajax({
+                url: "<?= url('pemeriksaan/pasien/' . $id) ?>/odontogram/save",
+                type: 'POST',
+                data: {
+                    mapping: JSON.stringify(window._jivident.getMapped()),
+                    odontotype: "{{ $odontotype }}",
+                },
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    Toast.fire({
+                        icon: "success",
+                        title: "Data berhasil disimpan"
+                    });
+                },
+                error: function(xhr) {
+                    Swal.close();
+                    const msg = xhr.responseJSON?.error || 'Terjadi kesalahan.';
+                    Toast.fire({
+                        icon: "error",
+                        title: msg
+                    });
+                },
+            });
+        })
+    </script>
+@endif

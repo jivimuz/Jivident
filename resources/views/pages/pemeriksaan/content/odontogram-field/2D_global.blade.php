@@ -32,19 +32,22 @@
 
         </div>
         <div class="col-md-4">
-            <br>
-            <br>
-            <div class="text-center d-flex align-items-center">
-                <div class="col-md-12">
-                    <a id='save-data' class="btn btn-sm rounded-pill btn-outline-success"><i class="fa fa-save"></i> Save
-                    </a> &nbsp;
-                    <a onclick="resetAllGigi()" class="btn rounded-pill btn-sm btn-outline-warning"><i
-                            class="fa fa-refresh"></i>
-                        Reset</a>
-                    <br>
-                </div>
+            @if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+                <br>
+                <br>
+                <div class="text-center d-flex align-items-center">
+                    <div class="col-md-12">
+                        <a id='save-data' class="btn btn-sm rounded-pill btn-outline-success"><i class="fa fa-save"></i>
+                            Save
+                        </a> &nbsp;
+                        <a onclick="resetAllGigi()" class="btn rounded-pill btn-sm btn-outline-warning"><i
+                                class="fa fa-refresh"></i>
+                            Reset</a>
+                        <br>
+                    </div>
 
-            </div>
+                </div>
+            @endif
         </div>
         <br>
     </div>
@@ -2353,148 +2356,153 @@
                 </div> --}}
     </div>
 </form>
-
-<div class="modal fade" role="dialog" tabindex="-1" id="m-gigi-selected">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Pilih satu pilihan</h4><span class="ml-1">Gigi
-                    <strong>0</strong></span>
-                <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button> -->
-            </div>
-            <div class="modal-body">
-                <div class="p-2">
-                    <div class="row" role="group">
-                        <div class="col-md-12">&nbsp;</div>
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
-                                accesskey="1" style="font-size: 12px;">UE</button><br>
-                        </div>
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
-                                accesskey="2" style="font-size: 12px;">PE</button><br>
-                        </div>
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
-                                accesskey="3" style="font-size: 12px;">A</button><br>
-                        </div>
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
-                                accesskey="4" style="font-size: 12px;">√</button><br>
-                        </div>
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-outline-dark btn-c btn-block " type="button"
-                                accesskey="5" style="font-size: 12px;"><span
-                                    class='text-danger'>X</span></button><br>
-                        </div>
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
-                                accesskey="6" style="font-size: 12px;"><span
-                                    class='text-success'>__</span></button><br>
-                        </div>
-                        <div class="col-md-12">
-                            <hr>
-                        </div>
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
-                                accesskey="7" style="font-size: 12px;"><span
-                                    class='text-warning'>--</span></button><br>
-                        </div>
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="8"
-                                style="font-size: 12px;"><span class='text-danger'>/</span></button><br>
-                        </div>
-
-                        <div class="col-md-2  d-flex w-flex align-items-stretch">
-                            <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="9"
-                                style="background-color: grey;font-size: 12px;">&nbsp;</button><br>
-                        </div>
-
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="10"
-                                style="background-color: pink;font-size: 12px;">&nbsp;</button><br>
-                        </div>
-                        <div class="col-md-2 d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="11"
-                                style="background-color: cadetblue;font-size: 12px;">&nbsp;</button><br>
-                        </div>
-
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="12"
-                                style="background-color: darkgreen;font-size: 12px;">&nbsp;</button><br>
-                        </div>
-                        <div class="col-md-12">
-                            <hr>
-                        </div>
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="13"
-                                style="background-color: cyan;font-size: 12px;">&nbsp;</button><br>
-                        </div>
-
-
-
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-dark btn-c btn-block" type="button" accesskey="14"
-                                style="font-size: 12px;">&nbsp;</button><br>
-                        </div>
-
-
-                        <div class="col-md-2  d-flex align-items-stretch">
-                            <button class="btn btn-sm btn-dark btn-c btn-block" type="button" accesskey="14"
-                                style="font-size: 12px;">&nbsp;</button><br>
-                        </div>
-                        <div class="col-md-12 text-center">
-                            <hr>
-                            <div class="float-end">
-                                <a id="add-send" class="btn btn-primary btn-sm rounded-pill "
-                                    data-bs-dismiss="modal"><i class="fa fa-save"></i> Simpan</a>
-                                <button class="btn btn-sm rounded-pill btn-danger btn-c " type="button"
-                                    accesskey="0"><i class="fa fa-trash"></i>
-                                    Reset</button><br>
+@if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+    <div class="modal fade" role="dialog" tabindex="-1" id="m-gigi-selected">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Pilih satu pilihan</h4><span class="ml-1">Gigi
+                        <strong>0</strong></span>
+                    <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button> -->
+                </div>
+                <div class="modal-body">
+                    <div class="p-2">
+                        <div class="row" role="group">
+                            <div class="col-md-12">&nbsp;</div>
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
+                                    accesskey="1" style="font-size: 12px;">UE</button><br>
                             </div>
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
+                                    accesskey="2" style="font-size: 12px;">PE</button><br>
+                            </div>
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
+                                    accesskey="3" style="font-size: 12px;">A</button><br>
+                            </div>
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
+                                    accesskey="4" style="font-size: 12px;">√</button><br>
+                            </div>
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-outline-dark btn-c btn-block " type="button"
+                                    accesskey="5" style="font-size: 12px;"><span
+                                        class='text-danger'>X</span></button><br>
+                            </div>
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
+                                    accesskey="6" style="font-size: 12px;"><span
+                                        class='text-success'>__</span></button><br>
+                            </div>
+                            <div class="col-md-12">
+                                <hr>
+                            </div>
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-outline-dark btn-c btn-block" type="button"
+                                    accesskey="7" style="font-size: 12px;"><span
+                                        class='text-warning'>--</span></button><br>
+                            </div>
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="8"
+                                    style="font-size: 12px;"><span class='text-danger'>/</span></button><br>
+                            </div>
+
+                            <div class="col-md-2  d-flex w-flex align-items-stretch">
+                                <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="9"
+                                    style="background-color: grey;font-size: 12px;">&nbsp;</button><br>
+                            </div>
+
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="10"
+                                    style="background-color: pink;font-size: 12px;">&nbsp;</button><br>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="11"
+                                    style="background-color: cadetblue;font-size: 12px;">&nbsp;</button><br>
+                            </div>
+
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="12"
+                                    style="background-color: darkgreen;font-size: 12px;">&nbsp;</button><br>
+                            </div>
+                            <div class="col-md-12">
+                                <hr>
+                            </div>
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-light btn-c btn-block" type="button" accesskey="13"
+                                    style="background-color: cyan;font-size: 12px;">&nbsp;</button><br>
+                            </div>
+
+
+
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-dark btn-c btn-block" type="button" accesskey="14"
+                                    style="font-size: 12px;">&nbsp;</button><br>
+                            </div>
+
+
+                            <div class="col-md-2  d-flex align-items-stretch">
+                                <button class="btn btn-sm btn-dark btn-c btn-block" type="button" accesskey="14"
+                                    style="font-size: 12px;">&nbsp;</button><br>
+                            </div>
+                            <div class="col-md-12 text-center">
+                                <hr>
+                                <div class="float-end">
+                                    <a id="add-send" class="btn btn-primary btn-sm rounded-pill "
+                                        data-bs-dismiss="modal"><i class="fa fa-save"></i> Simpan</a>
+                                    <button class="btn btn-sm rounded-pill btn-danger btn-c " type="button"
+                                        accesskey="0"><i class="fa fa-trash"></i>
+                                        Reset</button><br>
+                                </div>
+                            </div>
+                            <div class="col-md-12 text-center"></div>
                         </div>
-                        <div class="col-md-12 text-center"></div>
                     </div>
                 </div>
+                <!-- <div class=" modal-footer"><button class="btn btn-light" type="button" data-dismiss="modal">Batal</button> -->
             </div>
-            <!-- <div class=" modal-footer"><button class="btn btn-light" type="button" data-dismiss="modal">Batal</button> -->
         </div>
     </div>
-</div>
+@endif
 </section>
 <!-- /.content -->
+@if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+    <script>
+        $('#save-data').on('click', function() {
+            $.ajax({
+                url: "<?= url('pemeriksaan/pasien/' . $id) ?>/odontogram/save",
+                type: 'POST',
+                data: {
+                    mapping: JSON.stringify(selectedData),
+                    odontotype: "{{ $odontotype }}",
+                },
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    Toast.fire({
+                        icon: "success",
+                        title: "Data berhasil disimpan"
+                    });
+                },
+                error: function(xhr) {
+                    Swal.close();
+                    const msg = xhr.responseJSON?.error || 'Terjadi kesalahan.';
+                    Toast.fire({
+                        icon: "error",
+                        title: msg
+                    });
+                },
+            });
+        })
+    </script>
+@endif
 <script>
     $(document).ready(function() {
         getDataOdonto()
     });
 
-    $('#save-data').on('click', function() {
-        $.ajax({
-            url: "<?= url('pemeriksaan/pasien/' . $id) ?>/odontogram/save",
-            type: 'POST',
-            data: {
-                mapping: JSON.stringify(selectedData),
-                odontotype: "{{ $odontotype }}",
-            },
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                Toast.fire({
-                    icon: "success",
-                    title: "Data berhasil disimpan"
-                });
-            },
-            error: function(xhr) {
-                Swal.close();
-                const msg = xhr.responseJSON?.error || 'Terjadi kesalahan.';
-                Toast.fire({
-                    icon: "error",
-                    title: msg
-                });
-            },
-        });
-    })
 
     function getDataOdonto() {
         $.ajax({

@@ -181,7 +181,7 @@ return new class extends Migration
                 'icon' => 'iconoir-arcade',
                 'route' => '/antrian',
                 'isheader' => false,
-                'isactive' => true,
+                'isactive' => false,
             ],
             [
                 'name' => 'Setting',

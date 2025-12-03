@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
+use App\Models\DaftarPasien;
 use App\Models\Odontogram;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,7 @@ class OdontogramController extends Controller
 
     public function field(Request $request, $id)
     {
+        $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
         $odontotype = $request->odontotype ?? '-';
         // update jika ada id, kalau tidak maka insert baru
 
@@ -39,7 +41,7 @@ class OdontogramController extends Controller
         if (!$field) {
             return 'Pilih type terlebih dahulu';
         }
-        return view('pages/pemeriksaan/content/odontogram-field/' . $field, compact('id', 'odontotype'));
+        return view('pages/pemeriksaan/content/odontogram-field/' . $field, compact('id', 'odontotype', 'status'));
     }
 
     public function saveOdonto(Request $request, $id)

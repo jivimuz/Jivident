@@ -2,39 +2,41 @@
     <h3>Tindakan Pasien</h3>
 
 
-    <!-- Form Input -->
-    <form id="form-add" class="row g-3 mb-4">
-        <div class="col-md-5">
-            <label class="form-label">Pilih Tindakan</label>
-            <select id="tindakanSelect" class="form-control" style="width: 100%"></select>
-        </div>
+    @if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+        <!-- Form Input -->
+        <form id="form-add" class="row g-3 mb-4">
+            <div class="col-md-5">
+                <label class="form-label">Pilih Tindakan</label>
+                <select id="tindakanSelect" class="form-control" style="width: 100%"></select>
+            </div>
 
 
-        <div class="col-md-4">
-            <label class="form-label">Pilih Dokter</label>
-            <select id="dokterSelect" class="form-control" style="width: 100%"></select>
-        </div>
+            <div class="col-md-4">
+                <label class="form-label">Pilih Dokter</label>
+                <select id="dokterSelect" class="form-control" style="width: 100%"></select>
+            </div>
 
 
-        <div class="col-md-2">
-            <label class="form-label">Qty</label>
-            <input type="number" id="qty" value="1" class="form-control rounded-pill" min="1" />
-        </div>
+            <div class="col-md-2">
+                <label class="form-label">Qty</label>
+                <input type="number" id="qty" value="1" class="form-control rounded-pill" min="1" />
+            </div>
 
 
-        <div class="col-md-1 d-flex align-items-end">
-            <a id="btnAdd"
-                class="btn btn-sm btn-primary  rounded-pill text-center align-items-center justify-content-center">
-                <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path opacity="0.4"
-                        d="M16.6667 2H7.33333C3.92889 2 2 3.92889 2 7.33333V16.6667C2 20.0622 3.92 22 7.33333 22H16.6667C20.0711 22 22 20.0622 22 16.6667V7.33333C22 3.92889 20.0711 2 16.6667 2Z"
-                        fill="currentColor"></path>
-                    <path
-                        d="M15.3205 12.7083H12.7495V15.257C12.7495 15.6673 12.4139 16 12 16C11.5861 16 11.2505 15.6673 11.2505 15.257V12.7083H8.67955C8.29342 12.6687 8 12.3461 8 11.9613C8 11.5765 8.29342 11.2539 8.67955 11.2143H11.2424V8.67365C11.2824 8.29088 11.6078 8 11.996 8C12.3842 8 12.7095 8.29088 12.7495 8.67365V11.2143H15.3205C15.7066 11.2539 16 11.5765 16 11.9613C16 12.3461 15.7066 12.6687 15.3205 12.7083Z"
-                        fill="currentColor"></path>
-                </svg> </a>
-        </div>
-    </form>
+            <div class="col-md-1 d-flex align-items-end">
+                <a id="btnAdd"
+                    class="btn btn-sm btn-primary  rounded-pill text-center align-items-center justify-content-center">
+                    <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path opacity="0.4"
+                            d="M16.6667 2H7.33333C3.92889 2 2 3.92889 2 7.33333V16.6667C2 20.0622 3.92 22 7.33333 22H16.6667C20.0711 22 22 20.0622 22 16.6667V7.33333C22 3.92889 20.0711 2 16.6667 2Z"
+                            fill="currentColor"></path>
+                        <path
+                            d="M15.3205 12.7083H12.7495V15.257C12.7495 15.6673 12.4139 16 12 16C11.5861 16 11.2505 15.6673 11.2505 15.257V12.7083H8.67955C8.29342 12.6687 8 12.3461 8 11.9613C8 11.5765 8.29342 11.2539 8.67955 11.2143H11.2424V8.67365C11.2824 8.29088 11.6078 8 11.996 8C12.3842 8 12.7095 8.29088 12.7495 8.67365V11.2143H15.3205C15.7066 11.2539 16 11.5765 16 11.9613C16 12.3461 15.7066 12.6687 15.3205 12.7083Z"
+                            fill="currentColor"></path>
+                    </svg> </a>
+            </div>
+        </form>
+    @endif
 
 
     <!-- Table List -->
@@ -60,23 +62,22 @@
         </tfoot>
 
     </table>
-
-    <button id="btnSave" class="btn btn-primary rounded-pill">
-        <i class="fa fa-save"></i>
-        {{ $tindakan ? 'Update' : 'Save' }}
-    </button>
+    @if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+        <button id="btnSave" class="btn btn-primary rounded-pill">
+            <i class="fa fa-save"></i>
+            {{ $tindakan ? 'Update' : 'Save' }}
+        </button>
+    @endif
 </div>
 <script>
     tindakanInitial = @json($tindakan ? [$tindakan] : []);
 </script>
 <script>
+    tindakanList = [];
     $(document).ready(function() {
-        tindakanList = [];
-        console.log(tindakanInitial)
         // Load existing tindakan
         if (tindakanInitial.length > 0) {
             tindakanInitial.forEach(item => {
-                console.log(item.tindakan)
                 tindakanList.push({
                     tindakan_id: item.fk_tindakan,
                     tindakan_text: `${item.tindakan} | ${parseFloat(item.amount).toLocaleString("id-ID", {
@@ -120,88 +121,96 @@
                 }
             }
         });
+    });
 
 
-        // Select2 Dokter
-        $('#dokterSelect').select2({
-            placeholder: 'Cari dokter...',
-            ajax: {
-                url: `<?= url('tindakan/getDokterList') ?>`,
-                dataType: 'json',
-                type: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                delay: 250,
-                processResults: function(data) {
-                    return {
-                        results: data.data.map(item => ({
-                            id: item.id,
-                            text: item.name, // tampil di dropdown
-                        }))
-                    }
+    // Select2 Dokter
+    $('#dokterSelect').select2({
+        placeholder: 'Cari dokter...',
+        ajax: {
+            url: `<?= url('tindakan/getDokterList') ?>`,
+            dataType: 'json',
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            delay: 250,
+            processResults: function(data) {
+                return {
+                    results: data.data.map(item => ({
+                        id: item.id,
+                        text: item.name, // tampil di dropdown
+                    }))
                 }
             }
-        });
+        }
+    });
 
 
-        // Add to Table
-        $('#btnAdd').click(() => {
-            const tindakan = $('#tindakanSelect').select2('data')[0];
-            const dokter = $('#dokterSelect').select2('data')[0];
-            const qty = $('#qty').val();
+    // Add to Table
+    $('#btnAdd').click(() => {
+        const tindakan = $('#tindakanSelect').select2('data')[0];
+        const dokter = $('#dokterSelect').select2('data')[0];
+        const qty = $('#qty').val();
 
-            if (!tindakan || !dokter) {
-                return Toast.fire({
-                    icon: "warning",
-                    title: "Pilih tindakan & dokter"
-                });
-            }
+        if (!tindakan || !dokter) {
+            return Toast.fire({
+                icon: "warning",
+                title: "Pilih tindakan & dokter"
+            });
+        }
 
-            // 👉 Cek apakah tindakan_id sudah ada di array
-            const isDuplicate = tindakanList.some(item => item.tindakan_id == tindakan.id);
-            if (isDuplicate) {
-                return Toast.fire({
-                    icon: "warning",
-                    title: "Tindakan sudah ditambahkan"
-                });
-            }
+        // 👉 Cek apakah tindakan_id sudah ada di array
+        const isDuplicate = tindakanList.some(item => item.tindakan_id == tindakan.id);
+        if (isDuplicate) {
+            return Toast.fire({
+                icon: "warning",
+                title: "Tindakan sudah ditambahkan"
+            });
+        }
 
-            const item = {
-                tindakan_id: tindakan.id,
-                tindakan_text: tindakan.text,
-                tindakan_name: tindakan.name,
-                tindakan_amount: tindakan.amount,
-                dokter_id: dokter.id,
-                dokter_text: dokter.text,
-                qty: qty
-            };
+        const item = {
+            tindakan_id: tindakan.id,
+            tindakan_text: tindakan.text,
+            tindakan_name: tindakan.name,
+            tindakan_amount: tindakan.amount,
+            dokter_id: dokter.id,
+            dokter_text: dokter.text,
+            qty: qty
+        };
 
-            tindakanList.push(item);
-            renderTable();
-        });
+        tindakanList.push(item);
+        renderTable();
+    });
 
 
 
-        function renderTable() {
-            const tbody = $('#tindakanTable tbody');
-            tbody.empty();
+    function renderTable() {
+        const tbody = $('#tindakanTable tbody');
+        tbody.empty();
 
-            let total = 0;
-            let stotal = 0;
+        let total = 0;
+        let stotal = 0;
 
-            tindakanList.forEach((item, i) => {
-                const subtotal = item.tindakan_amount * item.qty;
-                stotal += item.tindakan_amount;
-                total += subtotal;
+        tindakanList.forEach((item, i) => {
+            const subtotal = item.tindakan_amount * item.qty;
+            stotal += item.tindakan_amount;
+            total += subtotal;
 
-                tbody.append(`
+            tbody.append(`
                     <tr>
                         <td>${item.tindakan_name}</td>
                         <td>${item.dokter_text}</td>
                         <td>
-                            <input type="number" class="form-control form-control-sm qty-input"
-                                data-index="${i}" value="${item.qty}" min="1" />
+                           <input
+                                type="number"
+                                class="form-control form-control-sm qty-input"
+                                data-index="${i}"
+                                value="${item.qty}"
+                                min="1"
+                                {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }}
+                            />
+
                         </td>
 
                         <td>${item.tindakan_amount.toLocaleString("id-ID", {
@@ -213,7 +222,7 @@
                             currency: "IDR"
                         })}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-danger rounded-pill"
+                            <button class="btn btn-sm btn-outline-danger rounded-pill" {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'hidden' }}
                                 onclick="removeItem(${i})">
                                 <svg width="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path opacity="0.4" d="M19.643 9.48851C19.643 9.5565 19.11 16.2973 18.8056 19.1342C18.615 20.8751 17.4927 21.9311 15.8092 21.9611C14.5157 21.9901 13.2494 22.0001 12.0036 22.0001C10.6809 22.0001 9.38741 21.9901 8.13185 21.9611C6.50477 21.9221 5.38147 20.8451 5.20057 19.1342C4.88741 16.2873 4.36418 9.5565 4.35445 9.48851C4.34473 9.28351 4.41086 9.08852 4.54507 8.93053C4.67734 8.78453 4.86796 8.69653 5.06831 8.69653H18.9388C19.1382 8.69653 19.3191 8.78453 19.4621 8.93053C19.5953 9.08852 19.6624 9.28351 19.643 9.48851Z" fill="currentColor"></path>
@@ -223,78 +232,77 @@
                         </td>
                     </tr>
                 `);
-            });
+        });
 
-            // update footer total
-            $('#stotalPrice').text(
-                stotal.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR"
-                })
-            );
-            $('#totalPrice').text(
-                total.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR"
-                })
-            );
-        }
-
-
-
-        window.removeItem = function(index) {
-            tindakanList.splice(index, 1);
-            renderTable();
-        }
-
-        // Save
-        $('#btnSave').click(() => {
-            if (tindakanList.length <= 0) {
-                return Toast.fire({
-                    icon: "warning",
-                    title: "Masukan tindakan terlebih dahulu"
-                });
-            }
-            $.ajax({
-                url: `<?= url('pemeriksaan/pasien/' . $id) ?>/tindakan/save`,
-                type: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                data: {
-                    tindakan: tindakanList,
-                },
-                success: function(response) {
-                    Toast.fire({
-                        icon: "success",
-                        title: "Data berhasil disimpan"
-                    });
-                },
-                error: function(xhr) {
-                    Swal.close();
-                    const msg = xhr.responseJSON?.error || 'Terjadi kesalahan.';
-                    Toast.fire({
-                        icon: "error",
-                        title: msg
-                    });
-                },
+        // update footer total
+        $('#stotalPrice').text(
+            stotal.toLocaleString("id-ID", {
+                style: "currency",
+                currency: "IDR"
             })
-        });
-        // event qty change
-        $('#tindakanTable').on('change', '.qty-input', function() {
-            const index = $(this).data('index');
-            const newQty = parseInt($(this).val());
+        );
+        $('#totalPrice').text(
+            total.toLocaleString("id-ID", {
+                style: "currency",
+                currency: "IDR"
+            })
+        );
+    }
 
-            if (newQty <= 0 || isNaN(newQty)) {
-                $(this).val(tindakanList[index].qty);
-                return Toast.fire({
-                    icon: "warning",
-                    title: "Qty minimal 1"
+
+
+    window.removeItem = function(index) {
+        tindakanList.splice(index, 1);
+        renderTable();
+    }
+
+    // Save
+    $('#btnSave').click(() => {
+        if (tindakanList.length <= 0) {
+            return Toast.fire({
+                icon: "warning",
+                title: "Masukan tindakan terlebih dahulu"
+            });
+        }
+        $.ajax({
+            url: `<?= url('pemeriksaan/pasien/' . $id) ?>/tindakan/save`,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            data: {
+                tindakan: tindakanList,
+            },
+            success: function(response) {
+                Toast.fire({
+                    icon: "success",
+                    title: "Data berhasil disimpan"
                 });
-            }
+            },
+            error: function(xhr) {
+                Swal.close();
+                const msg = xhr.responseJSON?.error || 'Terjadi kesalahan.';
+                Toast.fire({
+                    icon: "error",
+                    title: msg
+                });
+            },
+        })
+    });
+    // event qty change
+    $('#tindakanTable').on('change', '.qty-input', function() {
+        const index = $(this).data('index');
+        const newQty = parseInt($(this).val());
 
-            tindakanList[index].qty = newQty;
-            renderTable();
-        });
+        if (newQty <= 0 || isNaN(newQty)) {
+            $(this).val(tindakanList[index].qty);
+            return Toast.fire({
+                icon: "warning",
+                title: "Qty minimal 1"
+            });
+        }
+
+        tindakanList[index].qty = newQty;
+        renderTable();
     });
 </script>

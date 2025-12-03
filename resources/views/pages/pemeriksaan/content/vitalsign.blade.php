@@ -52,12 +52,14 @@
                 value="{{ $vital_sign->lingkarperut ?? '' }}" required>
         </div>
     </div>
-    <div class="d-flex justify-content-end mt-2">
-        <button type="submit" class="btn btn-primary rounded-pill">
-            <i class="fa fa-save"></i>
-            {{ $vital_sign ? 'Update' : 'Save' }}
-        </button>
-    </div>
+    @if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+        <div class="d-flex justify-content-end mt-2">
+            <button type="submit" class="btn btn-primary rounded-pill">
+                <i class="fa fa-save"></i>
+                {{ $vital_sign ? 'Update' : 'Save' }}
+            </button>
+        </div>
+    @endif
 </form>
 
 <script>
