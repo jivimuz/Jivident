@@ -21,7 +21,7 @@ class RuangPraktekController extends Controller
         $data = RuangPraktek::select([
             'm_ruangpraktek.*',
             'a.display_name as dokter'
-        ])->where('klienfk', Auth::user()->klienfk ?? 1)
+        ])->where('m_ruangpraktek.klienfk', Auth::user()->klienfk ?? 1)
             ->leftJoin('m_users as a', 'a.id', 'm_ruangpraktek.fk_dokter')->get();
         return response()->json(['message' => 'Get data sukses', 'data' => $data], 200);
     }

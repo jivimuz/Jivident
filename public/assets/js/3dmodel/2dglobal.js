@@ -1,4 +1,4 @@
-let selectedData = [];
+var selectedData = [];
 
 function load2DGlobal(curData = []) {
     let dataJson = {

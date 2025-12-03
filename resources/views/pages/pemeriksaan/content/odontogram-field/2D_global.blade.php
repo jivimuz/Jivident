@@ -2507,10 +2507,11 @@
                 "X-CSRF-TOKEN": "{{ csrf_token() }}",
             },
             success: function(response) {
+                let data = [];
                 if (response.data && response.data.mappeddata) {
-                    let data = JSON.parse(response.data.mappeddata);
-                    load2DGlobal(data);
+                    data = JSON.parse(response.data.mappeddata);
                 }
+                load2DGlobal(data);
             },
             error: function(xhr) {
                 Swal.close();

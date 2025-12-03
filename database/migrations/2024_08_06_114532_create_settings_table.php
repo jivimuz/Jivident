@@ -46,8 +46,13 @@ return new class extends Migration
                 "type" => 'file',
             ],
             [
-                "parameter" => 'no_surat',
-                "value" => 0,
+                "parameter" => 'id_youtube_monitor',
+                "value" => '1ZYbU82GVz4',
+                "type" => 'text',
+            ],
+            [
+                "parameter" => 'harga_pendaftaran',
+                "value" => 100000,
                 "type" => 'number',
             ],
 

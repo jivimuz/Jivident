@@ -28,7 +28,7 @@ class RuangTungguController extends Controller
 
         $orderColumnIndex = $request->input('order.0.column', 0);
         // $orderDirection = $request->input('order.0.dir', 'desc');
-        $orderDirection = 'desc';
+        $orderDirection = 'asc';
         // $nik = $request->post('nik_search');
 
         $columns = [

@@ -96,7 +96,7 @@
                                 <div class="col-md-4">
                                     <label>Tanggal Registrasi:*</label>
                                     <input type="datetime-local" name="tglregistrasi" id="tglregistrasi"
-                                        class="form-control" value="{{ WIB() }}" required>
+                                        class="form-control form-control-lg" value="{{ WIB() }}" required>
                                 </div>
                                 <div class="col-md-4">
                                     <label>Ruangan:*</label>

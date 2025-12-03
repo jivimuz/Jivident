@@ -98,7 +98,8 @@
               <br>
               <div class="float-end">
 
-                  <button class="btn btn-primary btn-sm float-end" data-bs-dismiss="modal"><i class="fa fa-save"></i>
+                  <button class="btn btn-primary btn-sm float-end rounded-pill" data-bs-dismiss="modal"><i
+                          class="fa fa-save"></i>
                       {{ $soap ? 'Update' : 'Save' }}
                   </button>
 

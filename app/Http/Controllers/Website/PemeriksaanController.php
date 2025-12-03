@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\Patient;
+use App\Models\TindakanPasien;
 use App\Models\SOAPE;
 use App\Models\VitalSign;
 use Carbon\Carbon;
@@ -24,6 +25,7 @@ class PemeriksaanController extends Controller
             't_daftarpasien.keluhan',
             't_daftarpasien.jenispembayaran',
             't_daftarpasien.statuspasien',
+            't_daftarpasien.status',
             'm_pasien.id as idp',
             'm_pasien.nama',
             'm_pasien.umur',
@@ -64,9 +66,11 @@ class PemeriksaanController extends Controller
 
             // update jika ada id, kalau tidak maka insert baru
             $vitalSign = VitalSign::updateOrCreate(
-                ['fk_daftarpasien' => base64_decode(base64_decode($id))],
                 [
+                    'fk_daftarpasien' => base64_decode(base64_decode($id)),
                     'klienfk' => Auth::user()->klienfk ?? 1,
+                ],
+                [
                     'siastole' => $request->siastole ?? null,
                     'diastole' => $request->diastole ?? null,
                     'tinggibadan' => $request->tinggibadan ?? null,
@@ -227,6 +231,107 @@ class PemeriksaanController extends Controller
                 'code' => 0,
                 'message' => $e->getMessage(),
                 'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public function tindakan($id)
+    {
+        $tindakan = TindakanPasien::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
+        return view('pages/pemeriksaan/content/tindakan', compact('tindakan', 'id'));
+    }
+
+    public function saveTindakan(Request $request, $id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klien = Auth::user()->klienfk ?? 1;
+
+        DB::beginTransaction(); // START TRANSACTION
+
+        try {
+
+            // 1. Ambil semua tindakan_id dari request
+            $incomingIds = collect($request->tindakan)
+                ->pluck('tindakan_id')
+                ->filter()
+                ->toArray();
+
+            // 2. Ambil semua tindakan_id yang sudah ada di DB
+            $existingIds = TindakanPasien::where('klienfk', $klien)
+                ->where('fk_daftarpasien', $daftarpasienId)
+                ->pluck('fk_tindakan')
+                ->toArray();
+
+            // 3. Cari yang harus dihapus
+            $deleteIds = array_diff($existingIds, $incomingIds);
+
+            if (!empty($deleteIds)) {
+                TindakanPasien::where('klienfk', $klien)
+                    ->where('fk_daftarpasien', $daftarpasienId)
+                    ->whereIn('fk_tindakan', $deleteIds)
+                    ->delete();
+            }
+
+            // 4. Insert/update data yang dikirim
+            foreach ($request->tindakan as $i) {
+                TindakanPasien::updateOrCreate(
+                    [
+                        'klienfk'          => $klien,
+                        'fk_daftarpasien'  => $daftarpasienId,
+                        'fk_tindakan'      => $i['tindakan_id'] ?? null,
+                    ],
+                    [
+                        'fk_dokter'       => $i['dokter_id'] ?? null,
+                        'fk_userhandler'  => Auth::user()->id ?? null,
+                        'tindakan'        => $i['tindakan_name'] ?? null,
+                        'dokter'          => $i['dokter_text'] ?? null,
+                        'amount'          => $i['tindakan_amount'] ?? null,
+                        'qty'             => $i['qty'] ?? null,
+                    ]
+                );
+            }
+
+            DB::commit(); // sukses → commit
+
+            return response()->json(['message' => 'success'], 200);
+        } catch (\Throwable $e) {
+
+            DB::rollBack(); // gagal → rollback
+
+            return response()->json([
+                'error' => 'Gagal menyimpan tindakan.',
+                'detail' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+
+    public function updateStatus($id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+
+        try {
+            // Cari data pasien
+            $pasien = DaftarPasien::find($daftarpasienId);
+
+            if (!$pasien) {
+                return response()->json([
+                    'error' => 'Data pasien tidak ditemukan'
+                ], 400);
+            }
+
+            // Update status
+            $pasien->status = 'Di Periksa';
+            $pasien->tgldiperiksa = Carbon::now();
+            $pasien->save();
+
+            return response()->json([
+                'message' => 'Status berhasil diperbarui'
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Gagal memperbarui status',
+                'detail' => $e->getMessage()
             ], 400);
         }
     }

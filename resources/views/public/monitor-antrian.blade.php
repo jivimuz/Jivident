@@ -176,6 +176,16 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
             border: 1px solid #b3e0ff;
         }
 
+        .ruangan-name {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #0A6E80;
+            padding: 0.8rem 1.5rem;
+            margin-top: 10px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
         /* * PERUBAHAN BESAR: Bar Status Ruangan (menggantikan Riwayat)
          * Ini adalah bar horizontal di bawah, sesuai referensi.
          */
@@ -391,12 +401,15 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
 
             <!-- Kartu Panggilan Utama -->
             <section class="now-serving">
-                <h2>Nomor Panggilan</h2>
+                <h2>Nomor Antrian</h2>
                 <div class="number-display" id="current-number">
-                    A-101
+                    0
                 </div>
                 <div class="doctor-name" id="current-doctor">
-                    Ruang 01 - Drg. Amanda Sari
+                    -
+                </div>
+                <div class="ruangan-name" id="current-ruangan">
+                    -
                 </div>
             </section>
 
@@ -404,7 +417,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
             <section class="room-status-bar">
                 <ul id="room-status-list-ul">
                     <!-- Ini akan diisi oleh JavaScript -->
-                    <li class="history-placeholder">
+                    <li class="history-placeholder text-white">
                         Memuat status ruangan...
                     </li>
                 </ul>
@@ -416,7 +429,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
             <div class="video-container">
                 <h3>Informasi & Hiburan</h3>
                 <iframe width="560" height="315"
-                    src="https://www.youtube.com/embed/1ZYbU82GVz4?autoplay=1&mute=1&loop=1&playlist=1ZYbU82GVz4&controls=0&showinfo=0"
+                    src="https://www.youtube.com/embed/{{ $urlVid ? $urlVid->value : '1ZYbU82GVz4' }}?autoplay=1&mute=1&loop=1&playlist={{ $urlVid ? $urlVid->value : '1ZYbU82GVz4' }}&controls=0&showinfo=0"
                     title="YouTube video player" frameborder: 0,
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen>
@@ -447,170 +460,118 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
     </div>
 
     <script>
-        // === LOGIKA BARU: Status per Ruangan ===
-        const doctors = [
-            'Ruang 01 - Drg. Amanda Sari',
-            'Ruang 02 - Drg. Budi Hartono',
-            'Ruang 03 - Drg. Citra Lestari'
-            // Tambahkan dokter/ruangan lain di sini
-        ];
-
-        // Buat state awal untuk setiap ruangan
-        let roomStates = doctors.map((doc, index) => ({
-            name: doc,
-            shortName: doc.split(' - ')[0], // Misal: "Ruang 01"
-            prefix: String.fromCharCode(65 + index) + '-', // A-, B-, C-
-            number: 100 // Nomor awal
-        }));
-
-        let currentRoomIndex = 0; // Ruangan mana yang sedang memanggil
-
-        // Ambil elemen dari HTML
+        // Ambil elemen display utama
         const currentNumberEl = document.getElementById('current-number');
+        const currentRuanganEl = document.getElementById('current-ruangan');
         const currentDoctorEl = document.getElementById('current-doctor');
-        const roomStatusListEl = document.getElementById('room-status-list-ul'); // ID yang benar
-
-        // Elemen Jam & Tanggal
+        const historyList = document.getElementById('room-status-list-ul');
+        // Elemen jam & tanggal
         const clockEl = document.getElementById('clock');
         const dateEl = document.getElementById('date');
 
         /**
          * ==========================================================
-         * BARU: Fungsi Text-to-Speech (TTS)
+         *  Text-to-Speech (TTS)
          * ==========================================================
          */
         function speak(text) {
-            // Hentikan suara sebelumnya (jika ada) agar tidak tumpang tindih
             window.speechSynthesis.cancel();
 
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'id-ID'; // Atur bahasa ke Indonesia
-                utterance.rate = 0.9; // Sedikit pelan agar jelas
+                utterance.lang = 'id-ID';
+                utterance.rate = 0.9;
                 window.speechSynthesis.speak(utterance);
-            } else {
-                console.log('Browser Anda tidak mendukung Text-to-Speech.');
             }
         }
 
-        /**
-         * PENTING: Browser modern memblokir audio otomatis.
-         * Kita perlu "membuka" izin audio dengan interaksi pengguna pertama.
-         * Cukup klik di mana saja pada halaman sekali untuk mengaktifkan suara.
-         */
+        // Aktifkan izin audio dengan 1x klik
         document.body.addEventListener('click', () => {
-            // Trik untuk mengaktifkan audio context setelah interaksi pengguna
-            let testUtterance = new SpeechSynthesisUtterance(' ');
-            window.speechSynthesis.speak(testUtterance);
-            console.log('Speech synthesis diaktifkan.');
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(' '));
         }, {
             once: true
-        }); // 'once: true' berarti event ini hanya berjalan sekali
+        });
 
 
         /**
-         * BARU: Fungsi untuk update Jam dan Tanggal
+         * ==========================================================
+         *  UPDATE JAM
+         * ==========================================================
          */
         function updateClock() {
             const now = new Date();
-
-            // Format Waktu: 00:00:00
-            const time = now.toTimeString().split(' ')[0];
-            clockEl.textContent = time;
-
-            // Format Tanggal: Jumat, 7 November 2025
-            const dateOptions = {
+            clockEl.textContent = now.toTimeString().split(' ')[0];
+            dateEl.textContent = now.toLocaleDateString('id-ID', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
-            };
-            dateEl.textContent = now.toLocaleDateString('id-ID', dateOptions);
+            });
         }
 
+
         /**
-         * BARU: Fungsi untuk merender bar status bawah
+         * ==========================================================
+         *  FETCH DATA ANTRIAN DARI BACKEND
+         * ==========================================================
          */
-        function renderRoomStatus() {
-            roomStatusListEl.innerHTML = ''; // Kosongkan
+        let lastNumber = null; // Untuk mendeteksi perubahan agar suara tidak spam
 
-            for (const room of roomStates) {
-                const li = document.createElement('li');
+        async function fetchCurrentQueue() {
+            try {
+                let res = await fetch(`{{ url('') }}/monitor/currentAntrian`);
+                let data = await res.json();
 
-                const roomNameSpan = document.createElement('span');
-                roomNameSpan.className = 'room-name';
-                roomNameSpan.textContent = room.shortName; // "Ruang 01"
+                if (data.status === 'ok') {
 
-                const queueNumSpan = document.createElement('span');
-                queueNumSpan.className = 'room-queue-num';
-                queueNumSpan.textContent = room.prefix + room.number; // "A-100"
+                    let current = data.current;
 
-                li.appendChild(roomNameSpan);
-                li.appendChild(queueNumSpan);
-                roomStatusListEl.appendChild(li);
+                    // Update current info
+                    currentNumberEl.textContent = current.nomor;
+                    currentDoctorEl.textContent = current.dokter;
+                    currentRuanganEl.textContent = current.ruangan;
+
+                    // Suara (TTS) hanya jika nomor berubah
+                    if (lastNumber !== current.nomor) {
+                        let txt = `Nomor antrian ${current.nomor}, silakan ke ${current.ruangan}`;
+                        speak(txt);
+                        lastNumber = current.nomor;
+                    }
+
+                    // ============================
+                    //  RENDER HISTORY → UL kamu
+                    // ============================
+                    historyList.innerHTML = ""; // clear dulu
+
+                    data.history.forEach(item => {
+                        let li = document.createElement('li');
+                        li.className = "flex justify-between py-2 border-b border-gray-200";
+
+                        li.innerHTML = `
+                    <span class="font-bold text-lg room-name">${item.ruangan}</span>
+                    <span class="text-gray-600 room-queue-num">${item.nomor}</span>
+                `;
+
+                        historyList.appendChild(li);
+                    });
+                }
+
+            } catch (e) {
+                console.error("Gagal fetch data:", e);
             }
         }
 
-        /**
-         * Fungsi untuk inisialisasi tampilan
-         */
-        function initializeDisplay() {
-            updateClock(); // Set jam pertama kali
 
-            // Set panggilan pertama saat memuat
-            const initialCall = roomStates[0];
-            currentNumberEl.textContent = initialCall.prefix + initialCall.number;
-            currentDoctorEl.textContent = initialCall.name;
 
-            // Render bar status awal
-            renderRoomStatus();
-        }
+        // Interval realtime
+        setInterval(fetchCurrentQueue, 3000); // 2 detik
+        setInterval(updateClock, 1000); // update jam tiap detik
 
-        /**
-         * LOGIKA BARU: Fungsi untuk update antrian
-         */
-        function updateQueue() {
-            // 1. Tentukan ruangan mana yang akan memanggil berikutnya
-            currentRoomIndex = (currentRoomIndex + 1) % roomStates.length;
-
-            // 2. Naikkan nomor antrian untuk ruangan tersebut
-            roomStates[currentRoomIndex].number++;
-
-            // 3. Update Panggilan Utama (Main Display)
-            const currentCall = roomStates[currentRoomIndex];
-            currentNumberEl.textContent = currentCall.prefix + currentCall.number;
-            currentDoctorEl.textContent = currentCall.name;
-
-            // 4. Beri animasi 'pop'
-            currentNumberEl.classList.add('pop');
-            setTimeout(() => {
-                currentNumberEl.classList.remove('pop');
-            }, 500); // Durasi animasi harus cocok dengan CSS
-
-            // 5. Render ulang bar status di bawah
-            renderRoomStatus();
-
-            // 6. BARU: Panggil fungsi Text-to-Speech
-            // Pisahkan prefix (huruf) dan nomor
-            const spokenPrefix = currentCall.prefix.replace('-', ''); // "A"
-            const spokenNumber = currentCall.number; // 101
-
-            // Format teks yang akan diucapkan
-            const textToSpeak = `Nomor antrian, ${spokenPrefix}, ${spokenNumber}, silakan ke ${currentCall.name}`;
-
-            // Panggil fungsi speak
-            speak(textToSpeak);
-        }
-
-        // Panggil fungsi updateQueue() setiap 7 detik (7000 ms)
-        setInterval(updateQueue, 12000);
-
-        // Panggil fungsi updateClock() setiap detik
-        setInterval(updateClock, 1000);
-
-        // Panggil sekali saat memuat halaman agar data langsung terisi
-        initializeDisplay();
+        // Load awal jam
+        updateClock();
+        fetchCurrentQueue();
     </script>
+
 </body>
 
 </html>

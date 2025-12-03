@@ -9,12 +9,14 @@ use App\Http\Controllers\Website\DiperiksaController;
 use App\Http\Controllers\Website\profileController;
 use App\Http\Controllers\Website\SettingController;
 use App\Http\Controllers\Website\EmployeesController;
+use App\Http\Controllers\Website\MonitorController;
 use App\Http\Controllers\Website\OdontogramController;
 use App\Http\Controllers\Website\PatientController;
 use App\Http\Controllers\Website\PemeriksaanController;
 use App\Http\Controllers\Website\PrintController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
+use App\Http\Controllers\Website\TindakanController;
 use App\Models\RuangPraktek;
 use Illuminate\Support\Facades\Route;
 
@@ -28,9 +30,8 @@ Route::get('/test', function () {
 });
 
 Route::prefix('monitor')->group(function () {
-    Route::get('antrian', function () {
-        return view('public/monitor-antrian');
-    });
+    Route::get('antrian', [MonitorController::class, 'antrian']);
+    Route::get('currentAntrian', [MonitorController::class, 'currentAntrian']);
 });
 
 
@@ -122,6 +123,18 @@ Route::middleware(['auth'])->group(function () {
             Route::get('account', [EmployeesController::class, 'attachment']);
         });
     });
+    Route::middleware(['checkAccess:MTT'])->prefix('tindakan')->group(function () {
+        Route::get('/', [TindakanController::class, 'index']);
+        Route::post('getList', [TindakanController::class, 'getList']);
+        Route::post('saveTindakan', [TindakanController::class, 'saveTindakan']);
+        Route::post('deleteTindakan', [TindakanController::class, 'deleteTindakan']);
+        Route::post('showTindakan', [TindakanController::class, 'showTindakan']);
+        Route::post('updateTindakan', [TindakanController::class, 'updateTindakan']);
+        Route::post('getTindakanList', [TindakanController::class, 'getTindakanList']);
+        Route::post('getDokterList', [TindakanController::class, 'getDokterList']);
+    });
+
+
 
     Route::middleware(['checkAccess:PA'])->prefix('patient')->group(function () {
         Route::get('/', [PatientController::class, 'index']);
@@ -144,12 +157,16 @@ Route::middleware(['auth'])->group(function () {
             Route::post('updateKeluhan/{idp}', [PemeriksaanController::class, 'updateKeluhan']);
             Route::post('updateAlergi/{idp}', [PemeriksaanController::class, 'updateAlergi']);
             Route::post('updateCatatan/{idp}', [PemeriksaanController::class, 'updateCatatan']);
+            Route::post('updateStatus', [PemeriksaanController::class, 'updateStatus']);
 
             Route::post('vitalsign', [PemeriksaanController::class, 'vitalsign']);
             Route::post('vitalsign/save', [PemeriksaanController::class, 'saveVitalSign']);
 
             Route::post('soape', [PemeriksaanController::class, 'soape']);
             Route::post('soape/save', [PemeriksaanController::class, 'saveSoape']);
+
+            Route::post('tindakan', [PemeriksaanController::class, 'tindakan']);
+            Route::post('tindakan/save', [PemeriksaanController::class, 'saveTindakan']);
 
             Route::prefix('odontogram')->group(function () {
                 Route::post('/', [OdontogramController::class, 'index']);

@@ -86,3 +86,15 @@ select[readonly] {
     color: #555; /* teks sedikit gelap */
     cursor: not-allowed;
 }
+
+.w-full {
+    width: 100% !important;
+}
+
+.hover-bg:hover{
+    background-color: wheat;
+}
+
+.horizontal-sidebar{
+    height: 110px !important;
+}

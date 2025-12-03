@@ -58,9 +58,9 @@
                 <button id="save-data" class="btn m-1 btn-success w-100 fw-semibold">
                     Save Odontogram
                 </button>
-                <button id="download-pdf" class="btn m-1 btn-primary w-100 fw-semibold" disabled>
+                {{-- <button id="download-pdf" class="btn m-1 btn-primary w-100 fw-semibold" disabled>
                     Download Diagnostic PDF
-                </button>
+                </button> --}}
                 <button id="reset-mapping" class="btn m-1 btn-danger w-100 fw-semibold">
                     Reset All Mapping Points
                 </button>

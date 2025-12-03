@@ -151,21 +151,19 @@
         let isLoading = false;
 
         $(document).ready(function() {
-            // [UBAH] Panggil getList() dan simpan instance tabelnya
-            mainTable = getList();
+            getList();
 
             // [UBAH] Ganti event listener ke #global-search
             $('#global-search').on('change', function() {
                 // 'draw()' akan memicu ulang ajax call dengan parameter baru
-                mainTable.draw();
+                getList();
             });
 
             // [UBAH] Ganti click handler ke #clear-global-search
             $('#clear-global-search').on('click', function() {
 
                 $('#global-search').val(''); // Kosongkan input
-                mainTable
-                    .draw(); // Gambar ulang tabel (ini akan otomatis memicu drawCallback dan menyembunyikan tombol)
+                getList();
             });
         });
 

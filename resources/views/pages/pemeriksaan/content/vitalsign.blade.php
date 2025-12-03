@@ -53,7 +53,7 @@
         </div>
     </div>
     <div class="d-flex justify-content-end mt-2">
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="btn btn-primary rounded-pill">
             <i class="fa fa-save"></i>
             {{ $vital_sign ? 'Update' : 'Save' }}
         </button>
