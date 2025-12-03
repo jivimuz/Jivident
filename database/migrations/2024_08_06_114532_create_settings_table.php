@@ -50,11 +50,11 @@ return new class extends Migration
                 "value" => '1ZYbU82GVz4',
                 "type" => 'text',
             ],
-            [
-                "parameter" => 'harga_pendaftaran',
-                "value" => 100000,
-                "type" => 'number',
-            ],
+            // [
+            //     "parameter" => 'harga_pendaftaran',
+            //     "value" => 100000,
+            //     "type" => 'number',
+            // ],
 
         ]);
     }

@@ -60,6 +60,7 @@ class MonitorController extends Controller
                 'nomor'   => $current->noantrian,
                 'ruangan' => $current->ruangan,
                 'dokter'  => $current->dokter,
+                'tgldiperiksa'  => $current->tgldiperiksa,
             ],
             'history' => $history->map(function ($item) {
                 return [

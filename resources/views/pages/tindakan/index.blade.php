@@ -196,6 +196,9 @@
 
 
         function openAdd() {
+            const btn = event.currentTarget;
+            btn.disabled = true;
+            setTimeout(() => btn.disabled = false, 500);
             $('#modalTitle').text("Tambah Tindakan")
             $('#formTindakan')[0].reset()
             $('#id').val('')
@@ -203,6 +206,9 @@
         }
 
         function openEdit(id) {
+            const btn = event.currentTarget;
+            btn.disabled = true;
+            setTimeout(() => btn.disabled = false, 500);
             $.ajax({
                 url: "{{ url('tindakan/showTindakan') }}",
                 type: "POST",
@@ -227,11 +233,13 @@
             $('#deleteId').val(id)
             $('#modalDelete').modal('show')
         }
-
         $('#formTindakan').submit(function(e) {
             e.preventDefault()
 
             let formData = $(this).serialize()
+
+            // Disable tombol biar ga bisa spam
+            $('#btnSubmit').prop('disabled', true).text('Saving...')
 
             $.ajax({
                 url: "{{ url('tindakan/saveTindakan') }}",
@@ -240,6 +248,10 @@
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
+                complete: function() {
+                    // Balikin tombol setelah request selesai
+                    $('#btnSubmit').prop('disabled', false).text('Save')
+                },
                 success: function() {
                     $('#modalForm').modal('hide')
                     getList()
@@ -247,36 +259,48 @@
             })
         })
 
+
         $('#btnDeleteConfirm').click(function() {
             let id = $('#deleteId').val()
+
+            $('#btnDeleteConfirm').prop('disabled', true).text('Deleting...')
+
             Swal.fire({
                 title: "Anda yakin?",
                 text: "Hapus tindakan ini?",
                 icon: "warning",
                 showCancelButton: true,
-                // showDenyButton: false,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
                 confirmButtonText: "Ya?",
-                // denyButtonText: `No, Delete User Only!`
             }).then((result) => {
+
                 if (result.isConfirmed) {
 
                     $.ajax({
                         url: "{{ url('tindakan/deleteTindakan') }}",
                         type: "POST",
                         data: {
-                            id: id
+                            id
                         },
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        complete: function() {
+                            // Enable ulang
+                            $('#btnDeleteConfirm').prop('disabled', false).text('Delete')
                         },
                         success: function() {
                             $('#modalDelete').modal('hide')
                             getList()
                         }
                     })
+
+                } else {
+                    // Kalau batal, tombol diaktifkan lagi
+                    $('#btnDeleteConfirm').prop('disabled', false).text('Delete')
                 }
+
             })
         })
     </script>
