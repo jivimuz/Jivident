@@ -15,7 +15,7 @@ class KlienSeeder extends Seeder
 
         $klien = [
             [
-                'organisasifk' => 1,
+                'isholding' => 1,
                 'kodeklinik' => 'JVD',
                 'tipe' => 'A',
                 'nama' => 'Jivident',

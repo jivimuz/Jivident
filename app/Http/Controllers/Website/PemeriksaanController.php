@@ -338,4 +338,10 @@ class PemeriksaanController extends Controller
             ], 400);
         }
     }
+
+    public function resepElektronik($id)
+    {
+        $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
+        return view('pages/pemeriksaan/content/resepElektronik', compact('id', 'status'));
+    }
 }

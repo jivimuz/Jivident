@@ -59,10 +59,10 @@
                                 <button class="nav-link" id="tindakan" aria-selected="false"><i
                                         class="fa fa-list-ol fa-fw"></i>Tindakan </button>
                             </li>
-                            {{-- <li class="nav-item">
+                            <li class="nav-item">
                                 <button class="nav-link" id="resepelektronik" aria-selected="false"><i
                                         class="fa fa-flask fa-fw"></i>Resep Obat</button>
-                            </li> --}}
+                            </li>
                         </ul>
 
                     </div>

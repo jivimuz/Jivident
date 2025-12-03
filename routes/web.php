@@ -140,8 +140,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [PatientController::class, 'index']);
         Route::post('getList', [PatientController::class, 'getList']);
         Route::get('add_patient', [PatientController::class, 'addPatient']);
+        Route::get('edit_patient/{id}', [PatientController::class, 'editPatient']);
         Route::post('searchAddress', [PatientController::class, 'searchAddress']);
         Route::post('saveData', [PatientController::class, 'saveData']);
+        Route::post('updateData', [PatientController::class, 'updateData']);
         Route::get('register-patient/{id}', [PatientController::class, 'registerPatient']);
         Route::post('register-patient/{id}', [PatientController::class, 'processPatient']);
     });
@@ -167,6 +169,8 @@ Route::middleware(['auth'])->group(function () {
 
             Route::post('tindakan', [PemeriksaanController::class, 'tindakan']);
             Route::post('tindakan/save', [PemeriksaanController::class, 'saveTindakan']);
+
+            Route::post('resepelektronik', [PemeriksaanController::class, 'resepElektronik']);
 
             Route::prefix('odontogram')->group(function () {
                 Route::post('/', [OdontogramController::class, 'index']);

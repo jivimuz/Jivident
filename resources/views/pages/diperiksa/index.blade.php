@@ -92,7 +92,7 @@
                                 <tr>
                                     {{-- <th>No</th> --}}
                                     <th>No Antrian</th>
-                                    <th>Tgl Registrasi</th>
+                                    <th>Tgl Pemeriksaan</th>
                                     <th>Ruangan</th>
                                     <th>Dokter Tujuan</th>
                                     <th>No RM</th>

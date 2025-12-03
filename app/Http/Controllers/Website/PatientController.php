@@ -111,6 +111,40 @@ class PatientController extends Controller
         return view('pages/patient/add_patient', compact('jk', 'agama', 'statusperkawinan', 'pendidikan', 'pekerjaan', 'kebangsaan', 'etnis', 'negara'));
     }
 
+    public function editPatient($id)
+    {
+        $jk = JenisKelamin::all();
+        $agama = Religion::all();
+        $statusperkawinan  = MarialStatus::all();
+        $pendidikan  = Study::all();
+        $pekerjaan  = Pekerjaan::all();
+        $kebangsaan   = Kebangsaan::all();
+        $etnis    = Etnis::all();
+        $negara    = Negara::all();
+        $data = Patient::select(
+            'm_pasien.*',
+            'a.alamat',
+            'a.kodepos',
+            'a.rt',
+            'a.rw',
+            'a.kelurahanfk',
+            'a.kelurahan',
+            'a.kecamatanfk',
+            'a.kecamatan',
+            'a.kotakabupatenfk',
+            'a.kotakabupaten',
+            'a.provinsifk',
+            'a.provinsi'
+        )
+            ->leftJoin('m_alamat as a', 'a.pasienfk', 'm_pasien.id')
+            ->where('m_pasien.id', base64_decode(base64_decode($id)))
+            ->first();
+        if (!$data) {
+            return abort(404, 'Data pasien tidak ditemukan');
+        }
+        return view('pages/patient/edit_patient', compact('jk', 'agama', 'statusperkawinan', 'pendidikan', 'pekerjaan', 'kebangsaan', 'etnis', 'negara', 'data'));
+    }
+
     public function searchAddress(Request $request)
     {
         $searchTerm = $request->post('q');
@@ -223,6 +257,100 @@ class PatientController extends Controller
             ], 400);
         }
     }
+
+    public function updateData(Request $request)
+    {
+        // Cari pasiennya
+        $pasien = Patient::find($request->id);
+        if (!$pasien) {
+            return response()->json(['error' => 'Data pasien tidak ditemukan'], 404);
+        }
+
+        // Validasi
+        $validator = Validator::make($request->all(), [
+            'nik' => 'required|string|max:20|unique:m_pasien,nik,' . $request->id,
+            'nama' => 'required|string|max:100',
+            'umur' => 'required|numeric',
+            'nohp' => 'required|string|max:20',
+            'jeniskelaminfk' => 'required',
+            'tgllahir' => 'required|date',
+            'namapenanggungjawab' => 'required|string',
+            'hubungandenganpasien' => 'required|string',
+            'nohppenanggungjawab' => 'required|string',
+            'alamat' => 'required|string',
+            'kelurahanfk' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => $validator->errors()->first()
+            ], 422);
+        }
+
+        try {
+
+            // Update pasien
+            $pasien->update([
+                'nobpjs' => $request->nobpjs,
+                'nik' => $request->nik,
+                'nama' => $request->nama,
+                'umur' => $request->umur,
+                'nohp' => $request->nohp,
+                'jeniskelaminfk' => $request->jeniskelaminfk,
+                'tempatlahir' => $request->tempatlahir,
+                'tgllahir' => $request->tgllahir,
+                'namaayah' => $request->namaayah,
+                'namaibu' => $request->namaibu,
+                'agamafk' => $request->agamafk,
+                'statusperkawinanfk' => $request->statusperkawinanfk,
+                'golongandarah' => $request->golongandarah,
+                'pendidikanfk' => $request->pendidikanfk,
+                'pekerjaanfk' => $request->pekerjaanfk,
+                'namapenanggungjawab' => $request->namapenanggungjawab,
+                'hubungandenganpasien' => $request->hubungandenganpasien,
+                'nohppenanggungjawab' => $request->nohppenanggungjawab,
+                'noasuransilain' => $request->noasuransilain,
+                'notelprumah' => $request->notelprumah,
+                'bahasadikuasai' => $request->bahasadikuasai,
+                'kebangsaanfk' => $request->kebangsaanfk,
+                'etnisfk' => $request->etnisfk,
+                'negarafk' => $request->negarafk,
+                'updated_at' => Carbon::now(),
+            ]);
+
+            // Update alamat
+            Alamat::updateOrCreate([
+                'pasienfk' => $request->id
+            ], [
+                'alamat' => $request->alamat,
+                'kodepos' => $request->kodepos,
+                'rt' => $request->rt,
+                'rw' => $request->rw,
+                'kelurahanfk' => $request->kelurahanfk,
+                'kelurahan' => $request->kelurahan,
+                'kecamatanfk' => $request->kecamatanfk,
+                'kecamatan' => $request->kecamatan,
+                'kotakabupatenfk' => $request->kotakabupatenfk,
+                'kotakabupaten' => $request->kotakabupaten,
+                'provinsifk' => $request->provinsifk,
+                'provinsi' => $request->provinsi,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data pasien berhasil diperbarui.',
+                'data' => $pasien
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Gagal mengupdate data: ' . $e->getMessage(),
+                'message' => 'Gagal mengupdate data: ' . $e->getMessage()
+            ], 400);
+        }
+    }
+
+
+
     public function registerPatient($id)
     {
         $pasien = Patient::select(

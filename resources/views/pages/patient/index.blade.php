@@ -240,16 +240,15 @@
                     data: "id",
                     render: function(data, b, c) {
                         let urlReg = `{{ url('patient/register-patient') }}/${btoa(btoa(c.id))}`;
+                        let urlEd = `{{ url('patient/edit_patient') }}/${btoa(btoa(c.id))}`;
                         let a = '';
                         a += `<a class="btn btn-xs btn-outline-success rounded-pill mt-1 " style="margin-right:5px" href="${urlReg}">
                                  <i class="iconoir-fast-arrow-right" style="font-size:15px; padding-top:2px; "></i>
                                 </a>`;
-                        a += `<a class="btn btn-xs btn-outline-primary rounded-pill mt-1 " style="margin-right:5px"  href="#">
+                        a += `<a class="btn btn-xs btn-outline-primary rounded-pill mt-1 " style="margin-right:5px"  href="${urlEd}">
                                 <i class="iconoir-page-search" style="font-size:15px"></i>
                                 </a>`;
-                        a += `<a class="btn btn-xs btn-outline-warning rounded-pill mt-1 " style="margin-right:5px"  href="#">
-                                <i class="iconoir-page-edit" style="font-size:15px"></i>
-                                </a>`;
+
                         a += `<a class="btn btn-xs btn-outline-danger rounded-pill mt-1 " style="margin-right:5px"  href="#">
                                 <i class="iconoir-trash" style="font-size:15px;padding-top:2px;"></i>
                                 </a>`;
