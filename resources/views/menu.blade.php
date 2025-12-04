@@ -45,13 +45,11 @@
                     </div>
                     <div class="card-body" data-iq-gsap="onStart" data-iq-opacity="0" data-iq-position-y="-40"
                         data-iq-duration=".6" data-iq-delay=".6" data-iq-trigger="scroll" data-iq-ease="none"
-                        style="padding-left: 40px; padding-right:40px">
+                        style="padding-left: 20px; padding-right:20px">
 
                         {{-- isi Content --}}
-                        <div class="row">
-                            <div class="row" id="menuList">
-                                Loading...
-                            </div>
+                        <div id="menuList">
+                            Loading...
                         </div>
                     </div>
                 </div>

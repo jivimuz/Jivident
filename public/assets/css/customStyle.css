@@ -98,3 +98,12 @@ select[readonly] {
 .horizontal-sidebar{
     height: 110px !important;
 }
+.mobile-hidden {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .mobile-hidden {
+        display: block;
+    }
+}

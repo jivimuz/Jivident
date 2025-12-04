@@ -26,10 +26,10 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                         <path
                             d="M11.9051 20H6.11304C3.69102 20 2 18.3299 2 15.9391V9.06091C2 6.66904 3.69102 5 6.11304 5H11.9051C14.3271 5 16.0181 6.66904 16.0181 9.06091V15.9391C16.0181 18.3299 14.3271 20 11.9051 20Z"
                             fill="currentColor"></path>
-                    </svg> Monitor Antrian</a>
+                    </svg> Monitor </a>
                 <ul class="d-flex align-items-center">
 
-                    <li class="header-cloud">
+                    <li class="header-cloud mobile-hidden">
                         <a aria-controls="cloudoffcanvasTops" class="head-icon" data-bs-target="#cloudoffcanvasTops"
                             data-bs-toggle="offcanvas" href="#" role="button">
                             <i class="iconoir-dew-point text-primary f-s-26 me-1"></i>
@@ -104,7 +104,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                         </div>
                     </li>
 
-                    <li class="header-language">
+                    <li class="header-language mobile-hidden">
                         <div class="flex-shrink-0 dropdown" id="lang_selector">
                             <a aria-expanded="false" class="d-block head-icon ps-0" data-bs-toggle="dropdown"
                                 href="#">
@@ -127,7 +127,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
 
                     </li>
 
-                    <li class="header-searchbar">
+                    <li class="header-searchbar mobile-hidden">
                         <a aria-controls="offcanvasRight" class="d-block head-icon" data-bs-target="#offcanvasRight"
                             data-bs-toggle="offcanvas" href="#" role="button">
                             <i class="iconoir-search"></i>

@@ -1,6 +1,6 @@
     <div class="row">
         @foreach ($menuList as $i)
-            <div class="col">
+            <div class="col-6 col-md-2">
                 <a href="{{ url('') }}{{ $i->route ?: str_replace(' ', '_', $i->group_menu) . '/' . str_replace(' ', '_', $i->name) }}"
                     class="btn text-center menu-list " style="width: 100%" alt=" {{ $i->name }}">
                     <h5 style=" margin-top:17px"><i class="{{ $i->icon ?: 'fa fa-user' }}"

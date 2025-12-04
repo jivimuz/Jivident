@@ -18,7 +18,7 @@ class MonitorController extends Controller
 
     public function currentAntrian()
     {
-        $today = now()->toDateString();
+        $today = now('Asia/Jakarta')->toDateString();
 
         // Ambil pasien yang statusnya 'Di Periksa' hari ini
         $current = DaftarPasien::select([
