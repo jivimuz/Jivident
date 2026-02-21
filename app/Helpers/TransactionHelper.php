@@ -8,6 +8,7 @@ use App\Models\BillingTransaction;
 use App\Models\DaftarPasien;
 use App\Models\Patient;
 use App\Models\Payments;
+use App\Models\Setting;
 use App\Models\Transactions;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
@@ -128,8 +129,9 @@ final class TransactionHelper
                     ->where('fk_daftarpasien', $daftarPasienID)
                     ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
                     ->value('total_amount');;
+                $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
 
-                $price = (float)($tagihanTindakan ?? 0);
+                $price = (float)($tagihanTindakan ?? 0) + (float) ($registrasi ? $registrasi->value : 50000);
 
                 $newStatus = $this->resolvePaymentStatus($totalPaid, $price);
 

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\Payments;
 use App\Models\RuangPraktek;
+use App\Models\Setting;
 use App\Models\TindakanPasien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -100,6 +101,7 @@ class BillingController extends Controller
                 $query->where('t_daftarpasien.statuspembayaran', $status_pembayaran);
             }
         }
+        $query->where('t_daftarpasien.status', '!=', 'Dalam Antrian');
 
         // Total record sebelum filter
         $totalData = DaftarPasien::count();
@@ -137,8 +139,21 @@ class BillingController extends Controller
 
     public function getTagihanList(Request $request)
     {
+        $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
         $tagihan =  TindakanPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
-        return response()->json(['message' => 'Get data sukses', 'tagihan' => $tagihan], 200);
+        $totalPaid = (float) DB::table('t_transactions')
+            ->where('daftarpasien_id', $request->daftarpasien_id)
+            ->selectRaw("COALESCE(SUM(CASE
+                        WHEN transaction_type='in' THEN amount
+                        WHEN transaction_type='out' THEN -amount
+                        ELSE 0 END),0) as total_paid")
+            ->value('total_paid');
+        return response()->json([
+            'message' => 'Get data sukses',
+            'tagihan' => $tagihan,
+            'registrasi' => $registrasi ? $registrasi->value : 50000,
+            'totalPaid' => $totalPaid ?? 0,
+        ], 200);
     }
 
     public function processPaid(Request $request)
@@ -174,7 +189,7 @@ class BillingController extends Controller
                     'transaction_type' => 'in',
                     'typecode'         => 'BIL',
                     'amount'           => $i['nominal'],
-                    'notes'            =>  'Pembayaran Kasir ' . $daftarPasien->noregistrasi,
+                    'notes'            =>  'Pembayaran Pasien dengan No Registrasi: ' . $daftarPasien->noregistrasi,
                     'userhandler_id'   => Auth::id(),
                     'payment_method'   => "BILLING",
                     'fk_payment'   => $i['metode'],
@@ -190,7 +205,7 @@ class BillingController extends Controller
                     'transaction_type' => 'out',
                     'typecode'         => 'BIL',
                     'amount'           => $validated['selisih'],
-                    'notes'            => 'Kembalian Kasir ' . $daftarPasien->noregistrasi,
+                    'notes'            => 'Kembalian Pasien dengan No Registrasi: ' . $daftarPasien->noregistrasi,
                     'userhandler_id'   => Auth::id(),
                     'payment_method'   => "BILLING",
                     'fk_payment'         => null,

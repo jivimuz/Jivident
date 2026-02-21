@@ -167,25 +167,32 @@
                     data: $(this).serialize(),
                     success: function(res) {
                         Swal.close();
-                        if (res.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: res.message,
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                            // $('#formPasien')[0].reset();
-                            openPopup("{{ url('print/print-antrian') }}/" + btoa(btoa(res
+
+                        // $('#formPasien')[0].reset();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: res.message || 'Pilih langkah selanjutnya',
+                            showConfirmButton: true,
+                            showDenyButton: true,
+                            showCancelButton: true,
+                            confirmButtonText: 'Langsung Periksa',
+                            denyButtonText: 'Ke Ruang Tunggu',
+                            cancelButtonText: 'Tutup'
+                        }).then((result) => {
+                            openPopup("{{ url('print/print-antrian') }}/" + btoa(btoa(
+                                res
                                 .data)))
-                            location.href = "{{ url('ruang-tunggu') }}"
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal!',
-                                text: res.message || 'Terjadi kesalahan, coba lagi.'
-                            });
-                        }
+                            if (result.isConfirmed) {
+                                location.href =
+                                    "{{ url('pemeriksaan/pasien') }}/" + btoa(btoa(res
+                                        .data));
+                            } else if (result.isDenied) {
+                                location.href = "{{ url('ruang-tunggu') }}";
+                            }
+                        });
+
                     },
                     error: function(xhr) {
                         Swal.close();

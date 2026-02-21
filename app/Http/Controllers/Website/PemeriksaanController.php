@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\Patient;
+use App\Models\Setting;
 use App\Models\TindakanPasien;
 use App\Models\SOAPE;
 use App\Models\VitalSign;
@@ -344,7 +345,9 @@ class PemeriksaanController extends Controller
                     ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
                     ->value('total_amount');;
 
-                $price = (float)($tagihanTindakan ?? 0);
+                $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
+
+                $price = (float)($tagihanTindakan ?? 0) + (float) ($registrasi ? $registrasi->value : 50000);
 
                 $newStatus = $this->resolvePaymentStatus($totalPaid, $price,  $pasien->statuspembayaran);
 

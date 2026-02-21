@@ -104,4 +104,23 @@ class RuangTungguController extends Controller
             'data' => $data,
         ]);
     }
+
+
+    public function batalkanPasien(Request $request)
+    {
+        $pasien = DaftarPasien::where('id', base64_decode(base64_decode($request->id)))->first();
+        if ($pasien) {
+            $pasien->status = "Dibatalkan";
+            $pasien->save();
+            return response()->json([
+                'code' => 1,
+                'message' => 'Pasien Dibatalkan.',
+            ]);
+        }
+        return response()->json([
+            'code' => 0,
+            'message' => "Pasien Tidak Ditemukan",
+            'error' => "Pasien Tidak Ditemukan"
+        ], 400);
+    }
 }

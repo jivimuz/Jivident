@@ -504,7 +504,7 @@
                             // Jika sukses, tidak perlu enable tombol karena halaman akan reload
                             Toast.fire({
                                 icon: 'success',
-                                title: 'Pemeriksaan diselesaikan 🎉.. \nkembali otomatis ke ruang tunggu'
+                                title: 'Pemeriksaan diselesaikan 🎉.. '
                             });
                             location.reload();
                             // history.back()

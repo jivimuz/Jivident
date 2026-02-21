@@ -188,7 +188,26 @@
                     data: "statuspasien"
                 },
                 {
-                    data: "status"
+                    data: "status",
+                    render: function(data) {
+                        const status = (data || "Dalam Antrian").toString();
+
+                        // escape text biar aman
+                        const safe = $("<div/>").text(status).html();
+
+                        const map = {
+                            "Dalam Antrian": "badge bg-secondary",
+                            "Di Periksa": "badge bg-primary",
+                            "Farmasi": "badge bg-info text-dark",
+                            "Payment": "badge bg-warning text-dark",
+                            "Selesai": "badge bg-success",
+                            "Dibatalkan": "badge bg-danger"
+                        };
+
+                        const cls = map[status] || "badge bg-dark";
+
+                        return `<span class="${cls}">${safe}</span>`;
+                    }
                 },
                 {
                     data: "id",
@@ -202,6 +221,10 @@
                         // a += `<a class="btn btn-xs btn-outline-warning rounded-pill mt-1 " style="margin-right:5px" onclick="openPopup('${urlAntrian}')">
                     //          <i class="iconoir-printing-page" style="font-size:15px; padding-top:2px; "></i> <br/> Antrian
                     //         </a>`;
+
+                        a += `<a class="btn btn-xs btn-outline-danger rounded-pill mt-1 " style="margin-right:5px" onclick="batalkanAntarian('${btoa(btoa(c.id))}')">
+                             <i class="iconoir-trash" style="font-size:15px; padding-top:2px; "></i> <br/> Antrian
+                            </a>`;
                         return a
 
                     },
@@ -244,6 +267,48 @@
 
             // [UBAH] Kembalikan instance tabel
             return tabled;
+        }
+
+        function deleteRoom(id) {
+            Swal.fire({
+                title: "Anda yakin?",
+                text: "Batalkan Pasien ini?",
+                icon: "warning",
+                showCancelButton: true,
+                // showDenyButton: false,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya?",
+                // denyButtonText: `No, Delete User Only!`
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ url('ruang-tunggu/batalkan-pasien') }}",
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        data: {
+                            sd: id,
+                        },
+                        success: function(data) {
+                            Toast.fire({
+                                icon: "success",
+                                title: "Pasien Dibatalkan"
+                            });
+                            getRooms()
+                        },
+                        error: function(xhr, status, error) {
+                            Toast.fire({
+                                icon: "error",
+                                title: JSON.parse(xhr.responseText).error ?? JSON.parse(xhr
+                                    .responseText).message
+                            });
+
+                        }
+                    });
+                }
+            });
         }
     </script>
 @endsection

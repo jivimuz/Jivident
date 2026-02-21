@@ -68,9 +68,9 @@
                                         id="tglregistrasi" max="{{ WIB() }}" placeholder="YYYY-MM-DD to YYYY-MM-DD">
                                 </div>
                             </div>
-                            <div class="col-md-1">
-                                <a onclick="getList()" class="btn b-sm btn-outline-primary mt-4">
-                                    <i class="iconoir-search" style="font-size: 15px"></i>
+                            <div class="col-md-12">
+                                <a onclick="getList()" class="btn b-sm btn-outline-primary mt-4" style="width: 100%">
+                                    <i class="iconoir-search" style="font-size: 15px"></i> Cari
                                 </a>
                             </div>
                         </div>
@@ -247,7 +247,26 @@
                     data: "statuspasien"
                 },
                 {
-                    data: "status"
+                    data: "status",
+                    render: function(data) {
+                        const status = (data || "Dalam Antrian").toString();
+
+                        // escape text biar aman
+                        const safe = $("<div/>").text(status).html();
+
+                        const map = {
+                            "Dalam Antrian": "badge bg-secondary",
+                            "Di Periksa": "badge bg-primary",
+                            "Farmasi": "badge bg-info text-dark",
+                            "Payment": "badge bg-warning text-dark",
+                            "Selesai": "badge bg-success",
+                            "Dibatalkan": "badge bg-danger"
+                        };
+
+                        const cls = map[status] || "badge bg-dark";
+
+                        return `<span class="${cls}">${safe}</span>`;
+                    }
                 },
 
             ]

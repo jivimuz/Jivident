@@ -206,6 +206,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['checkAccess:DPP'])->prefix('ruang-tunggu')->group(function () {
         Route::get('', [RuangTungguController::class, 'index']);
         Route::post('getList', [RuangTungguController::class, 'getList']);
+        Route::post('batalkan-pasien', [RuangTungguController::class, 'batalkanPasien']);
     });
     Route::middleware(['checkAccess:DPP'])->prefix('pemeriksaan')->group(function () {
         Route::prefix('pasien/{id}')->group(function () {

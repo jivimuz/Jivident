@@ -10,6 +10,14 @@
             /* warna primary bootstrap */
         }
 
+        .paid-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px dashed #83e169;
+            /* warna primary bootstrap */
+        }
+
         .table-responsive {
             max-height: 400px;
             overflow-y: auto;
@@ -76,6 +84,7 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                                <code>*Harga registrasi di atur pada menu setting</code>
                             </div>
                         </div>
                     </div>
@@ -88,10 +97,15 @@
                         <div class="card-body">
                             <h5 class="card-title border-bottom pb-2">Metode Pembayaran</h5>
 
-                            <div class="payment-summary mb-4 mt-3">
+                            <div class="payment-summary mb-1 mt-3">
                                 <h6 class="text-muted mb-1">Total Tagihan</h6>
-                                <h3 class="text-primary fw-bold mb-0 text-break" id="display-total-tagihan">Rp 0</h3>
+                                <h3 class="text-danger fw-bold mb-0 text-break" id="display-total-tagihan">Rp 0</h3>
                                 <input type="hidden" id="input-total-tagihan" name="total_tagihan" value="0">
+                            </div>
+                            <div class="paid-summary mb-2 mt-1">
+                                <h6 class="text-muted mb-1">Telah Dibayar</h6>
+                                <h3 class="text-success fw-bold mb-0 text-break" id="display-total-dibayar">Rp 0</h3>
+                                <input type="hidden" id="input-total-dibayar" name="total_dibayar" value="0">
                             </div>
 
 
@@ -138,11 +152,12 @@
                             </div>
                             <div class="d-flex flex-column flex-sm-row justify-content-between mb-3">
                                 <span class="fw-bold text-muted" id="label-kembalian">Sisa Tagihan:</span>
-                                <span class="fw-bold text-danger text-break text-sm-end" id="display-kembalian">Rp 0</span>
+                                <span class="fw-bold text-danger text-break text-sm-end" id="display-kembalian">Rp
+                                    0</span>
                             </div>
 
-                            <button type="submit" class="btn btn-success btn-lg w-100 rounded-pill fw-bold" id="btn-submit"
-                                disabled>
+                            <button type="submit" class="btn btn-success btn-lg w-100 rounded-pill fw-bold"
+                                id="btn-submit" disabled>
                                 <i class="iconoir-check-circle"></i> Proses Pembayaran
                             </button>
                         </div>
@@ -209,6 +224,22 @@
                     success: function(response) {
                         let html = '';
                         let totalAll = 0;
+                        if (response.registrasi) {
+                            totalAll += parseFloat(response.registrasi) || 0;
+                            html += `
+                                    <tr>
+                                        <td>
+                                            <!-- Hidden input agar tetap terbaca backend sebagai array -->
+                                            <input type="hidden" name="tagihan_id[]" value="0">
+                                            Registrasi
+                                        </td>
+                                        <td>-</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end text-nowrap">${formatRupiah(response.registrasi)}</td>
+                                        <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(response.registrasi)}</td>
+                                    </tr>
+                                `;
+                        }
 
                         if (response.tagihan && response.tagihan.length > 0) {
                             response.tagihan.forEach(function(item) {
@@ -237,6 +268,12 @@
                             $('#display-total-tagihan').text(formatRupiah(0));
                         }
 
+                        if (response.totalPaid) {
+                            $('#input-total-dibayar').val(response.totalPaid);
+                            $('#display-total-dibayar').text(formatRupiah(response.totalPaid));
+                        }
+
+
                         $('#billing-list').html(html);
                         kalkulasiPembayaran();
                     },
@@ -252,6 +289,7 @@
             // 2. Kalkulasi Multi-Metode Pembayaran Dinamis (Boleh Cicil)
             const kalkulasiPembayaran = () => {
                 let totalTagihan = parseFloat($('#input-total-tagihan').val()) || 0;
+                let totalDibayar = parseFloat($('#input-total-dibayar').val()) || 0;
                 let totalBayar = 0;
 
                 // Hitung total dari baris pembayaran yg sedang aktif
@@ -259,7 +297,7 @@
                     totalBayar += parseFloat($(this).val()) || 0;
                 });
 
-                selisih = totalBayar - totalTagihan;
+                selisih = totalBayar - (totalTagihan - totalDibayar);
 
                 $('#display-total-bayar').text(formatRupiah(totalBayar));
 
@@ -279,7 +317,7 @@
 
                 // Aturan Tombol Submit:
                 // Disable jika tidak ada tagihan, ATAU bayarnya masih Rp 0.
-                if (totalTagihan === 0 || totalBayar === 0) {
+                if (totalTagihan <= 0 || totalBayar === 0 || (totalTagihan - totalDibayar) <= 0) {
                     $('#btn-submit').prop('disabled', true);
                 } else {
                     $('#btn-submit').prop('disabled', false);
