@@ -5,6 +5,7 @@ use App\Http\Controllers\Website\HomeController;
 use App\Http\Controllers\Website\ModuleController;
 use App\Http\Controllers\Website\UserListController;
 use App\Http\Controllers\Website\AuthController;
+use App\Http\Controllers\Website\BillingController;
 use App\Http\Controllers\Website\DiperiksaController;
 use App\Http\Controllers\Website\profileController;
 use App\Http\Controllers\Website\SettingController;
@@ -12,12 +13,15 @@ use App\Http\Controllers\Website\EmployeesController;
 use App\Http\Controllers\Website\MonitorController;
 use App\Http\Controllers\Website\OdontogramController;
 use App\Http\Controllers\Website\PatientController;
+use App\Http\Controllers\Website\PaymentsController;
 use App\Http\Controllers\Website\PemeriksaanController;
 use App\Http\Controllers\Website\PrintController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
 use App\Http\Controllers\Website\TindakanController;
+use App\Http\Controllers\Website\TransactionController;
 use App\Models\RuangPraktek;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 Route::get('login', [AuthController::class, 'index'])->name('login');
@@ -34,6 +38,49 @@ Route::prefix('monitor')->group(function () {
     Route::get('currentAntrian', [MonitorController::class, 'currentAntrian']);
 });
 
+
+Route::get('_ops/config-cache', function () {
+
+    // ✅ cuma boleh kalau APP_DEBUG=true
+    abort_unless(config('app.debug') === true, 404);
+
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    Artisan::call('config:cache');
+
+    return response()->json([
+        'ok' => true,
+        'message' => 'config:cache done',
+        'output' => Artisan::output(),
+    ]);
+});
+
+Route::get('_ops/storage-link', function () {
+    abort_unless(request('key') === env('TOOLS_KEY'), 403);
+
+    $target = storage_path('app/public');
+    $link   = public_path('storage');
+
+    if (file_exists($link)) {
+        return response()->json(['ok' => true, 'message' => 'public/storage already exists']);
+    }
+
+    // beberapa hosting disable symlink()
+    $ok = symlink($target, $link);
+
+    if (!$ok) {
+        return response()->json([
+            'ok' => false,
+            'message' => 'symlink() gagal (mungkin diblok hosting). Buat manual lewat file manager/ssh.',
+            'target' => $target,
+            'link' => $link,
+        ], 500);
+    }
+
+    return response()->json(['ok' => true, 'message' => 'symlink created', 'link' => $link, 'target' => $target]);
+})->middleware('throttle:5,10');
 
 //Group By Auth
 Route::middleware(['auth'])->group(function () {
@@ -134,6 +181,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getDokterList', [TindakanController::class, 'getDokterList']);
     });
 
+    Route::middleware(['checkAccess:MTP'])->prefix('payments')->group(function () {
+        Route::get('/', [PaymentsController::class, 'index']);
+        Route::post('getList', [PaymentsController::class, 'getList']);
+        Route::post('getPaymentsById', [PaymentsController::class, 'getPaymentsById']);
+        Route::post('insertOrUpdatePayments', [PaymentsController::class, 'insertOrUpdatePayments']);
+        Route::post('deletePayment', [PaymentsController::class, 'deletePayment']);
+    });
+
 
 
     Route::middleware(['checkAccess:PA'])->prefix('patient')->group(function () {
@@ -186,10 +241,33 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getList', [DiperiksaController::class, 'getList']);
     });
 
+    Route::middleware(['checkAccess:DPS'])->prefix('sudah-diperiksa')->group(function () {
+        Route::get('/', [DiperiksaController::class, 'index']);
+        Route::post('getList', [DiperiksaController::class, 'getList']);
+    });
+
     Route::middleware(['checkAccess:DPA'])->prefix('antrian')->group(function () {
         Route::get('/', [AntrianController::class, 'index']);
     });
-});
+
+    Route::middleware(['checkAccess:TR'])->prefix('transaction')->group(function () {
+        Route::get('/', [TransactionController::class, 'index']);
+        Route::post('getList', [TransactionController::class, 'getList']);
+        Route::post('getOmset', [TransactionController::class, 'getOmset']);
+        Route::post('addTransaction', [TransactionController::class, 'addTransaction']);
+        Route::post('submitTransaction', [TransactionController::class, 'submitTransaction']);
+        Route::get('print/{no_transaction}/{mode}', [TransactionController::class, 'printInvoice']);
+    });
+
+
+    Route::middleware(['checkAccess:BL'])->prefix('billing')->group(function () {
+        Route::get('/', [BillingController::class, 'index']);
+        Route::post('getList', [BillingController::class, 'getList']);
+        Route::get('detail/{id}', [BillingController::class, 'billingDetail']);
+        Route::post('getTagihanList', [BillingController::class, 'getTagihanList']);
+        Route::post('process-paid', [BillingController::class, 'processPaid']);
+    });
+})->middleware('throttle:10,1');
 
 Route::prefix('print')->group(function () {
     Route::middleware(['checkAccess:PA'])->get('print-antrian/{id}', [PrintController::class, 'antrianPasien']);

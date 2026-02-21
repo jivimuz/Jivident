@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class PemeriksaanController extends Controller
 {
@@ -51,8 +52,10 @@ class PemeriksaanController extends Controller
             ->leftJoin('m_pekerjaan', 'm_pekerjaan.id', '=', 'm_pasien.pekerjaanfk')
             ->leftJoin('m_ruangpraktek', 'm_ruangpraktek.id', '=', 't_daftarpasien.ruanganfk')
             ->where('t_daftarpasien.id', base64_decode(base64_decode($id)))->first();
-
-        return view('pages/pemeriksaan/index', compact('data', 'id'));
+        if ($data) {
+            return view('pages/pemeriksaan/index', compact('data', 'id'));
+        }
+        return redirect()->back();
     }
 
     public function vitalsign($id)
@@ -288,8 +291,9 @@ class PemeriksaanController extends Controller
                         'fk_userhandler'  => Auth::user()->id ?? null,
                         'tindakan'        => $i['tindakan_name'] ?? null,
                         'dokter'          => $i['dokter_text'] ?? null,
-                        'amount'          => $i['tindakan_amount'] ?? null,
-                        'qty'             => $i['qty'] ?? null,
+                        'price'          => $i['tindakan_amount'] ?? 0,
+                        'amount'          => ($i['tindakan_amount'] ?? 0) * ($i['qty'] ?? 1),
+                        'qty'             => $i['qty'] ?? 1,
                     ]
                 );
             }
@@ -309,13 +313,13 @@ class PemeriksaanController extends Controller
     }
 
 
-    public function updateStatus($id)
+    public function updateStatus(Request $request, $id)
     {
-        $daftarpasienId = base64_decode(base64_decode($id));
+        $daftarPasienID = base64_decode(base64_decode($id));
 
         try {
             // Cari data pasien
-            $pasien = DaftarPasien::find($daftarpasienId);
+            $pasien = DaftarPasien::find($daftarPasienID);
 
             if (!$pasien) {
                 return response()->json([
@@ -323,9 +327,40 @@ class PemeriksaanController extends Controller
                 ], 400);
             }
 
-            // Update status
-            $pasien->status = 'Di Periksa';
-            $pasien->tgldiperiksa = Carbon::now();
+            if ((int)$request->f == 1) {
+                $pasien->status = 'Payment';
+                $daftarPasienID = ($daftarPasienID === '' || $daftarPasienID === 0) ? null : $daftarPasienID;
+
+                $totalPaid = (float) DB::table('t_transactions')
+                    ->where('daftarpasien_id', $daftarPasienID)
+                    ->selectRaw("COALESCE(SUM(CASE
+                        WHEN transaction_type='in' THEN amount
+                        WHEN transaction_type='out' THEN -amount
+                        ELSE 0 END),0) as total_paid")
+                    ->value('total_paid');
+
+                $tagihanTindakan = (float) DB::table('t_tindakanpasien')
+                    ->where('fk_daftarpasien', $daftarPasienID)
+                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
+                    ->value('total_amount');;
+
+                $price = (float)($tagihanTindakan ?? 0);
+
+                $newStatus = $this->resolvePaymentStatus($totalPaid, $price,  $pasien->statuspembayaran);
+
+                // Update status kalau berubah
+                if (($pasien->statuspembayaran ?? null) !== $newStatus) {
+
+                    $pasien->statuspembayaran = $newStatus;
+                }
+                if ($newStatus == 'Verifikasi' || $newStatus == 'Lunas') {
+                    $pasien->status = 'Selesai';
+                }
+            } else {
+                $pasien->status = 'Di Periksa';
+                $pasien->tgldiperiksa = Carbon::now();
+            }
+
             $pasien->save();
 
             return response()->json([
@@ -339,9 +374,31 @@ class PemeriksaanController extends Controller
         }
     }
 
+
     public function resepElektronik($id)
     {
         $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
         return view('pages/pemeriksaan/content/resepElektronik', compact('id', 'status'));
+    }
+
+
+    protected function resolvePaymentStatus(float $totalPaid, float $price, $statbefore = null): string
+    {
+        if ($price <= 0) {
+            return 'Belum Verifikasi';
+        }
+
+        if ($totalPaid <= 0) {
+            return 'Belum Verifikasi';
+        }
+
+        // Toleransi kecil buat decimal rounding
+        if ($totalPaid + 0.000001 < $price) {
+            return 'Verifikasi Sebagian';
+        }
+        if ($statbefore == 'Lunas') {
+            return 'Lunas';
+        }
+        return 'Verifikasi';
     }
 }

@@ -12,8 +12,9 @@ class OdontogramController extends Controller
 {
     public function index($id)
     {
+        $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
         $odontogram = Odontogram::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
-        return view('pages/pemeriksaan/content/odontogram', compact('odontogram', 'id'));
+        return view('pages/pemeriksaan/content/odontogram', compact('odontogram', 'id', 'status'));
     }
 
     public function field(Request $request, $id)

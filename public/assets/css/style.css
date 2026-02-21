@@ -17582,7 +17582,6 @@ nav .app-nav .main-nav > li:not(.menu-title) > a {
   font-size: 16px;
   align-items: center;
   text-transform: capitalize;
-  border-radius: 1rem;
 }
 nav .app-nav .main-nav > li:not(.menu-title) > a[aria-expanded=true] {
   background: rgba(var(--primary), 0.3);

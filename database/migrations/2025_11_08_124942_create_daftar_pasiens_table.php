@@ -24,7 +24,7 @@ return new class extends Migration
             $table->dateTime('tglregistrasi');
             $table->dateTime('tglpulang')->nullable();
             $table->enum('statuspasien', ['LAMA', 'BARU'])->default('BARU');
-            $table->enum('status', ['Dalam Antrian', 'Di Periksa',  'Farmasi', 'Selesai'])->default('Dalam Antrian');
+            $table->enum('status', ['Dalam Antrian', 'Di Periksa',  'Farmasi', 'Payment', 'Selesai'])->default('Dalam Antrian');
             $table->dateTime('tgldiperiksa')->nullable();
             $table->string('keluhan', 255)->nullable();
             $table->string('noantrian', 10);

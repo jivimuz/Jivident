@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('tindakan');
             $table->string('dokter');
             $table->decimal('qty', 20, 0);
+            $table->double('price')->default(0);
             $table->double('amount')->default(0);
 
             $table->timestamps();

@@ -1,7 +1,8 @@
 <div class="form-group border-b">
     <label for="typeodontogram" class="form-label"><strong>Tipe Odontogram</strong></label>
     <div class="input-group">
-        <select class="form-control" id="typeodontogram" name="typeodontogram" onchange="changeOdonto()">
+        <select class="form-control" id="typeodontogram" name="typeodontogram" onchange="changeOdonto()"
+            {{ $status->status != 'Di Periksa' ? 'readonly disabled' : '' }}>
             <option value="-" {{ !$odontogram || $odontogram->typeodontogram == '-' ? 'selected' : '' }}>
                 Pilih salah satu
             </option>
@@ -29,7 +30,10 @@
     $(document).ready(function() {
         changeOdonto()
     })
-    $('#typeodontogram').select2()
+
+    if ("{{ $status->status }}" == "Di Periksa") {
+        $('#typeodontogram').select2()
+    }
 
     function changeOdonto() {
         const odontotype = $('#typeodontogram').val();

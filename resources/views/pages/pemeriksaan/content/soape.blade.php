@@ -5,38 +5,33 @@
 
           <h1 class="col-md-1">S</h1>
           <div class="col-md-11">
-              <textarea {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }} maxlength="255"
-                  class="form-control" name="s" id="s" rows="3" placeholder="Subjective"
-                  style="background-color: #f0f0f0;">{{ $soap ? $soap->s : $data->keluhan }}</textarea> <br>
+              <textarea {{ $status->status == 'Di Periksa' ? '' : 'disabled' }} maxlength="255" class="form-control" name="s"
+                  id="s" rows="3" placeholder="Subjective" style="background-color: #f0f0f0;">{{ $soap ? $soap->s : $data->keluhan }}</textarea> <br>
           </div>
 
           <h1 class="col-md-1">O</h1>
           <div class="col-md-11">
-              <textarea {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }} maxlength="255"
-                  class="form-control" name="o" id="o" rows="3" placeholder="Objective"
-                  style="background-color: #f0f0f0;">{{ $soap ? $soap->o : $objective }}</textarea> <br>
+              <textarea {{ $status->status == 'Di Periksa' ? '' : 'disabled' }} maxlength="255" class="form-control" name="o"
+                  id="o" rows="3" placeholder="Objective" style="background-color: #f0f0f0;">{{ $soap ? $soap->o : $objective }}</textarea> <br>
           </div>
 
           <h1 class="col-md-1">A</h1>
           <div class="col-md-11">
-              <textarea {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }} maxlength="255"
-                  class="form-control" name="a" id="a" rows="3" placeholder="Assesment"
-                  style="background-color: #f0f0f0;">{{ $soap ? $soap->a : '' }}</textarea> <br>
+              <textarea {{ $status->status == 'Di Periksa' ? '' : 'disabled' }} maxlength="255" class="form-control" name="a"
+                  id="a" rows="3" placeholder="Assesment" style="background-color: #f0f0f0;">{{ $soap ? $soap->a : '' }}</textarea> <br>
           </div>
 
           <h1 class="col-md-1">P</h1>
           <div class="col-md-11">
-              <textarea {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }} maxlength="255"
-                  class="form-control" name="p" id="p" rows="3" placeholder="Plan"
-                  style="background-color: #f0f0f0;">{{ $soap ? $soap->p : '' }}</textarea> <br>
+              <textarea {{ $status->status == 'Di Periksa' ? '' : 'disabled' }} maxlength="255" class="form-control" name="p"
+                  id="p" rows="3" placeholder="Plan" style="background-color: #f0f0f0;">{{ $soap ? $soap->p : '' }}</textarea> <br>
           </div>
 
 
           <h1 class="col-md-1">E</h1>
           <div class="col-md-11">
-              <textarea {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }} maxlength="255"
-                  class="form-control" name="e" id="e" rows="3" placeholder="Evaluation"
-                  style="background-color: #f0f0f0;">{{ $soap ? $soap->e : '' }}</textarea> <br>
+              <textarea {{ $status->status == 'Di Periksa' ? '' : 'disabled' }} maxlength="255" class="form-control" name="e"
+                  id="e" rows="3" placeholder="Evaluation" style="background-color: #f0f0f0;">{{ $soap ? $soap->e : '' }}</textarea> <br>
           </div>
 
           <h1 class="col-md-1"></h1>
@@ -47,8 +42,7 @@
                       <ul class="list-group d-flex flex-column ">
                           <li class="checkbox-wrapper">
                               <label class="check-box">
-                                  <input type="checkbox"
-                                      {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }}
+                                  <input type="checkbox" {{ $status->status == 'Di Periksa' ? '' : 'disabled' }}
                                       name="diabet" id="diabet"
                                       {{ $data->is_diabet != 0 || null ? 'checked' : '' }} />
                                   <span class="checkmark outline-primary-dark"></span>
@@ -57,8 +51,7 @@
                           </li>
                           <li class="checkbox-wrapper ">
                               <label class="check-box">
-                                  <input type="checkbox"
-                                      {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }}
+                                  <input type="checkbox" {{ $status->status == 'Di Periksa' ? '' : 'disabled' }}
                                       name="diare" id="diare"
                                       {{ $data->is_diare != 0 || null ? 'checked' : '' }} />
                                   <span class="checkmark outline-secondary-dark"></span>
@@ -71,8 +64,7 @@
                       <ul class="list-group d-flex flex-column ">
                           <li class="checkbox-wrapper ">
                               <label class="check-box">
-                                  <input type="checkbox"
-                                      {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }}
+                                  <input type="checkbox" {{ $status->status == 'Di Periksa' ? '' : 'disabled' }}
                                       name="hipertensi" id="hipertensi"
                                       {{ $data->is_hipertensi != 0 || null ? 'checked' : '' }} />
                                   <span class="checkmark outline-success-dark"></span>
@@ -81,8 +73,7 @@
                           </li>
                           <li class="checkbox-wrapper ">
                               <label class="check-box">
-                                  <input type="checkbox"
-                                      {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }}
+                                  <input type="checkbox" {{ $status->status == 'Di Periksa' ? '' : 'disabled' }}
                                       name="pnemonea" id="pnemonea"
                                       {{ $data->is_pnemonea != 0 || null ? 'checked' : '' }} />
                                   <span class="checkmark outline-danger-dark"></span>
@@ -95,8 +86,7 @@
                       <ul class="list-group d-flex flex-column ">
                           <li class="checkbox-wrapper ">
                               <label class="check-box">
-                                  <input type="checkbox"
-                                      {{ $status->status != 'Dalam Antrian' && $status->status != 'Selesai' ? '' : 'disabled' }}
+                                  <input type="checkbox" {{ $status->status == 'Di Periksa' ? '' : 'disabled' }}
                                       name="tbc" id="tbc"
                                       {{ $data->is_tbc != 0 || null ? 'checked' : '' }} />
                                   <span class="checkmark outline-warning-dark"></span>
@@ -109,7 +99,7 @@
           </div>
 
 
-          @if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+          @if ($status->status == 'Di Periksa')
               <div class="col-md-12">
                   <br>
                   <div class="float-end">
@@ -124,7 +114,7 @@
           @endif
       </div>
   </form>
-  @if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+  @if ($status->status == 'Di Periksa')
       <script>
           $(function() {
               $('#soap-form').on('submit', function(e) {

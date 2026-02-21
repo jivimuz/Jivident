@@ -115,7 +115,7 @@
     window._jivident.isFinished = false;
 </script>
 
-@if ($status->status == 'Selesai')
+@if ($status->status != 'Di Periksa')
     <script>
         // Kunci semua interaksi 3D
         window._jivident.isFinished = true;

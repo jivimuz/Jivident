@@ -7,15 +7,15 @@ const Toast = Swal.mixin({
     didOpen: (toast) => {
         toast.onmouseenter = Swal.stopTimer;
         toast.onmouseleave = Swal.resumeTimer;
-    }
+    },
 });
 
 function showModal(targetId) {
-    $('#' + targetId).modal('show')
+    $("#" + targetId).modal("show");
 }
 
 function closeModal(targetId) {
-    $('#' + targetId).modal('hide')
+    $("#" + targetId).modal("hide");
 }
 
 function HoldCloseModal(targetId) {
@@ -26,53 +26,60 @@ function HoldCloseModal(targetId) {
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, Close it!"
-      }).then((result) => {
+        confirmButtonText: "Yes, Close it!",
+    }).then((result) => {
         if (result.isConfirmed) {
-            $('#' + targetId).modal('hide')
+            $("#" + targetId).modal("hide");
         }
-       });
+    });
 }
 
-
 function checkboxVal(fromId, targetId) {
-    if ($('#' + fromId).prop('checked') == true) {
-        $('#' + targetId).val('1')
+    if ($("#" + fromId).prop("checked") == true) {
+        $("#" + targetId).val("1");
     } else {
-        $('#' + targetId).val('0')
+        $("#" + targetId).val("0");
     }
 }
 
 function noMinus(val) {
     var currentValue = val.value.trim();
-    if (currentValue.startsWith('0') && currentValue.length > 1 && currentValue[1] !== '.') {
+    if (
+        currentValue.startsWith("0") &&
+        currentValue.length > 1 &&
+        currentValue[1] !== "."
+    ) {
         currentValue = currentValue.slice(1);
     }
     if (parseFloat(currentValue) < 0 || isNaN(parseFloat(currentValue))) {
-        currentValue = '0';
+        currentValue = "0";
     }
-    $('#' + val.id).val(currentValue);
+    $("#" + val.id).val(currentValue);
 
     return currentValue;
 }
 
 function maxValue(val, max) {
     var currentValue = val.value.trim();
-    if (currentValue.startsWith('0') && currentValue.length > 1 && currentValue[1] !== '.') {
+    if (
+        currentValue.startsWith("0") &&
+        currentValue.length > 1 &&
+        currentValue[1] !== "."
+    ) {
         currentValue = currentValue.slice(1);
     }
     var parsedValue = parseFloat(currentValue);
     if (parsedValue > max || isNaN(parsedValue)) {
         currentValue = max.toString();
     }
-    $('#' + val.id).val(currentValue);
+    $("#" + val.id).val(currentValue);
 
     return currentValue;
 }
 
 function timeDiff(tanggalAwal, tanggalAkhir = false) {
     const waktuAwal = new Date(tanggalAwal);
-    const waktuAkhir = tanggalAkhir ? new Date(tanggalAkhir) :new Date();
+    const waktuAkhir = tanggalAkhir ? new Date(tanggalAkhir) : new Date();
     const selisih = Math.abs(waktuAkhir - waktuAwal);
 
     const detik = Math.floor(selisih / 1000);
@@ -82,68 +89,134 @@ function timeDiff(tanggalAwal, tanggalAkhir = false) {
     const bulan = Math.floor(hari / 30);
     const tahun = Math.floor(bulan / 12);
 
-    let hasil = '';
-    if (tahun > 0) hasil += tahun + (tahun == 1 ? ' Year ' : ' Years ');
-    if (bulan > 0) hasil += bulan + (bulan == 1 ? ' Month ' : ' Months ');
-    if (hari > 0) hasil += hari % 30 + ((hari % 30) == 1 ? ' Day ' : ' Days ');
-    if (jam > 0) hasil += jam % 24 + ((jam % 24) == 1 ? ' Hour ' : ' Hours ');
-    if (menit > 0) hasil += menit % 60 + ' Min ';
-    hasil += detik % 60 + ' Sec';
+    let hasil = "";
+    if (tahun > 0) hasil += tahun + (tahun == 1 ? " Year " : " Years ");
+    if (bulan > 0) hasil += bulan + (bulan == 1 ? " Month " : " Months ");
+    if (hari > 0) hasil += (hari % 30) + (hari % 30 == 1 ? " Day " : " Days ");
+    if (jam > 0) hasil += (jam % 24) + (jam % 24 == 1 ? " Hour " : " Hours ");
+    if (menit > 0) hasil += (menit % 60) + " Min ";
+    hasil += (detik % 60) + " Sec";
 
     return hasil;
 }
 
-function timeDiffPause(tanggalAwal, tanggalAkhir =  new Date(), totalPauseTime = []) {
-        const waktuAwal = new Date(tanggalAwal);
-        const waktuAkhir =new Date(tanggalAkhir) ;
-        let selisih = Math.abs(waktuAkhir - waktuAwal);
+function timeDiffPause(
+    tanggalAwal,
+    tanggalAkhir = new Date(),
+    totalPauseTime = [],
+) {
+    const waktuAwal = new Date(tanggalAwal);
+    const waktuAkhir = new Date(tanggalAkhir);
+    let selisih = Math.abs(waktuAkhir - waktuAwal);
 
-        if (totalPauseTime.length > 0) {
-            let totalPauseDetik = 0;
-            for (let i = 0; i < totalPauseTime.length; i++) {
-                const startPause = new Date(totalPauseTime[i][0]);
-                const endPause = new Date(totalPauseTime[i][1]);
-                totalPauseDetik += Math.abs(endPause - startPause) / 1000;
-            }
-            selisih -= totalPauseDetik * 1000;
+    if (totalPauseTime.length > 0) {
+        let totalPauseDetik = 0;
+        for (let i = 0; i < totalPauseTime.length; i++) {
+            const startPause = new Date(totalPauseTime[i][0]);
+            const endPause = new Date(totalPauseTime[i][1]);
+            totalPauseDetik += Math.abs(endPause - startPause) / 1000;
         }
+        selisih -= totalPauseDetik * 1000;
+    }
 
+    const detik = Math.floor(selisih / 1000);
+    const menit = Math.floor(detik / 60);
+    const jam = Math.floor(menit / 60);
+    const hari = Math.floor(jam / 24);
+    const bulan = Math.floor(hari / 30);
+    const tahun = Math.floor(bulan / 12);
 
-        const detik = Math.floor(selisih / 1000);
-        const menit = Math.floor(detik / 60);
-        const jam = Math.floor(menit / 60);
-        const hari = Math.floor(jam / 24);
-        const bulan = Math.floor(hari / 30);
-        const tahun = Math.floor(bulan / 12);
+    let hasil = "";
+    if (tahun > 0) hasil += tahun + (tahun == 1 ? " Year " : " Years ");
+    if (bulan > 0) hasil += bulan + (bulan == 1 ? " Month " : " Months ");
+    if (hari > 0) hasil += (hari % 30) + (hari % 30 == 1 ? " Day " : " Days ");
+    if (jam > 0) hasil += (jam % 24) + (jam % 24 == 1 ? " Hour " : " Hours ");
+    if (menit > 0) hasil += (menit % 60) + " Min ";
+    hasil += (detik % 60) + " Sec";
 
-        let hasil = '';
-        if (tahun > 0) hasil += tahun + (tahun == 1 ? ' Year ' : ' Years ');
-        if (bulan > 0) hasil += bulan + (bulan == 1 ? ' Month ' : ' Months ');
-        if (hari > 0) hasil += hari % 30 + ((hari % 30) == 1 ? ' Day ' : ' Days ');
-        if (jam > 0) hasil += jam % 24 + ((jam % 24) == 1 ? ' Hour ' : ' Hours ');
-        if (menit > 0) hasil += menit % 60 + ' Min ';
-        hasil += detik % 60 + ' Sec';
-
-        return hasil;
+    return hasil;
 }
 
 function openPopup(url) {
-    var windowName = 'popupWindow';
-    var windowFeatures = 'width=800,height=600,toolbar=no,location=no,menubar=no,scrollbars=yes,resizable=yes';
+    var windowName = "popupWindow";
+    var windowFeatures =
+        "width=800,height=600,toolbar=no,location=no,menubar=no,scrollbars=yes,resizable=yes";
 
     var popupWindow = window.open(url, windowName, windowFeatures);
     // popupWindow.focus();
 }
 function countAge(tanggalLahir) {
-  const today = new Date();
-  const birthDate = new Date(tanggalLahir);
-  let umur = today.getFullYear() - birthDate.getFullYear();
-  const bulan = today.getMonth() - birthDate.getMonth();
+    const today = new Date();
+    const birthDate = new Date(tanggalLahir);
+    let umur = today.getFullYear() - birthDate.getFullYear();
+    const bulan = today.getMonth() - birthDate.getMonth();
 
-  // kalau belum lewat ulang tahun di tahun ini, umur dikurangi 1
-  if (bulan < 0 || (bulan === 0 && today.getDate() < birthDate.getDate())) {
-    umur--;
-  }
+    // kalau belum lewat ulang tahun di tahun ini, umur dikurangi 1
+    if (bulan < 0 || (bulan === 0 && today.getDate() < birthDate.getDate())) {
+        umur--;
+    }
 
-  return umur;
+    return umur;
+}
+
+function convertMonthYear(monthYear) {
+    if (!monthYear) return "-";
+
+    const months = [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
+    ];
+
+    // Pecah "2025-01" jadi ["2025","01"]
+    const [year, month] = monthYear.split("-");
+    const monthName = months[parseInt(month, 10) - 1];
+
+    return `${monthName} ${year}`;
+}
+
+function limitText(str, max = 30) {
+    str = (str ?? "").toString().trim();
+    return str.length > max ? str.slice(0, max) + "..." : str;
+}
+function normalizeWA(phone) {
+    if (!phone) return "";
+    let p = phone.toString().trim();
+
+    // buang spasi, strip, dll
+    p = p.replace(/[^\d+]/g, "");
+
+    // kalau diawali 0 -> jadikan 62
+    if (p.startsWith("0")) p = "62" + p.slice(1);
+
+    // kalau diawali + -> hapus plus (format wa.me pake tanpa +)
+    if (p.startsWith("+")) p = p.slice(1);
+
+    // kalau user udah nulis 62xxxx ya keep
+    return p;
+}
+
+function phoneInput(e) {
+    let v = e.target.value;
+
+    // only digits and +
+    v = v.replace(/[^\d+]/g, "");
+
+    // keep only ONE + and only at start
+    if (v[0] === "+") v = "+" + v.slice(1).replace(/\+/g, "");
+    else v = v.replace(/\+/g, "");
+
+    // max length 15
+    v = v.slice(0, 15);
+
+    e.target.value = v;
 }

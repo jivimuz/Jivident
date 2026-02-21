@@ -27,8 +27,9 @@ $currentRouteName = Request::getPathInfo();
 
 <nav>
     <div class="app-logo border-b">
-        <a class="logo d-inline-block" href="/">
-            <img alt="#" src="{{ $logo }}">
+        <a class="logo d-inline-block" href="/"
+            style="text-align: center;align-content: center;align-items: center; width: 100%">
+            <img alt="#" class="mx-auto" style="align-self: center;" src="{{ $logo }}">
         </a>
 
         <span class="bg-light-primary toggle-semi-nav">

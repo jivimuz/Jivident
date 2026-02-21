@@ -32,7 +32,7 @@
 
         </div>
         <div class="col-md-4">
-            @if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+            @if ($status->status == 'Di Periksa')
                 <br>
                 <br>
                 <div class="text-center d-flex align-items-center">
@@ -2356,7 +2356,7 @@
                 </div> --}}
     </div>
 </form>
-@if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+@if ($status->status == 'Di Periksa')
     <div class="modal fade" role="dialog" tabindex="-1" id="m-gigi-selected">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -2467,7 +2467,7 @@
 @endif
 </section>
 <!-- /.content -->
-@if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+@if ($status->status == 'Di Periksa')
     <script>
         $('#save-data').on('click', function() {
             $.ajax({

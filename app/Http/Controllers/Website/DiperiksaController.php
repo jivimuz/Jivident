@@ -25,6 +25,7 @@ class DiperiksaController extends Controller
         $searchValue = $request->post('pasienSearch');
         $ruanganfk = $request->input('ruanganfk');
         $tgldiperiksa = $request->input('tgldiperiksa');
+        $status = $request->input('status');
 
         $orderColumnIndex = $request->input('order.0.column', 0);
         $orderDirection = $request->input('order.0.dir', 'desc');
@@ -82,6 +83,13 @@ class DiperiksaController extends Controller
             });
         }
         $query->where('t_daftarpasien.status', '!=', 'Dalam Antrian');
+        if ($status && $status != 'All') {
+            if ($status == "Not Yet") {
+                $query->where('t_daftarpasien.status', '!=', 'Selesai');
+            } else {
+                $query->where('t_daftarpasien.status', $status);
+            }
+        }
 
         // Total record sebelum filter
         $totalData = DaftarPasien::count();

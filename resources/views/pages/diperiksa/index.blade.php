@@ -37,6 +37,17 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
+                                <label for="status" class="form-label"><strong>Status Pembayaran</strong></label>
+                                <select name="status" id="status" class="form-select">
+                                    <option value="Not Yet" selected>Semua (Yang Belum)</option>
+                                    <option value="All">Semua</option>
+                                    <option value="Di Periksa">Di Periksa</option>
+                                    <option value="Farmasi">Farmasi</option>
+                                    <option value="Payment">Payment</option>
+                                    <option value="Selesai">Lunas</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
                                 <label for="ruanganfk" class="form-label"><strong>Ruang Praktek </strong></label>
                                 <select name="ruanganfk" id="ruanganfk" class="form-select">
                                     <option value="" selected>Semua</option>
@@ -222,6 +233,7 @@
                         pasienSearch: $('#global-search').val(),
                         ruanganfk: $('#ruanganfk').val(),
                         tgldiperiksa: $('#tgldiperiksa').val(),
+                        status: $('#status').val(),
                     }
 
                 },

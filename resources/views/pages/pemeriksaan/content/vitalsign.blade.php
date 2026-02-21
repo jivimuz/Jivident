@@ -5,25 +5,29 @@
         <div class="col-lg-3">
             <label class="form-label">Tekanan Darah Siastole</label>
             <input type="text" name="siastole" class="form-control" placeholder="Siastole" maxlength="10"
-                value="{{ $vital_sign->siastole ?? '' }}" required>
+                value="{{ $vital_sign->siastole ?? '' }}" required
+                {{ $status->status != 'Di Periksa' ? 'readonly' : '' }}>
         </div>
 
         <div class="col-lg-3">
             <label class="form-label">Tekanan Darah Diastole</label>
             <input type="text" name="diastole" class="form-control" placeholder="Diastole"maxlength="10"
-                value="{{ $vital_sign->diastole ?? '' }}" required>
+                value="{{ $vital_sign->diastole ?? '' }}" required
+                {{ $status->status != 'Di Periksa' ? 'readonly' : '' }}>
         </div>
 
         <div class="col-lg-3">
             <label class="form-label">Tinggi Badan</label>
             <input type="text" name="tinggibadan" class="form-control" placeholder="Tinggi Badan"maxlength="10"
-                value="{{ $vital_sign->tinggibadan ?? '' }}" required>
+                value="{{ $vital_sign->tinggibadan ?? '' }}" required
+                {{ $status->status != 'Di Periksa' ? 'readonly' : '' }}>
         </div>
 
         <div class="col-lg-3">
             <label class="form-label">Berat Badan</label>
             <input type="text" name="beratbadan" class="form-control" placeholder="Berat Badan"maxlength="10"
-                value="{{ $vital_sign->beratbadan ?? '' }}" required>
+                value="{{ $vital_sign->beratbadan ?? '' }}" required
+                {{ $status->status != 'Di Periksa' ? 'readonly' : '' }}>
         </div>
     </div>
 
@@ -31,28 +35,32 @@
         <div class="col-lg-3">
             <label class="form-label">Suhu</label>
             <input type="text" name="suhu" class="form-control" placeholder="Suhu"maxlength="10"
-                value="{{ $vital_sign->suhu ?? '37' }}" required>
+                value="{{ $vital_sign->suhu ?? '37' }}" required
+                {{ $status->status != 'Di Periksa' ? 'readonly' : '' }}>
         </div>
 
         <div class="col-lg-3">
             <label class="form-label">Nadi</label>
             <input type="text" name="nadi" class="form-control" placeholder="Nadi"maxlength="10"
-                value="{{ $vital_sign->nadi ?? '' }}" required>
+                value="{{ $vital_sign->nadi ?? '' }}" required
+                {{ $status->status != 'Di Periksa' ? 'readonly' : '' }}>
         </div>
 
         <div class="col-lg-3">
             <label class="form-label">Pernapasan</label>
             <input type="text" name="pernapasan" class="form-control" placeholder="Pernapasan"maxlength="10"
-                value="{{ $vital_sign->pernapasan ?? '' }}" required>
+                value="{{ $vital_sign->pernapasan ?? '' }}" required
+                {{ $status->status != 'Di Periksa' ? 'readonly' : '' }}>
         </div>
 
         <div class="col-lg-3">
             <label class="form-label">Lingkar Perut</label>
             <input type="text" name="lingkarperut" class="form-control" placeholder="Lingkar Perut"maxlength="10"
-                value="{{ $vital_sign->lingkarperut ?? '' }}" required>
+                value="{{ $vital_sign->lingkarperut ?? '' }}" required
+                {{ $status->status != 'Di Periksa' ? 'readonly' : '' }}>
         </div>
     </div>
-    @if ($status->status != 'Dalam Antrian' && $status->status != 'Selesai')
+    @if ($status->status == 'Di Periksa')
         <div class="d-flex justify-content-end mt-2">
             <button type="submit" class="btn btn-primary rounded-pill">
                 <i class="fa fa-save"></i>
