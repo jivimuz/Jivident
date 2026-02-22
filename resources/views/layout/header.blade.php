@@ -2,7 +2,7 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <meta content="IE=edge" http-equiv="X-UA-Compatible">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <meta content="la-themes" name="author">
     <link href="{{ url('') }}/assets/favicon.ico" rel="icon" type="image/x-icon">

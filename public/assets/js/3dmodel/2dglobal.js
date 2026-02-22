@@ -95,12 +95,12 @@ function load2DGlobal(curData = []) {
                     $("#text-" + idGigi).html("");
 
                     selectedData = selectedData.filter(
-                        (item) => item.idGigi !== idGigi
+                        (item) => item.idGigi !== idGigi,
                     );
                 } else {
                     // Hapus dulu data lama dengan idGigi sama
                     selectedData = selectedData.filter(
-                        (item) => item.bagian !== bagian
+                        (item) => item.bagian !== bagian,
                     );
 
                     selectedData.push({
@@ -149,7 +149,7 @@ function load2DGlobal(curData = []) {
                     "background-color",
                     obj.config[i].color === "white"
                         ? "#f8f9fa"
-                        : obj.config[i].color
+                        : obj.config[i].color,
                 );
             } else {
                 $("<span>", {
@@ -162,26 +162,6 @@ function load2DGlobal(curData = []) {
 
             btn.appendTo(kol);
         }
-    }
-
-    function resetAllGigi() {
-        // Hapus semua data terpilih
-        selectedData = [];
-
-        // Reset warna tiap bagian gigi
-        $(".gigi").each(function () {
-            $(this).attr({ fill: "white" });
-        });
-
-        // Kosongkan semua input hidden terkait gigi
-        $("input[id^='gigi-']").each(function () {
-            $(this).val(0);
-        });
-
-        // Hapus semua simbol teks (UE, PE, A, dsb)
-        $("[id^='text-']").each(function () {
-            $(this).html("");
-        });
     }
 
     function loadGigiFromData(savedData) {
@@ -222,4 +202,24 @@ function load2DGlobal(curData = []) {
             });
         });
     }
+}
+
+function resetAllGigi() {
+    // Hapus semua data terpilih
+    selectedData = [];
+
+    // Reset warna tiap bagian gigi
+    $(".gigi").each(function () {
+        $(this).attr({ fill: "white" });
+    });
+
+    // Kosongkan semua input hidden terkait gigi
+    $("input[id^='gigi-']").each(function () {
+        $(this).val(0);
+    });
+
+    // Hapus semua simbol teks (UE, PE, A, dsb)
+    $("[id^='text-']").each(function () {
+        $(this).html("");
+    });
 }

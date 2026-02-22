@@ -54,7 +54,7 @@ $currentRouteName = Request::getPathInfo();
                     <ul class="collapse" id="group-{{ $b['group_id'] }}">
                         @foreach ($b['child'] as $c)
                             <li><a href="{{ $c['route'] }}"
-                                    class="{{ $c['route'] == $currentRouteName && 'active' }}">{{ $c['name'] }}</a>
+                                    class="{{ $c['route'] == $currentRouteName && 'active' }} hover-border-b">{{ $c['name'] }}</a>
                             </li>
                         @endForeach
                     </ul>

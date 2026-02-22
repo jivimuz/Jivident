@@ -10,6 +10,7 @@ use App\Http\Controllers\Website\DiperiksaController;
 use App\Http\Controllers\Website\profileController;
 use App\Http\Controllers\Website\SettingController;
 use App\Http\Controllers\Website\EmployeesController;
+use App\Http\Controllers\Website\ICDController;
 use App\Http\Controllers\Website\MonitorController;
 use App\Http\Controllers\Website\OdontogramController;
 use App\Http\Controllers\Website\PatientController;
@@ -27,6 +28,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('login', [AuthController::class, 'index'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('auth-license', [AuthController::class, 'authLicense']);
+Route::get('license', [AuthController::class, 'license'])->name('license');
+Route::post('license/validate', [AuthController::class, 'validateLicense'])->name('license.validate');
 // Route::get('error', [AuthController::class, 'error'])->name('error');
 
 Route::get('/test', function () {
@@ -226,6 +230,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('tindakan', [PemeriksaanController::class, 'tindakan']);
             Route::post('tindakan/save', [PemeriksaanController::class, 'saveTindakan']);
 
+            Route::post('diagnosa', [PemeriksaanController::class, 'diagnosa']);
+            Route::post('diagnosa/save', [PemeriksaanController::class, 'saveDiagnosa']);
+
             Route::post('resepelektronik', [PemeriksaanController::class, 'resepElektronik']);
 
             Route::prefix('odontogram')->group(function () {
@@ -267,6 +274,33 @@ Route::middleware(['auth'])->group(function () {
         Route::get('detail/{id}', [BillingController::class, 'billingDetail']);
         Route::post('getTagihanList', [BillingController::class, 'getTagihanList']);
         Route::post('process-paid', [BillingController::class, 'processPaid']);
+    });
+
+    Route::middleware(['checkAccess:ICD'])->prefix('icd')->group(function () {
+        Route::get('/', [ICDController::class, 'index']);
+
+        // Data tables
+        Route::get('dataICDIX', [ICDController::class, 'dataICDIX'])->name('icd.data.ix');
+        Route::get('dataICDX', [ICDController::class, 'dataICDX'])->name('icd.data.x');
+
+        // Modal GET
+        Route::get('addICDIX', [ICDController::class, 'addICDIX'])->name('icd.add.ix');
+        Route::get('addICDX', [ICDController::class, 'addICDX'])->name('icd.add.x');
+        Route::get('showICD/{id}/{tipe}', [ICDController::class, 'showICD'])->name('icd.show');
+        Route::get('editICDIX/{id}', [ICDController::class, 'editICDIX'])->name('icd.edit.ix');
+        Route::get('editICDX/{id}', [ICDController::class, 'editICDX'])->name('icd.edit.x');
+
+        // Store / Update
+        Route::post('storeICDIX', [ICDController::class, 'storeICDIX'])->name('icd.store.ix');
+        Route::post('storeICDX', [ICDController::class, 'storeICDX'])->name('icd.store.x');
+        Route::put('updateICDIX/{id}', [ICDController::class, 'updateICDIX'])->name('icd.update.ix');
+        Route::put('updateICDX/{id}', [ICDController::class, 'updateICDX'])->name('icd.update.x');
+
+        // Delete
+        Route::delete('/deleteICD/{id}/{tipe}', [ICDController::class, 'deleteICD'])->name('icd.delete');
+
+        Route::post('getDokterList', [ICDController::class, 'getDokterList']);
+        Route::post('getDiagnosaList', [ICDController::class, 'getDiagnosaList']);
     });
 })->middleware('throttle:10,1');
 

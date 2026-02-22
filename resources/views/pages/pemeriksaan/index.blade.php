@@ -84,6 +84,10 @@
                                         class="fa fa-heartbeat fa-fw"></i> Vital Sign</button>
                             </li>
                             <li class="nav-item">
+                                <button class="nav-link" id="diagnosa" aria-selected="true"><i
+                                        class="fa fa-stethoscope fa-fw"></i> Diagnosa</button>
+                            </li>
+                            <li class="nav-item">
                                 <button class="nav-link" id="odontogram" aria-selected="false"><i
                                         class="fa fa-tooth pe-1 ps-1"></i>Odontogram</button>
                             </li>

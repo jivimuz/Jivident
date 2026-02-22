@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
+use App\Models\DiagnosaPasien;
 use App\Models\Patient;
 use App\Models\Setting;
 use App\Models\TindakanPasien;
@@ -343,11 +344,15 @@ class PemeriksaanController extends Controller
                 $tagihanTindakan = (float) DB::table('t_tindakanpasien')
                     ->where('fk_daftarpasien', $daftarPasienID)
                     ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
-                    ->value('total_amount');;
+                    ->value('total_amount');
+                $tagihanDiagnosa = (float) DB::table('t_diagnosapasien')
+                    ->where('fk_daftarpasien', $daftarPasienID)
+                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
+                    ->value('total_amount');
 
                 $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
 
-                $price = (float)($tagihanTindakan ?? 0) + (float) ($registrasi ? $registrasi->value : 50000);
+                $price = (float)($tagihanTindakan ?? 0) + (float)($tagihanDiagnosa ?? 0) + (float) ($registrasi ? $registrasi->value : 50000);
 
                 $newStatus = $this->resolvePaymentStatus($totalPaid, $price,  $pasien->statuspembayaran);
 
@@ -403,5 +408,113 @@ class PemeriksaanController extends Controller
             return 'Lunas';
         }
         return 'Verifikasi';
+    }
+
+    public function diagnosa($id)
+    {
+        $diagnosa = DiagnosaPasien::where('fk_daftarpasien', base64_decode(base64_decode($id)))->get();
+        $status = DaftarPasien::select('status', 'pasienfk')->where('id', base64_decode(base64_decode($id)))->first();
+        return view('pages/pemeriksaan/content/diagnosa', compact('id', 'status', 'diagnosa'));
+    }
+
+    public function saveDiagnosa(Request $request, $id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klien = Auth::user()->klienfk ?? 1;
+
+        // Kalau frontend kadang kirim "diagnosa",  fallback aman
+        $items = collect($request->input('diagnosa'));
+
+        DB::beginTransaction();
+
+        try {
+            // Normalisasi payload + filter data kosong
+            $payload = $items->map(function ($i) {
+                $tipe = strtoupper(trim((string) ($i['diagnosa_tipe'] ?? $i['tipe_diagnosa'] ?? '')));
+
+                return [
+                    'diagnosa_id'    => isset($i['diagnosa_id']) ? (int) $i['diagnosa_id'] : null,
+                    'tipe_diagnosa'  => $tipe, // X / IX
+                    'pasien_id'      => $i['pasien_id'] ?? null,
+                    'dokter_id'      => $i['dokter_id'] ?? null,
+                    'diagnosa_name'  => $i['diagnosa_name'] ?? ($i['tindakan_name'] ?? null), // sesuaikan field UI
+                    'dokter_text'    => $i['dokter_text'] ?? null,
+                    'price'          => (float) ($i['diagnosa_amount'] ?? $i['tindakan_amount'] ?? 0),
+                    'qty'            => (int) ($i['qty'] ?? 1),
+                ];
+            })->filter(function ($i) {
+                return !empty($i['diagnosa_id']) && in_array($i['tipe_diagnosa'], ['X', 'IX'], true);
+            })->values();
+
+            // ===== 1) Ambil existing rows (harus ambil ID + fk_diagnosa + tipe_diagnosa)
+            $existingRows = DiagnosaPasien::query()
+                ->where('klienfk', $klien)
+                ->where('fk_daftarpasien', $daftarpasienId)
+                ->get(['id', 'fk_diagnosa', 'tipe_diagnosa']);
+
+            // ===== 2) Bentuk set key incoming: "X|10", "IX|10", dst
+            $incomingKeySet = $payload
+                ->mapWithKeys(function ($i) {
+                    $key = $i['tipe_diagnosa'] . '|' . $i['diagnosa_id'];
+                    return [$key => true];
+                });
+
+            // ===== 3) Tentukan row yang harus dihapus (berdasarkan composite key)
+            $deleteRowIds = $existingRows
+                ->filter(function ($row) use ($incomingKeySet) {
+                    $rowTipe = strtoupper(trim((string) $row->tipe_diagnosa));
+                    $key = $rowTipe . '|' . (int) $row->fk_diagnosa;
+                    return !$incomingKeySet->has($key);
+                })
+                ->pluck('id')
+                ->all();
+
+            if (!empty($deleteRowIds)) {
+                DiagnosaPasien::query()
+                    ->where('klienfk', $klien)
+                    ->where('fk_daftarpasien', $daftarpasienId)
+                    ->whereIn('id', $deleteRowIds)
+                    ->delete();
+            }
+
+            // ===== 4) Insert / Update incoming rows (updateOrCreate pakai composite key)
+            foreach ($payload as $i) {
+                $qty = max(1, (int) ($i['qty'] ?? 1));
+                $price = (float) ($i['price'] ?? 0);
+                $amount = $price * $qty;
+
+                DiagnosaPasien::updateOrCreate(
+                    [
+                        'klienfk'         => $klien,
+                        'fk_daftarpasien' => $daftarpasienId,
+                        'fk_diagnosa'     => $i['diagnosa_id'],
+                        'tipe_diagnosa'   => $i['tipe_diagnosa'], // pembeda utama X vs IX
+                    ],
+                    [
+                        'fk_pasien'       => $i['pasien_id'],
+                        'fk_dokter'       => $i['dokter_id'],
+                        'fk_userhandler'  => Auth::id(),
+                        'diagnosa'        => $i['diagnosa_name'], // ganti nama kolom kalau sebenarnya "diagnosa"
+                        'dokter'          => $i['dokter_text'],
+                        'price'           => $price,
+                        'qty'             => $qty,
+                        'amount'          => $amount,
+                    ]
+                );
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'success',
+            ], 200);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'error'  => 'Gagal menyimpan diagnosa.',
+                'detail' => $e->getMessage(),
+            ], 400);
+        }
     }
 }

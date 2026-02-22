@@ -374,7 +374,13 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                                     </li>
 
                                     <li>
-                                        <a class="f-w-500" onclick="changePass()">
+                                        <a class="f-w-500 hover-border-b" href="{{ url('auth-license') }}">
+                                            <i class="iconoir-window-lock pe-1 f-s-20"></i> License
+                                        </a>
+                                    </li>
+                                    <li>
+
+                                        <a class="f-w-500 hover-border-b" onclick="changePass()">
                                             <i class="iconoir-password-cursor pe-1 f-s-20"></i> Change Password
                                         </a>
                                     </li>

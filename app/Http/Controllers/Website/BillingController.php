@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Helpers\TransactionHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
+use App\Models\DiagnosaPasien;
 use App\Models\Payments;
 use App\Models\RuangPraktek;
 use App\Models\Setting;
@@ -140,7 +141,8 @@ class BillingController extends Controller
     public function getTagihanList(Request $request)
     {
         $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
-        $tagihan =  TindakanPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
+        $tagihanTindakan =  TindakanPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
+        $tagihanDiagnosa =  DiagnosaPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
         $totalPaid = (float) DB::table('t_transactions')
             ->where('daftarpasien_id', $request->daftarpasien_id)
             ->selectRaw("COALESCE(SUM(CASE
@@ -148,9 +150,11 @@ class BillingController extends Controller
                         WHEN transaction_type='out' THEN -amount
                         ELSE 0 END),0) as total_paid")
             ->value('total_paid');
+
         return response()->json([
             'message' => 'Get data sukses',
-            'tagihan' => $tagihan,
+            'tagihan_tindakan' => $tagihanTindakan,
+            'tagihan_diagnosa' => $tagihanDiagnosa,
             'registrasi' => $registrasi ? $registrasi->value : 50000,
             'totalPaid' => $totalPaid ?? 0,
         ], 200);

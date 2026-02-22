@@ -64,9 +64,10 @@
                             </div>
 
                             <div class="table-responsive">
-                                <table class="table table-hover table-striped align-middle">
+                                <table class="table table-hover table-striped align-middle" id="billing-table">
                                     <thead class="bg-light">
                                         <tr>
+                                            <th>Tipe</th>
                                             <th>Tindakan / Item</th>
                                             <th>Dokter</th>
                                             <th class="text-center">Qty</th>
@@ -228,6 +229,7 @@
                             totalAll += parseFloat(response.registrasi) || 0;
                             html += `
                                     <tr>
+                                        <td>REG</td>
                                         <td>
                                             <!-- Hidden input agar tetap terbaca backend sebagai array -->
                                             <input type="hidden" name="tagihan_id[]" value="0">
@@ -241,15 +243,19 @@
                                 `;
                         }
 
-                        if (response.tagihan && response.tagihan.length > 0) {
-                            response.tagihan.forEach(function(item) {
-                                totalAll += parseFloat(item.amount) || 0;
-                                html += `
+                        if ((response.tagihan_tindakan && response.tagihan_tindakan.length > 0) || (
+                                response.tagihanDiagnosa && response.tagihanDiagnosa.length > 0)) {
+
+                            if (response.tagihan_tindakan && response.tagihan_tindakan.length > 0) {
+                                response.tagihan_tindakan.forEach(function(item) {
+                                    totalAll += parseFloat(item.amount) || 0;
+                                    html += `
                                     <tr>
+                                        <td>TDK</td>
                                         <td>
                                             <!-- Hidden input agar tetap terbaca backend sebagai array -->
                                             <input type="hidden" name="tagihan_id[]" value="${item.id}">
-                                            ${item.tindakan}
+                                            ${(item.tindakan || '').length > 20 ? (item.tindakan || '').slice(0, 20) + '...' : (item.tindakan || '')}
                                         </td>
                                         <td>${item.dokter || '-'}</td>
                                         <td class="text-center">${parseInt(item.qty)}</td>
@@ -257,7 +263,27 @@
                                         <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
                                     </tr>
                                 `;
-                            });
+                                });
+                            }
+                            if (response.tagihan_diagnosa && response.tagihan_diagnosa.length > 0) {
+                                response.tagihan_diagnosa.forEach(function(item) {
+                                    totalAll += parseFloat(item.amount) || 0;
+                                    html += `
+                                    <tr>
+                                        <td>ICD</td>
+                                        <td>
+                                            <!-- Hidden input agar tetap terbaca backend sebagai array -->
+                                            <input type="hidden" name="tagihan_id[]" value="${item.id}">
+                                            IDC ${item.tipe_diagnosa} || ${(item.diagnosa || '').length > 20 ? (item.diagnosa || '').slice(0, 20) + '...' : (item.diagnosa || '')}
+                                        </td>
+                                        <td>${item.dokter || '-'}</td>
+                                        <td class="text-center">${parseInt(item.qty)}</td>
+                                        <td class="text-end text-nowrap">${formatRupiah(item.price)}</td>
+                                        <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
+                                    </tr>
+                                `;
+                                });
+                            }
 
                             $('#input-total-tagihan').val(totalAll);
                             $('#display-total-tagihan').text(formatRupiah(totalAll));
@@ -275,6 +301,8 @@
 
 
                         $('#billing-list').html(html);
+                        $('#billing-table').DataTable()
+
                         kalkulasiPembayaran();
                     },
                     error: function(xhr) {

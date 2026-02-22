@@ -9,6 +9,6 @@ class Serial extends Model
 {
     use HasFactory;
     protected $table = "serial";
-    protected $guarded = [];
+    protected $guarded = ['id'];
     public $timestamps = false;
 }

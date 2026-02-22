@@ -129,9 +129,15 @@ final class TransactionHelper
                     ->where('fk_daftarpasien', $daftarPasienID)
                     ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
                     ->value('total_amount');;
+
+                $tagihanDiagnosa = (float) DB::table('t_diagnosapasien')
+                    ->where('fk_daftarpasien', $daftarPasienID)
+                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
+                    ->value('total_amount');
+
                 $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
 
-                $price = (float)($tagihanTindakan ?? 0) + (float) ($registrasi ? $registrasi->value : 50000);
+                $price = (float)($tagihanTindakan ?? 0) + (float)($tagihanDiagnosa ?? 0) + (float) ($registrasi ? $registrasi->value : 50000);
 
                 $newStatus = $this->resolvePaymentStatus($totalPaid, $price);
 

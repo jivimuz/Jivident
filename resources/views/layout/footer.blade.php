@@ -66,33 +66,7 @@
  </div>
 
 
- <div class="modal fade" id="expiredAlert" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-     aria-labelledby="staticBackdropLabel" aria-hidden="true">
-     <div class="modal-dialog  modal-dialog-centered" role="document">
-         <div class="modal-content ">
-             <div class="modal-header">
-                 <h5 class="modal-title">
-                     Serial Expired Alert!!
-                 </h5>
-             </div>
-             <div class="modal-body">
-                 <div class="row">
-                     <div class="col-md-10">
 
-                         @if (session('expiredDate'))
-                             {{ session('expiredDate') }}
-                             <br>
-                             Please Contact: +6282120741970 (Jivi)
-                         @endif
-                     </div>
-                     <div class="col-md-2">
-                         <h1 id='expiredCount'>6</h1>
-                     </div>
-                 </div>
-             </div>
-         </div>
-     </div>
- </div>
 
 
  <!-- modal -->
@@ -182,37 +156,20 @@
      <script>
          $(document).ready(function() {
              // Tampilkan modal
-             showModal('expiredAlert');
-
-             // Inisialisasi penghitung mundur
-             var nu = 5;
-             $('#expiredCount').html(nu);
-
-             // Interval untuk menghitung mundur
-             var aInt = setInterval(() => {
-                 nu--;
-                 $('#expiredCount').html(nu);
-
-                 if (nu <= 3) {
-                     $('#expiredCount').addClass('text-danger');
-                 }
-
-                 if (nu <= 0) {
-                     clearInterval(aInt); // Hentikan interval jika sudah mencapai 0
-                     closeModal('expiredAlert');
-                 }
-             }, 1000);
-
-             // Penutupan modal dan penghentian interval setelah durasi
              setTimeout(() => {
-                 clearInterval(aInt); // Pastikan interval dihentikan
-                 closeModal('expiredAlert');
-             }, 5000); // Ini akan menutup modal setelah 5 detik
+
+                 Toast.fire({
+                     icon: "warning",
+                     title: "Lisensi habis pada {{ session('expiredDate') }}",
+                     text: "Harap hubungi \n+6282120741970 (Jivi)",
+                 })
+             }, 2000);
          });
      </script>
 
      @php
          session()->forget('expiredAlert');
+         session()->forget('expiredDate');
      @endphp
  @endif
 

@@ -1,82 +1,89 @@
-<!doctype html>
-<html lang="en" dir="ltr">
+<!DOCTYPE html>
+<html lang="en">
 
+
+<!-- Mirrored from phpstack-1384472-5121645.cloudwaysapps.com/template/html/axelit/template/error_500.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 11 Sep 2025 07:01:28 GMT -->
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>HRIS System || 404 Error</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Multipurpose, super flexible, powerful, clean modern responsive bootstrap 5 admin template"
+        name="description">
+    <meta
+        content="admin template, axelit admin template, dashboard template, flat admin template, responsive admin template, web app"
+        name="keywords">
+    <meta content="la-themes" name="author">
+    <link href="{{ url('') }}/assets/images/logo/favicon.png" rel="icon" type="image/x-icon">
+    <link href="{{ url('') }}/assets/images/logo/favicon.png" rel="shortcut icon" type="image/x-icon">
 
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="../assets/images/favicon.png" />
+    <title>axelit - Premium Admin Template</title>
 
+    <!--font-awesome-css-->
+    <link href="{{ url('') }}/assets/vendor/fontawesome/css/all.css" rel="stylesheet">
 
-    <!-- Library / Plugin Css Build -->
-    <link rel="stylesheet" href="../../assets/css/core/libs.min.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com/" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&amp;display=swap"
+        rel="stylesheet">
 
-    <!-- Custom Css -->
-    <link rel="stylesheet" href="../../assets/css/aprycot.mine209.css?v=1.0.0">
+    <!-- iconoir icon css  -->
+    <link href="{{ url('') }}/assets/vendor/ionio-icon/css/iconoir.css" rel="stylesheet">
+
+    <!-- tabler icons-->
+    <link href="{{ url('') }}/assets/vendor/tabler-icons/tabler-icons.css" rel="stylesheet" type="text/css">
+
+    <!-- Bootstrap css-->
+    <link href="{{ url('') }}/assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+    <!-- App css-->
+    <link href="{{ url('') }}/assets/css/style.css" rel="stylesheet" type="text/css">
+
+    <!-- Responsive css-->
+    <link href="{{ url('') }}/assets/css/responsive.css" rel="stylesheet" type="text/css">
+
 </head>
 
-<body class=" " data-bs-spy="scroll" data-bs-target="#elements-section" data-bs-offset="0" tabindex="0">
-    <!-- loader Start -->
+<body>
 
-    <div class="wrapper">
-        <script src="../../../../../../../cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
-        <div class="d-flex align-items-center justify-content-center vh-100">
-            <div class="container text-center mt-5">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <img src="../../assets/images/error/01.png" class="img-fluid w-25" alt="">
-                        <img src="../../assets/images/error/02.png" class="img-fluid w-25 px-5" alt="">
-                        <img src="../../assets/images/error/01.png" class="img-fluid w-25" alt="">
-                        <h2 class="mb-0 mt-4">Page Not Found.</h2>
-                        <p class="mt-2">This page is not in your area or under maintenance. </p>
-                        <div class="d-flex justify-content-center">
-                            <a href="/" class="btn btn-primary">Back to Home</a>
+    <div class="error-container p-0">
+        <div class="container">
+            <div>
+                <div>
+                    <img alt="" class="img-fluid"
+                        src="{{ url('') }}/assets/images/background/error-500.png">
+                </div>
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-lg-8 offset-lg-2">
+                            <p class="text-center text-secondary f-w-500">500 Internal Server Error server error
+                                response
+                                code
+                                indicates that the server encountered an unexpected that prevented it from
+                                fulfilling the request</p>
                         </div>
                     </div>
                 </div>
+                <a class="btn btn-lg btn-light-info b-r-22" href="index-2.html" role="button"><i
+                        class="ti ti-home"></i> Back
+                    To
+                    Home</a>
             </div>
         </div>
     </div>
 
-    <!-- Required Library Bundle Script -->
-    <script src="../../assets/js/core/libs.min.js"></script>
 
-    <!-- External Library Bundle Script -->
-    <script src="../../assets/js/core/external.min.js"></script>
+    <!-- latest jquery-->
+    <script src="{{ url('') }}/assets/js/jquery-3.6.3.min.js"></script>
 
-    <!-- Widgetchart JavaScript -->
-    <script src="../../assets/js/charts/widgetcharts.js"></script>
+    <!-- Bootstrap js-->
+    <script src="{{ url('') }}/assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
 
-    <!-- Mapchart JavaScript -->
-    <script src="../../assets/js/charts/vectore-chart.js"></script>
-    <script src="../../assets/js/charts/dashboard.js"></script>
 
-    <!-- Admin Dashboard Chart -->
-    <script src="../../assets/js/charts/admin.js"></script>
-
-    <!-- fslightbox JavaScript -->
-    <script src="../../assets/js/fslightbox.js"></script>
-
-    <!-- GSAP Animation -->
-    <script src="../../assets/vendor/gsap/gsap.min.js"></script>
-    <script src="../../assets/vendor/gsap/ScrollTrigger.min.js"></script>
-    <script src="../../assets/js/animation/gsap-init.js"></script>
-
-    <!-- Stepper Plugin -->
-    <script src="../../assets/js/stepper.js"></script>
-
-    <!-- Form Wizard Script -->
-    <script src="../../assets/js/form-wizard.js"></script>
-
-    <!-- app JavaScript -->
-    <script src="../../assets/js/app.js"></script>
-
-    <!-- moment JavaScript -->
-    <script src="../../assets/vendor/moment.min.js"></script>
 </body>
 
+
+<!-- Mirrored from phpstack-1384472-5121645.cloudwaysapps.com/template/html/axelit/template/error_500.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 11 Sep 2025 07:01:29 GMT -->
 
 </html>
