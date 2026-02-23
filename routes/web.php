@@ -17,6 +17,8 @@ use App\Http\Controllers\Website\PatientController;
 use App\Http\Controllers\Website\PaymentsController;
 use App\Http\Controllers\Website\PemeriksaanController;
 use App\Http\Controllers\Website\PrintController;
+use App\Http\Controllers\Website\ProductCategoriesController;
+use App\Http\Controllers\Website\ProductController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
 use App\Http\Controllers\Website\TindakanController;
@@ -301,6 +303,25 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('getDokterList', [ICDController::class, 'getDokterList']);
         Route::post('getDiagnosaList', [ICDController::class, 'getDiagnosaList']);
+    });
+
+    Route::middleware(['checkAccess:MTP'])->group(function () {
+        Route::prefix('product')->group(function () {
+            Route::get('/', [ProductController::class, 'index']);
+            Route::get('add', [ProductController::class, 'add']);
+            Route::get('getList', [ProductController::class, 'getList']);
+            Route::post('store', [ProductController::class, 'store']);
+            Route::get('edit/{id}', [ProductController::class, 'edit']);
+            Route::post('update/{id}', [ProductController::class, 'update']);
+            Route::delete('delete/{id}', [ProductController::class, 'destroy']);
+        });
+        Route::prefix('categories')->group(function () {
+            Route::get('getList', [ProductCategoriesController::class, 'getList']);
+            Route::post('store', [ProductCategoriesController::class, 'store']);
+            Route::get('edit/{id}', [ProductCategoriesController::class, 'edit']);
+            Route::post('update/{id}', [ProductCategoriesController::class, 'update']);
+            Route::delete('delete/{id}', [ProductCategoriesController::class, 'destroy']);
+        });
     });
 })->middleware('throttle:10,1');
 

@@ -25,12 +25,15 @@ class DatabaseSeeder extends Seeder
         $this->call(\Database\Seeders\Pasien\KecamatanSeeder::class);
         $this->call(KelurahanSeeder::class);
         $this->call(PasienSeeder::class);
-        $this->call(ICDXSeeder::class);
-        $this->call(ICDIXSeeder::class);
+
         $this->call(\Database\Seeders\Pasien\NegaraSeeder::class);
         $this->call(\Database\Seeders\Pasien\PekerjaanSeeder::class);
         $this->call(\Database\Seeders\Pasien\PendidikanSeeder::class);
         $this->call(\Database\Seeders\Pasien\StatusPerkawinanSeeder::class);
         $this->call(\Database\Seeders\Pasien\KoordinatSeeder::class);
+        $this->call(ICDXSeeder::class);
+        $this->call(ICDIXSeeder::class);
+        $this->call(SatuanProductSeeder::class);
+        $this->call(ProductCategoriesSeeder::class);
     }
 }

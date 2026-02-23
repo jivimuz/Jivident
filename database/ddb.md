@@ -1,6 +1,5 @@
 public function handle($request, Closure $next)
     {
-        // Skip halaman license
         if (
             $request->is('license') ||
             $request->is('license/*') ||
@@ -12,7 +11,6 @@ public function handle($request, Closure $next)
 
         $type = (int) env('TYPE_LOCAL_SERVER', 0);
 
-        // TYPE 2 = bypass
         if ($type === 2) {
             return $next($request);
         }
@@ -20,7 +18,7 @@ public function handle($request, Closure $next)
         $serial = Serial::first();
 
         if (!$serial) {
-            return redirect()->route('license', ['expired' => 1]); // query param fallback (aman untuk global middleware)
+            return redirect()->route('license', ['expired' => 1]);
         }
 
         if (empty($serial->serial_code)) {
