@@ -34,6 +34,7 @@ return new class extends Migration
             $table->index('transaction_type');
             $table->index('daftarpasien_id');
             $table->index('pasien_id');
+            $table->index('amount');
         });
     }
 

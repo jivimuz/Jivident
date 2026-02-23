@@ -19,8 +19,10 @@ use App\Http\Controllers\Website\PemeriksaanController;
 use App\Http\Controllers\Website\PrintController;
 use App\Http\Controllers\Website\ProductCategoriesController;
 use App\Http\Controllers\Website\ProductController;
+use App\Http\Controllers\Website\ReceiveOrderController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
+use App\Http\Controllers\Website\SupplierController;
 use App\Http\Controllers\Website\TindakanController;
 use App\Http\Controllers\Website\TransactionController;
 use App\Models\RuangPraktek;
@@ -295,17 +297,17 @@ Route::middleware(['auth'])->group(function () {
         // Store / Update
         Route::post('storeICDIX', [ICDController::class, 'storeICDIX'])->name('icd.store.ix');
         Route::post('storeICDX', [ICDController::class, 'storeICDX'])->name('icd.store.x');
-        Route::put('updateICDIX/{id}', [ICDController::class, 'updateICDIX'])->name('icd.update.ix');
-        Route::put('updateICDX/{id}', [ICDController::class, 'updateICDX'])->name('icd.update.x');
+        Route::post('updateICDIX/{id}', [ICDController::class, 'updateICDIX'])->name('icd.update.ix');
+        Route::post('updateICDX/{id}', [ICDController::class, 'updateICDX'])->name('icd.update.x');
 
         // Delete
-        Route::delete('/deleteICD/{id}/{tipe}', [ICDController::class, 'deleteICD'])->name('icd.delete');
+        Route::post('deleteICD/{id}/{tipe}', [ICDController::class, 'deleteICD'])->name('icd.delete');
 
         Route::post('getDokterList', [ICDController::class, 'getDokterList']);
         Route::post('getDiagnosaList', [ICDController::class, 'getDiagnosaList']);
     });
 
-    Route::middleware(['checkAccess:MTP'])->group(function () {
+    Route::middleware(['checkAccess:PR'])->group(function () {
         Route::prefix('product')->group(function () {
             Route::get('/', [ProductController::class, 'index']);
             Route::get('add', [ProductController::class, 'add']);
@@ -313,15 +315,37 @@ Route::middleware(['auth'])->group(function () {
             Route::post('store', [ProductController::class, 'store']);
             Route::get('edit/{id}', [ProductController::class, 'edit']);
             Route::post('update/{id}', [ProductController::class, 'update']);
-            Route::delete('delete/{id}', [ProductController::class, 'destroy']);
+            Route::post('delete/{id}', [ProductController::class, 'destroy']);
         });
         Route::prefix('categories')->group(function () {
             Route::get('getList', [ProductCategoriesController::class, 'getList']);
             Route::post('store', [ProductCategoriesController::class, 'store']);
             Route::get('edit/{id}', [ProductCategoriesController::class, 'edit']);
             Route::post('update/{id}', [ProductCategoriesController::class, 'update']);
-            Route::delete('delete/{id}', [ProductCategoriesController::class, 'destroy']);
+            Route::post('delete/{id}', [ProductCategoriesController::class, 'destroy']);
         });
+    });
+
+    Route::middleware(['checkAccess:SUP'])->prefix('supplier')->group(function () {
+        Route::get('/', [SupplierController::class, 'index']);
+        Route::get('get-data', [SupplierController::class, 'getData']);
+        Route::post('store', [SupplierController::class, 'store']);
+        Route::get('show/{id}', [SupplierController::class, 'show']);
+        Route::post('update/{id}', [SupplierController::class, 'update']);
+        Route::post('delete/{id}', [SupplierController::class, 'destroy']);
+    });
+
+    Route::middleware(['checkAccess:RO'])->prefix('receive_order')->group(function () {
+        Route::get('/', [ReceiveOrderController::class, 'index']);
+        Route::get('get-data', [ReceiveOrderController::class, 'getData']);
+        Route::get('create', [ReceiveOrderController::class, 'create']);
+        Route::post('store', [ReceiveOrderController::class, 'store']);
+        Route::get('edit/{id}', [ReceiveOrderController::class, 'edit']);
+        Route::post('update/{id}', [ReceiveOrderController::class, 'update']);
+        Route::post('delete/{id}', [ReceiveOrderController::class, 'destroy']);
+        Route::post('getSupplierList', [ReceiveOrderController::class, 'getSupplierList']);
+        Route::post('getProductList', [ReceiveOrderController::class, 'getProductList']);
+        Route::post('getUnitList', [ReceiveOrderController::class, 'getUnitList']);
     });
 })->middleware('throttle:10,1');
 

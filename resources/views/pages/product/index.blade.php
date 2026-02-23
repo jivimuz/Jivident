@@ -25,9 +25,11 @@
                                 <th>Category</th>
                                 <th>Satuan</th>
                                 <th>Unit</th>
+                                <th>Total QTY</th>
                                 <th>Harga Beli</th>
                                 <th>HPP</th>
                                 <th>Harga Jual</th>
+                                <th>Margin</th>
                                 <th>-</th>
                             </tr>
                         </thead>
@@ -130,6 +132,10 @@
                 {
                     data: 'unit_name'
                 },
+                {
+                    data: 'total_qty'
+                },
+
 
                 {
                     data: 'harga_beli',
@@ -158,6 +164,27 @@
                             style: "currency",
                             currency: "IDR"
                         })
+                    },
+
+                },
+                {
+                    data: 'harga_beli',
+                    render: function(data, b, c) {
+                        let hpp = parseFloat(c.hpp) || 0;
+                        let hargaJual = parseFloat(c.harga_jual) || 0;
+                        let marginText = '';
+
+                        if (hpp > 0 && hargaJual >= hpp) {
+                            let profit = hargaJual - hpp;
+                            let marginPercent = (profit / hpp) * 100;
+                            marginText = marginPercent.toFixed(2) + '%'
+                        } else if (hargaJual < hpp && hargaJual > 0) {
+                            marginText = 'Rugi!'
+                        } else {
+                            marginText = '0%'
+                        }
+
+                        return marginText
                     },
 
                 },
@@ -203,7 +230,7 @@
                 if (result.isConfirmed) {
                     $.ajax({
                         url: `{{ url('product/delete') }}/${id}`,
-                        type: 'DELETE',
+                        type: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}'
                         },
@@ -352,7 +379,7 @@
                 if (result.isConfirmed) {
                     $.ajax({
                         url: `{{ url('categories/delete') }}/${id}`,
-                        type: 'DELETE',
+                        type: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}'
                         },

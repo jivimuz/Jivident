@@ -43,7 +43,7 @@
                         <i class="iconoir-fast-arrow-left" style="font-size:20px;"></i>
                     </a>
                     <span class="text-primary fw-bold text-center flex-grow-1 fs-5 fs-md-4">
-                        Tambah Master Obat / Farmasi
+                        Edit {{ $data->name ?? '' }}
                     </span>
                     <div style="width:45px;" class="flex-shrink-0"></div>
                 </div>

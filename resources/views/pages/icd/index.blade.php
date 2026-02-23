@@ -429,7 +429,6 @@
                         url: route,
                         type: 'POST',
                         data: {
-                            _method: 'DELETE',
                             _token: $('meta[name="csrf-token"]').attr('content')
                         },
                         success: function(res) {

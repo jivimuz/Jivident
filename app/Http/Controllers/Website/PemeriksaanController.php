@@ -338,16 +338,16 @@ class PemeriksaanController extends Controller
                     ->selectRaw("COALESCE(SUM(CASE
                         WHEN transaction_type='in' THEN amount
                         WHEN transaction_type='out' THEN -amount
-                        ELSE 0 END),0) as total_paid")
+                        ELSE 0 END),0) as total_paid")->whereNull('deleted_at')
                     ->value('total_paid');
 
                 $tagihanTindakan = (float) DB::table('t_tindakanpasien')
                     ->where('fk_daftarpasien', $daftarPasienID)
-                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
+                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")->whereNull('deleted_at')
                     ->value('total_amount');
                 $tagihanDiagnosa = (float) DB::table('t_diagnosapasien')
                     ->where('fk_daftarpasien', $daftarPasienID)
-                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
+                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")->whereNull('deleted_at')
                     ->value('total_amount');
 
                 $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();

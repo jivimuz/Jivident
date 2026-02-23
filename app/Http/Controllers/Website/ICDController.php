@@ -225,7 +225,8 @@ class ICDController extends Controller
         $validated = $this->validateICD($request, 'm_icdix');
 
         ICDIX::create($validated + [
-            'klienfk' => 1, // sesuaikan kalau multi tenant
+            'klienfk' => Auth::user()->klienfk ?? 1, // Default sesuai skema
+
         ]);
 
         return response()->json([
@@ -239,7 +240,8 @@ class ICDController extends Controller
         $validated = $this->validateICD($request, 'm_icdx');
 
         ICDX::create($validated + [
-            'klienfk' => 1,
+            'klienfk' => Auth::user()->klienfk ?? 1, // Default sesuai skema
+
         ]);
 
         return response()->json([
@@ -334,7 +336,7 @@ class ICDController extends Controller
         ])
             ->join('m_users as a', 'a.fk_employee', 'm_employee.id')
             ->where('is_pemeriksapasien', true)
-            ->where('klienfk', Auth::user()->klienfk)
+            ->where('klienfk', Auth::user()->klienfk ?? 0)
             ->when($q, function ($query) use ($q) {
                 $query->where('a.display_name', 'LIKE', "%{$q}%");
             })
@@ -352,14 +354,14 @@ class ICDController extends Controller
         $q = $request->q;
         $data = [];
         if ($request->tipe == 'IX') {
-            $data = ICDIX::where('klienfk', Auth::user()->klienfk)
+            $data = ICDIX::where('klienfk', Auth::user()->klienfk ?? 0)
                 ->when($q, function ($query) use ($q) {
                     $query->where('a.diagnosa', 'LIKE', "%{$q}%");
                 })
                 ->limit(20)
                 ->get();
         } else  if ($request->tipe == 'X') {
-            $data = ICDX::where('klienfk', Auth::user()->klienfk)
+            $data = ICDX::where('klienfk', Auth::user()->klienfk ?? 0)
                 ->when($q, function ($query) use ($q) {
                     $query->where('a.diagnosa', 'LIKE', "%{$q}%");
                 })

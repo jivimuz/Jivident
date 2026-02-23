@@ -35,6 +35,7 @@ return new class extends Migration
             $table->double('harga_beli')->default(0); // Harga modal dari PBF
             $table->double('hpp')->default(0); // Harga Pokok Penjualan (Bisa sama dgn Harga Beli, atau ditambah PPN/Biaya lain)
             $table->double('harga_jual')->default(0); // Harga akhir ke pasien
+            $table->decimal('qty', 15, 0)->default(0);
 
             $table->timestamps();
             $table->softDeletes();

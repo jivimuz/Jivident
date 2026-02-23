@@ -62,7 +62,7 @@ class TransactionController extends Controller
                     ELSE 0
                 END
             ), 0) as total_saldo
-        ")
+        ")->whereNull('deleted_at')
             // ->where('is_system', 1)
             ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$request->monthYear])
             ->first();
@@ -87,7 +87,7 @@ class TransactionController extends Controller
                     ELSE 0
                 END
             ), 0) as total_saldo
-        ")
+        ")->whereNull('deleted_at')
             // ->where('is_system', 1)
             ->first();
 

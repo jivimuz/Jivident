@@ -148,7 +148,7 @@ class BillingController extends Controller
             ->selectRaw("COALESCE(SUM(CASE
                         WHEN transaction_type='in' THEN amount
                         WHEN transaction_type='out' THEN -amount
-                        ELSE 0 END),0) as total_paid")
+                        ELSE 0 END),0) as total_paid")->whereNull('deleted_at')
             ->value('total_paid');
 
         return response()->json([

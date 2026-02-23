@@ -29,7 +29,7 @@ return new class extends Migration
             $table->decimal('stock_after', 18, 4);
 
             // optional: gudang/lokasi
-            $table->unsignedBigInteger('warehouse_id')->nullable()->index();
+            $table->unsignedBigInteger('location_id')->nullable()->index();
 
             // referensi dokumen sumber (generic, biar bisa link ke apa aja)
             // contoh: source_type='purchase_return', source_id=123, ref_no='PR-00012'

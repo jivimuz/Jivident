@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategories;
-use App\Models\ProductLogs;
 use App\Models\SatuanProduct;
 use App\Models\UnitProduct;
 use Illuminate\Http\Request;
@@ -36,16 +35,34 @@ class ProductController extends Controller
 
         // 2. Base Query
         // Menggunakan alias 'a' untuk kategori dan memaksa tabel utama jadi 'm_products'
+        $qtySub = DB::table('t_productqty as pq')
+            ->selectRaw("
+        pq.product_id,
+        COALESCE(SUM(
+            CASE
+                WHEN pq.type = 'in' THEN pq.qty
+                WHEN pq.type = 'out' THEN -pq.qty
+                ELSE 0
+            END
+        ), 0) as total_qty
+    ")->whereNull('deleted_at')
+            ->groupBy('pq.product_id');
+
         $query = Product::from('m_products')
             ->leftJoin('m_productcategories as a', 'm_products.kategorifk', '=', 'a.id')
             ->leftJoin('m_satuanproducts as b', 'm_products.satuanfk', '=', 'b.id')
             ->leftJoin('m_unitproducts as c', 'm_products.unitfk', '=', 'c.id')
+            ->leftJoinSub($qtySub, 'q', function ($join) {
+                $join->on('q.product_id', '=', 'm_products.id');
+            })
             ->select(
                 'm_products.*',
                 'a.name as category_name',
                 'b.code as satuan_name',
                 'c.name as unit_name',
+                DB::raw('COALESCE(q.total_qty, 0) as total_qty')
             );
+
 
         // 3. Hitung Total Data (Sebelum filtering search)
         $totalData = $query->count();
@@ -129,7 +146,7 @@ class ProductController extends Controller
         try {
             // 2. Insert ke tabel m_products
             DB::table('m_products')->insert([
-                'klienfk' => 1, // Default sesuai skema
+                'klienfk' => Auth::user()->klienfk ?? 1, // Default sesuai skema
                 'code' => $request->code,
                 'name' => $request->name,
                 'strength' => $request->strength,
