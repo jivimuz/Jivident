@@ -67,6 +67,7 @@
                                         <th>No</th>
                                         <th>Kode</th>
                                         <th>Nama</th>
+                                        <th>Tarif</th>
                                         <th>-</th>
                                     </tr>
                                 </thead>
@@ -129,6 +130,7 @@
                                         <th>No</th>
                                         <th>Kode</th>
                                         <th>Nama</th>
+                                        <th>Tarif</th>
                                         <th>-</th>
                                     </tr>
                                 </thead>
@@ -249,6 +251,17 @@
                     data: 'name'
                 },
                 {
+                    data: 'tarif',
+                    sortable: false,
+                    render: function(data, type, full, meta) {
+                        return new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0
+                        }).format(data ?? 0);;
+                    }
+                },
+                {
                     data: 'code',
                     sortable: false,
                     render: function(data, type, full, meta) {
@@ -257,7 +270,7 @@
                         <a onclick="editICD(9, ${full.id})"><button class="btn rounded-pill btn-outline-warning btn-sm"><i class="fa fa-edit"></i></button></a>
                         <a onclick="deleteICD(9, ${full.id})"><button class="btn rounded-pill btn-outline-danger btn-sm"><i class="fa fa-trash"></i></button></a>
                     `;
-                    }
+                    },
                 },
             ];
 
@@ -293,6 +306,17 @@
                 },
                 {
                     data: 'name'
+                },
+                {
+                    data: 'tarif',
+                    sortable: false,
+                    render: function(data, type, full, meta) {
+                        return new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0
+                        }).format(data ?? 0);;
+                    }
                 },
                 {
                     data: 'code',
