@@ -261,15 +261,6 @@
                             <input disabled type="hidden" name="grand_total" id="input-grand-total"
                                 value="{{ $receiveOrder->grand_total }}">
                         </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-light rounded-pill px-4"
-                                onclick="history.back()">Batal</button>
-                            <button type="submit" class="btn btn-primary text-white rounded-pill w-100 fw-bold"
-                                id="btn-submit">
-                                <i class="fa fa-save"></i> Simpan Penerimaan
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
