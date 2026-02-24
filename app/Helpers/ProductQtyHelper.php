@@ -118,8 +118,8 @@ final class ProductQtyHelper
                     'created_at'   => now(),
                     'updated_at'   => now(),
                 ];
+                $this->updateProductPrices($d->product_id, $d->harga_beli ?? 0, $d->ppn_persen ?? 0);
             }
-            $this->updateProductPrices($d->product_id, $d->harga_beli ?? 0, $d->ppn_persen ?? 0);
 
             DB::table('t_productqty')->insert($rows);
 
