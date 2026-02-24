@@ -119,6 +119,7 @@ final class ProductQtyHelper
                     'updated_at'   => now(),
                 ];
             }
+            $this->updateProductPrices($d->product_id, $d->harga_beli ?? 0, $d->ppn_persen ?? 0);
 
             DB::table('t_productqty')->insert($rows);
 
@@ -849,5 +850,31 @@ final class ProductQtyHelper
     private function lotKey($receiptId, $expiredDate): string
     {
         return (string)($receiptId ?? '') . '|' . (string)($expiredDate ?? '');
+    }
+
+    private function updateProductPrices($productId, $hargaBeli, $ppnPersen)
+    {
+        $hargaBeli = (float) $hargaBeli;
+        $ppnPersen = (float) $ppnPersen;
+
+        $ppnNominal = $hargaBeli * ($ppnPersen / 100);
+        $hppMinimal = $hargaBeli + $ppnNominal;
+        $hargaJualMinimal = $hppMinimal * 1.5;
+
+        $dataproduct = DB::table('m_products')->where('id', $productId)->first();
+
+        if ($dataproduct) {
+            $updateData = ['harga_beli' => $hargaBeli];
+
+            if ((float) ($dataproduct->hpp ?? 0) < $hppMinimal) {
+                $updateData['hpp'] = $hppMinimal;
+            }
+
+            if ((float) ($dataproduct->harga_jual ?? 0) < $hargaJualMinimal) {
+                $updateData['harga_jual'] = $hargaJualMinimal;
+            }
+
+            DB::table('m_products')->where('id', $productId)->update($updateData);
+        }
     }
 }
