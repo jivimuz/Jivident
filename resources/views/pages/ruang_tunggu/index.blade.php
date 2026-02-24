@@ -222,8 +222,8 @@
                     //          <i class="iconoir-printing-page" style="font-size:15px; padding-top:2px; "></i> <br/> Antrian
                     //         </a>`;
 
-                        a += `<a class="btn btn-xs btn-outline-danger rounded-pill mt-1 " style="margin-right:5px" onclick="batalkanAntarian('${btoa(btoa(c.id))}')">
-                             <i class="iconoir-trash" style="font-size:15px; padding-top:2px; "></i> <br/> Antrian
+                        a += `<a class="btn btn-xs btn-outline-danger rounded-pill mt-1 " style="margin-right:5px" onclick="batalkanPasien('${btoa(btoa(c.id))}')">
+                             <i class="iconoir-user-xmark" style="font-size:15px; padding-top:2px; "></i> <br/> Batalkan
                             </a>`;
                         return a
 
@@ -269,7 +269,7 @@
             return tabled;
         }
 
-        function deleteRoom(id) {
+        function batalkanPasien(id) {
             Swal.fire({
                 title: "Anda yakin?",
                 text: "Batalkan Pasien ini?",
@@ -296,7 +296,7 @@
                                 icon: "success",
                                 title: "Pasien Dibatalkan"
                             });
-                            getRooms()
+                            getList()
                         },
                         error: function(xhr, status, error) {
                             Toast.fire({

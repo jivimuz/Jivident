@@ -31,6 +31,8 @@ return new class extends Migration
             $table->double('diskon_global')->default(0);
             $table->double('ppn_persen')->default(0);
             $table->double('grand_total')->default(0);
+            $table->boolean('is_processed')->default(false);
+            $table->date('tgl_processed')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

@@ -9,6 +9,10 @@
             font-weight: 600;
         }
 
+        .table-custom tr {
+            border-bottom: 1px solid black !important
+        }
+
         .table-custom td {
             vertical-align: middle;
             font-size: 14px;
@@ -58,7 +62,7 @@
 
                         <!-- Tabel Data -->
                         <div class="table-responsive">
-                            <table class="table table-hover table-bordered table-custom" id="receive-table"
+                            <table class="table table-hover table-bordered table-striped table-custom" id="receive-table"
                                 style="width: 100%;">
                                 <thead>
                                     <tr>
@@ -151,14 +155,23 @@
                     className: 'text-center',
                     sortable: false,
                     render: function(data, type, row) {
-                        return `
-                            <a class="btn btn-sm btn-outline-warning rounded-pill" href="{{ url('receive_order') }}/edit/${btoa(btoa(row.id))}" title="Detail">
+                        let a = ''
+                        if (parseInt(row.is_processed) == 0) {
+                            a = ` <a class="btn btn-sm btn-outline-success rounded-pill" style="margin-top:2px" onclick="approveRO('${btoa(btoa(row.id))}')" title="Approve">
+                                <i class="iconoir-check"></i>
+                            </a>
+                             <a class="btn btn-sm btn-outline-warning rounded-pill" style="margin-top:2px" href="{{ url('receive_order') }}/edit/${btoa(btoa(row.id))}" title="Detail">
                                 <i class="iconoir-edit-pencil"></i>
                             </a>
-                            <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="hapusRO(${row.id})" title="Hapus">
+                            <button class="btn btn-sm btn-outline-danger rounded-pill" style="margin-top:2px" onclick="hapusRO(${row.id})" title="Hapus">
                                 <i class="iconoir-trash"></i>
-                            </button>
-                        `;
+                            </button>`
+                        } else {
+                            a = `   <a class="btn btn-sm btn-outline-info rounded-pill" style="margin-top:2px" href="{{ url('receive_order') }}/show/${btoa(btoa(row.id))}" title="Detail">
+                                <i class="iconoir-eye"></i>
+                            </a>`
+                        }
+                        return a;
                     }
                 }
             ];
@@ -169,6 +182,8 @@
                 destroy: true,
                 lengthChange: false,
                 pageLength: 10,
+                processing: true,
+                serverSide: true,
                 ajax: {
                     url: `{{ url('receive_order/get-data') }}?${filterData}`,
                     type: 'GET'
@@ -186,6 +201,47 @@
             });
         };
 
+        const approveRO = (idRO) => {
+
+            Swal.fire({
+                title: 'Apakah Anda Yakin?',
+                text: "Data penerimaan barang ini akan diapprove dan akan melakukan pembayaran dalam sistem!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Approve',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `{{ url('receive_order/approve') }}/${idRO}`, // Sesuaikan Route Delete Anda
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Disetujui!',
+                                text: response.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                loadData()
+                                // window.location.href =
+                                //     "{{ url('receive_order') }}"; // Kembali ke daftar list RO
+                            });
+                        },
+                        error: function(xhr) {
+                            let errorMsg = xhr.responseJSON?.message ||
+                                'Gagal menghapus data transaksi.';
+                            Swal.fire('Error', errorMsg, 'error');
+                        }
+                    });
+                }
+            });
+        };
 
         const hapusRO = (idRO) => {
 
@@ -201,7 +257,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: `{{ url('receive_order/delete') }}/${btoa(btoa(idRO))}`, // Sesuaikan Route Delete Anda
+                        url: `{{ url('receive_order/delete') }}/${idRO}`, // Sesuaikan Route Delete Anda
                         type: 'POST',
                         data: {
                             _token: $('meta[name="csrf-token"]').attr('content')
@@ -214,8 +270,9 @@
                                 timer: 2000,
                                 showConfirmButton: false
                             }).then(() => {
-                                window.location.href =
-                                    "{{ url('receive_order') }}"; // Kembali ke daftar list RO
+                                loadData()
+                                // window.location.href =
+                                //     "{{ url('receive_order') }}"; // Kembali ke daftar list RO
                             });
                         },
                         error: function(xhr) {

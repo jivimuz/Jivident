@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductCategories;
 use App\Models\SatuanProduct;
 use App\Models\UnitProduct;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -46,6 +47,7 @@ class ProductController extends Controller
             END
         ), 0) as total_qty
     ")->whereNull('deleted_at')
+            ->whereDate('expired_date', '>', Carbon::now()->format('Y-m-d'))
             ->groupBy('pq.product_id');
 
         $query = Product::from('m_products')

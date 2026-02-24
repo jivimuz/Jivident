@@ -6,6 +6,7 @@ use App\Http\Controllers\Website\ModuleController;
 use App\Http\Controllers\Website\UserListController;
 use App\Http\Controllers\Website\AuthController;
 use App\Http\Controllers\Website\BillingController;
+use App\Http\Controllers\Website\DibatalkanController;
 use App\Http\Controllers\Website\DiperiksaController;
 use App\Http\Controllers\Website\profileController;
 use App\Http\Controllers\Website\SettingController;
@@ -253,9 +254,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getList', [DiperiksaController::class, 'getList']);
     });
 
-    Route::middleware(['checkAccess:DPS'])->prefix('sudah-diperiksa')->group(function () {
-        Route::get('/', [DiperiksaController::class, 'index']);
-        Route::post('getList', [DiperiksaController::class, 'getList']);
+    Route::middleware(['checkAccess:DBT'])->prefix('dibatalkan')->group(function () {
+        Route::get('/', [DibatalkanController::class, 'index']);
+        Route::post('getList', [DibatalkanController::class, 'getList']);
     });
 
     Route::middleware(['checkAccess:DPA'])->prefix('antrian')->group(function () {
@@ -341,8 +342,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('create', [ReceiveOrderController::class, 'create']);
         Route::post('store', [ReceiveOrderController::class, 'store']);
         Route::get('edit/{id}', [ReceiveOrderController::class, 'edit']);
+        Route::get('show/{id}', [ReceiveOrderController::class, 'show']);
         Route::post('update/{id}', [ReceiveOrderController::class, 'update']);
         Route::post('delete/{id}', [ReceiveOrderController::class, 'destroy']);
+        Route::post('approve/{id}', [ReceiveOrderController::class, 'approve']);
         Route::post('getSupplierList', [ReceiveOrderController::class, 'getSupplierList']);
         Route::post('getProductList', [ReceiveOrderController::class, 'getProductList']);
         Route::post('getUnitList', [ReceiveOrderController::class, 'getUnitList']);

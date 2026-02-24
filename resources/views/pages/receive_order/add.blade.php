@@ -247,41 +247,6 @@
 
         </form>
 
-        <!-- Templat Tersembunyi untuk Tambah Baris (Klon) -->
-        <table style="display: none;">
-            <tbody id="row-template">
-                <tr class="item-row">
-                    <td>
-                        <select name="product_id[]" class="form-select select-product" required>
-                            <option value="">Pilih Obat...</option>
-
-                        </select>
-                    </td>
-                    <td><input type="text" name="batch_no[]" class="form-control text-uppercase" placeholder="Batch"
-                            required></td>
-                    <td><input type="date" name="expired_date[]" class="form-control" required></td>
-                    <td><input type="number" name="qty[]" class="form-control input-qty text-center" value="1"
-                            min="1" required></td>
-                    <td>
-                        <select name="unit_id[]" class="form-select select-unit">
-                        </select>
-                    </td>
-                    <td><input type="number" name="harga_beli[]" class="form-control input-harga text-end"
-                            value="0" min="0" required></td>
-                    <td><input type="number" name="diskon_persen[]" class="form-control input-diskon text-center"
-                            value="0" min="0" max="100" step="0.01"></td>
-                    <td>
-                        <input type="text" class="form-control input-subtotal-display text-end fw-bold" value="0"
-                            readonly>
-                        <input type="hidden" name="subtotal[]" class="input-subtotal" value="0">
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-danger btn-remove-row"><i
-                                class="iconoir-trash"></i></button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
 
     </div>
 @endsection
@@ -421,11 +386,41 @@
                 }
 
                 // Tambah klon baris baharu
-                let newRow = $($('#row-template').html());
+                let newRow = ` <tr class="item-row">
+                    <td>
+                        <select name="product_id[]" class="form-select select-product" required>
+                            <option value="">Pilih Obat...</option>
+
+                        </select>
+                    </td>
+                    <td><input type="text" name="batch_no[]" class="form-control text-uppercase" placeholder="Batch"
+                            required></td>
+                    <td><input type="date" name="expired_date[]" class="form-control" required></td>
+                    <td><input type="number" name="qty[]" class="form-control input-qty text-center" value="1"
+                            min="1" required></td>
+                    <td>
+                        <select name="unit_id[]" class="form-select select-unit">
+                        </select>
+                    </td>
+                    <td><input type="number" name="harga_beli[]" class="form-control input-harga text-end"
+                            value="0" min="0" required></td>
+                    <td><input type="number" name="diskon_persen[]" class="form-control input-diskon text-center"
+                            value="0" min="0" max="100" step="0.01"></td>
+                    <td>
+                        <input type="text" class="form-control input-subtotal-display text-end fw-bold" value="0"
+                            readonly>
+                        <input type="hidden" name="subtotal[]" class="input-subtotal" value="0">
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-danger btn-remove-row"><i
+                                class="iconoir-trash"></i></button>
+                    </td>
+                </tr>`
                 $('#item-tbody').append(newRow);
 
                 updateDeleteButtons();
                 updateProductOptions(); // Kemas kini pilihan produk untuk baris baharu
+                select2run()
             });
 
             // Padam Baris

@@ -35,5 +35,6 @@ class DatabaseSeeder extends Seeder
         $this->call(ICDIXSeeder::class);
         $this->call(SatuanProductSeeder::class);
         $this->call(ProductCategoriesSeeder::class);
+        $this->call(UnitProductSeeder::class);
     }
 }

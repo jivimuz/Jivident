@@ -68,7 +68,7 @@
                         <i class="iconoir-fast-arrow-left" style="font-size:20px;"></i>
                     </a>
                     <span class="text-warning fw-bold text-center flex-grow-1 fs-5 fs-md-4">
-                        Edit Penerimaan Barang (Receive Order)
+                        Edit Receive Order ({{ $receiveOrder->no_receipt }})
                     </span>
                     <div style="width:45px;" class="flex-shrink-0"></div>
                 </div>
@@ -87,17 +87,16 @@
                             <h5 class="form-section-title"><i class="iconoir-page"></i> Maklumat Faktur / PBF</h5>
                             <div class="row">
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label fw-bold">Pembekal (PBF) <span
+                                    <label class="form-label fw-bold">Supplier (PBF) <span
                                             class="text-danger">*</span></label>
-                                    <select name="supplier_id" class="form-select" required>
-                                        <option value="">-- Pilih PBF --</option>
-                                        <!-- Anda bisa me-load supplier asli dari backend/ajax. Ini fallback statis -->
-                                        <option value="1" {{ $receiveOrder->supplier_id == 1 ? 'selected' : '' }}>PT.
-                                            Enseval Putera Megatrading</option>
-                                        <option value="2" {{ $receiveOrder->supplier_id == 2 ? 'selected' : '' }}>PT.
-                                            Kebayoran Pharma</option>
-                                        <option value="3" {{ $receiveOrder->supplier_id == 3 ? 'selected' : '' }}>PT.
-                                            Anugerah Pharmindo Lestari</option>
+                                    <select name="supplier_id" id="supplier_id" class="form-select" required>
+                                        <option value="" hidden>-- Pilih PBF --</option>
+                                        @if ($receiveOrder->supplier)
+                                            <option value="{{ $receiveOrder->supplier_id }}" selected>
+                                                {{ $receiveOrder->supplier }}
+                                            </option>
+                                        @endif
+
                                     </select>
                                 </div>
                                 <div class="col-md-3 mb-3">
@@ -106,17 +105,17 @@
                                         value="{{ $receiveOrder->no_faktur }}" required>
                                 </div>
                                 <div class="col-md-2 mb-3">
-                                    <label class="form-label fw-bold">Tkh. Faktur <span class="text-danger">*</span></label>
+                                    <label class="form-label fw-bold">Tgl. Faktur <span class="text-danger">*</span></label>
                                     <input type="date" name="tgl_faktur" class="form-control"
                                         value="{{ $receiveOrder->tgl_faktur }}" required>
                                 </div>
                                 <div class="col-md-2 mb-3">
-                                    <label class="form-label fw-bold">Tkh. Jatuh Tempo</label>
+                                    <label class="form-label fw-bold">Tgl. Jatuh Tempo</label>
                                     <input type="date" name="tgl_jatuh_tempo" class="form-control"
                                         value="{{ $receiveOrder->tgl_jatuh_tempo }}">
                                 </div>
                                 <div class="col-md-2 mb-3">
-                                    <label class="form-label fw-bold">No. PO (Pilihan)</label>
+                                    <label class="form-label fw-bold">No. PO (Opsional)</label>
                                     <input type="text" name="no_po" class="form-control"
                                         value="{{ $receiveOrder->no_po }}">
                                 </div>
@@ -132,8 +131,8 @@
                     <div class="card shadow-sm border-0">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                                <h5 class="card-title text-primary fw-bold mb-0"><i class="iconoir-box"></i> Perincian Item
-                                    Ubat</h5>
+                                <h5 class="card-title text-primary fw-bold mb-0"><i class="iconoir-box"></i> Detail Item
+                                </h5>
                                 <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" id="btn-add-row">
                                     <i class="iconoir-plus-circle"></i> Tambah Baris
                                 </button>
@@ -143,10 +142,10 @@
                                 <table class="table table-bordered table-input" id="table-items">
                                     <thead>
                                         <tr>
-                                            <th width="20%">Produk / Ubat</th>
+                                            <th width="20%">Produk / Obat</th>
                                             <th width="12%">No. Batch</th>
-                                            <th width="10%">Tarikh Luput</th>
-                                            <th width="8%">Kuantiti</th>
+                                            <th width="10%">Tgl Kadaluwarsa</th>
+                                            <th width="8%">Qty</th>
                                             <th width="10%">Unit</th>
                                             <th width="12%">Harga Beli</th>
                                             <th width="8%">Disc (%)</th>
@@ -169,22 +168,19 @@
                                                 <td><input type="text" name="batch_no[]"
                                                         class="form-control text-uppercase" value="{{ $detail->batch_no }}"
                                                         required></td>
-                                                <td><input type="month" name="expired_date[]" class="form-control"
-                                                        value="{{ \Carbon\Carbon::parse($detail->expired_date)->format('Y-m') }}"
-                                                        required></td>
+                                                <td><input type="date" name="expired_date[]" class="form-control"
+                                                        value="{{ $detail->expired_date }}" required></td>
                                                 <td><input type="number" name="qty[]"
                                                         class="form-control input-qty text-center"
                                                         value="{{ $detail->qty }}" min="1" required></td>
                                                 <td>
-                                                    <select name="satuan_id[]" class="form-select">
-                                                        <option value="Box"
-                                                            {{ $detail->unit_id == 'Box' ? 'selected' : '' }}>Box</option>
-                                                        <option value="Strip"
-                                                            {{ $detail->unit_id == 'Strip' ? 'selected' : '' }}>Strip
-                                                        </option>
-                                                        <option value="Botol"
-                                                            {{ $detail->unit_id == 'Botol' ? 'selected' : '' }}>Botol
-                                                        </option>
+                                                    <select name="unit_id[]" class="form-select select-unit">
+
+                                                        @if ($detail->unit_id)
+                                                            <option value="{{ $detail->unit_id }}" selected>
+                                                                {{ $detail->unit_name }}
+                                                            </option>
+                                                        @endif
                                                     </select>
                                                 </td>
                                                 <td><input type="number" name="harga_beli[]"
@@ -230,14 +226,14 @@
                 <div class="col-lg-5">
                     <div class="card shadow-sm border-0 summary-box">
                         <div class="row mb-2">
-                            <div class="col-6 summary-label align-self-center">Jumlah Kasar</div>
+                            <div class="col-6 summary-label align-self-center">Total Bruto</div>
                             <div class="col-6 summary-value" id="display-total-bruto">Rp 0</div>
                             <input type="hidden" name="total_bruto" id="input-total-bruto"
                                 value="{{ $receiveOrder->total_bruto }}">
                         </div>
 
                         <div class="row mb-2">
-                            <div class="col-6 summary-label align-self-center">Diskaun Tambahan (Rp)</div>
+                            <div class="col-6 summary-label align-self-center">Discount Tambahan (Rp)</div>
                             <div class="col-6">
                                 <input type="number" name="diskon_global" id="input-diskon-global"
                                     class="form-control text-end fw-bold" value="{{ $receiveOrder->diskon_global }}"
@@ -260,7 +256,7 @@
                         <hr>
 
                         <div class="row mb-4">
-                            <div class="col-5 summary-label align-self-center">Jumlah Keseluruhan</div>
+                            <div class="col-5 summary-label align-self-center">Grand Total</div>
                             <div class="col-7 summary-value grand-total" id="display-grand-total">Rp 0</div>
                             <input type="hidden" name="grand_total" id="input-grand-total"
                                 value="{{ $receiveOrder->grand_total }}">
@@ -271,7 +267,7 @@
                                 onclick="history.back()">Batal</button>
                             <button type="submit" class="btn btn-warning text-white rounded-pill w-100 fw-bold"
                                 id="btn-submit">
-                                <i class="iconoir-save-floppy-disk"></i> Kemas Kini Penerimaan
+                                <i class="fa fa-save"></i> Simpan Penerimaan
                             </button>
                         </div>
                     </div>
@@ -280,48 +276,6 @@
 
         </form>
 
-        <!-- Templat Tersembunyi untuk Tambah Baris (Klon) -->
-        <table style="display: none;">
-            <tbody id="row-template">
-                <tr class="item-row">
-                    <td>
-                        <select name="product_id[]" class="form-select select-product" required>
-                            <option value="">Pilih Ubat...</option>
-                            <option value="1">Paracetamol 500mg</option>
-                            <option value="2">Amoxicillin 500mg</option>
-                            <option value="3">Cefadroxil 500mg</option>
-                            <option value="4">Vitamin C 100mg</option>
-                            <option value="5">Antasida Doen</option>
-                        </select>
-                    </td>
-                    <td><input type="text" name="batch_no[]" class="form-control text-uppercase" placeholder="Batch"
-                            required></td>
-                    <td><input type="month" name="expired_date[]" class="form-control" required></td>
-                    <td><input type="number" name="qty[]" class="form-control input-qty text-center" value="1"
-                            min="1" required></td>
-                    <td>
-                        <select name="satuan_id[]" class="form-select">
-                            <option value="Box">Box</option>
-                            <option value="Strip">Strip</option>
-                            <option value="Botol">Botol</option>
-                        </select>
-                    </td>
-                    <td><input type="number" name="harga_beli[]" class="form-control input-harga text-end"
-                            value="0" min="0" required></td>
-                    <td><input type="number" name="diskon_persen[]" class="form-control input-diskon text-center"
-                            value="0" min="0" max="100" step="0.01"></td>
-                    <td>
-                        <input type="text" class="form-control input-subtotal-display text-end fw-bold" value="0"
-                            readonly>
-                        <input type="hidden" name="subtotal[]" class="input-subtotal" value="0">
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-danger btn-remove-row"><i
-                                class="iconoir-trash"></i></button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
 
     </div>
 @endsection
@@ -435,16 +389,48 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'Amaran',
-                        text: 'Sila pilih ubat/produk pada baris terakhir sebelum menambah baris baharu.'
+                        text: 'Sila pilih Obat/produk pada baris terakhir sebelum menambah baris baharu.'
                     });
                     return;
                 }
 
-                let newRow = $($('#row-template').html());
+                let newRow = `    <tr class="item-row">
+                    <td>
+                        <select name="product_id[]" class="form-select select-product" required>
+                            <option value="">Pilih Obat...</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="batch_no[]" class="form-control text-uppercase" placeholder="Batch"
+                            required></td>
+                    <td><input type="month" name="expired_date[]" class="form-control" required></td>
+                    <td><input type="number" name="qty[]" class="form-control input-qty text-center" value="1"
+                            min="1" required></td>
+                    <td>
+                        <select name="satuan_id[]" class="form-select select-unit">
+                            <option value="Box">Box</option>
+                            <option value="Strip">Strip</option>
+                            <option value="Botol">Botol</option>
+                        </select>
+                    </td>
+                    <td><input type="number" name="harga_beli[]" class="form-control input-harga text-end"
+                            value="0" min="0" required></td>
+                    <td><input type="number" name="diskon_persen[]" class="form-control input-diskon text-center"
+                            value="0" min="0" max="100" step="0.01"></td>
+                    <td>
+                        <input type="text" class="form-control input-subtotal-display text-end fw-bold" value="0"
+                            readonly>
+                        <input type="hidden" name="subtotal[]" class="input-subtotal" value="0">
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-danger btn-remove-row"><i
+                                class="iconoir-trash"></i></button>
+                    </td>
+                </tr>`
                 $('#item-tbody').append(newRow);
 
                 updateDeleteButtons();
                 updateProductOptions();
+                select2run()
             });
 
             $('#item-tbody').on('click', '.btn-remove-row', function() {
@@ -480,8 +466,8 @@
                     success: function(response) {
                         Swal.fire({
                             icon: 'success',
-                            title: 'Berjaya',
-                            text: 'Penerimaan barang berjaya diperbarui!',
+                            title: 'Berhasil',
+                            text: 'Penerimaan barang berhasil disimpan!',
                             timer: 2000,
                             showConfirmButton: false
                         }).then(() => {
@@ -490,7 +476,7 @@
                         });
                     },
                     error: function(xhr) {
-                        let errorMsg = "Terdapat ralat pada sistem.";
+                        let errorMsg = "Terjadi kesalahan sistem.";
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMsg = xhr.responseJSON.message;
                         }

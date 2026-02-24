@@ -83,6 +83,7 @@ class DiperiksaController extends Controller
             });
         }
         $query->where('t_daftarpasien.status', '!=', 'Dalam Antrian');
+        $query->where('t_daftarpasien.status', '!=', 'Dibatalkan');
         if ($status && $status != 'All') {
             if ($status == "Not Yet") {
                 $query->where('t_daftarpasien.status', '!=', 'Selesai');

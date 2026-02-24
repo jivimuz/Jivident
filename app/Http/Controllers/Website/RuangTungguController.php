@@ -108,8 +108,16 @@ class RuangTungguController extends Controller
 
     public function batalkanPasien(Request $request)
     {
-        $pasien = DaftarPasien::where('id', base64_decode(base64_decode($request->id)))->first();
+        $pasien = DaftarPasien::where('id', base64_decode(base64_decode($request->sd)))->first();
         if ($pasien) {
+
+            if ($pasien->status !== "Dalam Antrian") {
+                return response()->json([
+                    'code' => 0,
+                    'message' => "Pasien sudah di proses",
+                    'error' => "Pasien sudah di proses"
+                ], 400);
+            }
             $pasien->status = "Dibatalkan";
             $pasien->save();
             return response()->json([
