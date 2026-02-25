@@ -55,11 +55,11 @@ return new class extends Migration
                 "value" => 50000,
                 "type" => 'number',
             ],
-            // [
-            //     "parameter" => 'harga_pendaftaran',
-            //     "value" => 100000,
-            //     "type" => 'number',
-            // ],
+            [
+                "parameter" => 'jasa_racikan_price',
+                "value" => 5000,
+                "type" => 'number',
+            ],
 
         ]);
     }

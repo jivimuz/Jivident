@@ -213,11 +213,15 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['checkAccess:DPP'])->prefix('ruang-tunggu')->group(function () {
-        Route::get('', [RuangTungguController::class, 'index']);
+        Route::get('/', [RuangTungguController::class, 'index']);
         Route::post('getList', [RuangTungguController::class, 'getList']);
         Route::post('batalkan-pasien', [RuangTungguController::class, 'batalkanPasien']);
     });
     Route::middleware(['checkAccess:DPP'])->prefix('pemeriksaan')->group(function () {
+
+        Route::post('getProductList', [PemeriksaanController::class, 'getProductList']);
+        Route::post('getPenggunaanList', [PemeriksaanController::class, 'getPenggunaanList']);
+
         Route::prefix('pasien/{id}')->group(function () {
             Route::get('/', [PemeriksaanController::class, 'index']);
 
@@ -238,7 +242,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('diagnosa', [PemeriksaanController::class, 'diagnosa']);
             Route::post('diagnosa/save', [PemeriksaanController::class, 'saveDiagnosa']);
 
-            Route::post('resepelektronik', [PemeriksaanController::class, 'resepElektronik']);
+            Route::post('resep', [PemeriksaanController::class, 'resep']);
+            Route::post('resep/save', [PemeriksaanController::class, 'saveOrUpdateResep']);
+            Route::post('resep/load', [PemeriksaanController::class, 'getCurrentResep']);
 
             Route::prefix('odontogram')->group(function () {
                 Route::post('/', [OdontogramController::class, 'index']);

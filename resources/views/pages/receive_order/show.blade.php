@@ -148,7 +148,6 @@
                                             <th width="12%">Harga Beli</th>
                                             <th width="8%">Disc (%)</th>
                                             <th width="15%">Subjumlah</th>
-                                            <th width="5%"><i class="iconoir-trash"></i></th>
                                         </tr>
                                     </thead>
                                     <tbody id="item-tbody">
@@ -197,10 +196,7 @@
                                                     <input disabled type="hidden" name="subtotal[]"
                                                         class="input-subtotal" value="{{ $detail->subtotal }}">
                                                 </td>
-                                                <td class="text-center">
-                                                    <button type="button" class="btn btn-sm btn-danger btn-remove-row"><i
-                                                            class="iconoir-trash"></i></button>
-                                                </td>
+
                                             </tr>
                                         @endforeach
 

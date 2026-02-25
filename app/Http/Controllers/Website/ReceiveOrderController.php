@@ -472,7 +472,7 @@ class ReceiveOrderController extends Controller
 
         $data = Supplier::where('klienfk', Auth::user()->klienfk ?? 1)
             ->when($q, function ($query) use ($q) {
-                $query->where('a.name', 'LIKE', "%{$q}%");
+                $query->where('name', 'LIKE', "%{$q}%");
             })
             ->limit(20)
             ->get();
@@ -489,7 +489,7 @@ class ReceiveOrderController extends Controller
 
         $data = Product::where('klienfk', Auth::user()->klienfk ?? 1)
             ->when($q, function ($query) use ($q) {
-                $query->where('a.name', 'LIKE', "%{$q}%");
+                $query->where('name', 'LIKE', "%{$q}%");
             })
             ->limit(20)
             ->get();
@@ -504,7 +504,7 @@ class ReceiveOrderController extends Controller
         $q = $request->q;
 
         $data = UnitProduct::when($q, function ($query) use ($q) {
-            $query->where('a.name', 'LIKE', "%{$q}%");
+            $query->where('name', 'LIKE', "%{$q}%");
         })
             ->limit(20)
             ->get();

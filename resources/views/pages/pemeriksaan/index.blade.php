@@ -102,7 +102,7 @@
                                         class="fa fa-list-ol fa-fw"></i>Tindakan </button>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link" id="resepelektronik" aria-selected="false"><i
+                                <button class="nav-link" id="resep" aria-selected="false"><i
                                         class="fa fa-flask fa-fw"></i>Resep Obat</button>
                             </li>
                         </ul>
@@ -278,6 +278,9 @@
     <script src="{{ url('') }}/assets/js/3dmodel/jspdf.js"></script>
     <script src="{{ url('') }}/assets/js/3dmodel/2dglobal.js"></script>
     <script>
+        // State Management
+        let cart = [];
+        let rCounter = 1;
         let ishold = false;
         let tindakanInitial = []
         let tindakanList = [];
@@ -596,5 +599,98 @@
                 }
             });
         });
+
+        function selectProduct() {
+            $('.select-product').each(function() {
+                if (!$(this).hasClass('rendered')) {
+                    $(this).select2({
+                        ajax: {
+                            url: "<?= url('pemeriksaan/getProductList') ?>",
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            delay: 250,
+                            datatype: 'json',
+
+                            data: function(params) {
+                                return {
+                                    q: params.term
+                                }
+                            },
+                            processResults: function(response) {
+                                var option = [];
+                                option.push({
+                                    text: 'Pilih',
+                                    id: '',
+                                    name: '',
+                                })
+                                for (data of response.data) {
+                                    option.push({
+                                        text: data.is_narkotika ?
+                                            `${data.name} (${data.strength} ${data.satuan_name}) - NARKOTIKA` :
+                                            `${data.name} (${data.strength} ${data.satuan_name})`,
+                                        id: data.id,
+                                        satuan: data.unit_name,
+                                        stok: data.qty,
+                                        harga: data.harga,
+
+                                    })
+                                }
+                                return {
+                                    results: option
+                                };
+                            },
+
+                        },
+                        placeholder: "Input Name for search",
+                    })
+                    $(this).addClass('rendered')
+                }
+            })
+        }
+
+        function selectPenggunaan() {
+            $('.select-penggunaan').each(function() {
+                if (!$(this).hasClass('rendered')) {
+                    $(this).select2({
+                        ajax: {
+                            url: "<?= url('pemeriksaan/getPenggunaanList') ?>",
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            delay: 250,
+                            datatype: 'json',
+                            data: function(params) {
+                                return {
+                                    q: params.term
+                                }
+                            },
+                            processResults: function(response) {
+                                var option = [];
+                                option.push({
+                                    text: 'Pilih',
+                                    id: '',
+                                    name: '',
+                                })
+                                for (data of response.data) {
+                                    option.push({
+                                        text: data.name,
+                                        id: data.id,
+                                    })
+                                }
+                                return {
+                                    results: option
+                                };
+                            },
+
+                        },
+                        placeholder: "Input Name for search",
+                    })
+                    $(this).addClass('rendered')
+                }
+            })
+        }
     </script>
 @endsection
