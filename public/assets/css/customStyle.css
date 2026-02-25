@@ -265,7 +265,7 @@ label {
 
 .signa-badge {
     background: #e0e7ff;
-    color: #3730a3;
+    color: #3730a3 !important;
     padding: 3px 8px;
     border-radius: 4px;
     font-size: 11px;
