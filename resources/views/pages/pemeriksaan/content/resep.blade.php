@@ -313,8 +313,8 @@
                         <tr class="row-racikan-header">
                             <td class="r-number">R/ ${item.r_num}</td>
                             <td>
-                                <strong class="text-dark fs-6">Racikan: ${item.nama_racikan}</strong> (${item.bentuk})<br>
-                                <span class="signa-badge mt-1 d-inline-block">${item.signa}</span>
+                                <strong class="text-dark fs-6">Racikan: ${item.nama_racikan}</strong> <span class="text-warning">(${item.bentuk})</span><br>
+                                <span class="signa-badge text-info mt-1 d-inline-block">${item.signa}</span>
                             </td>
                             <td class="fw-bold text-black">${item.qty_buat} ${item.satuan}</td>
                             <td class="text-end fw-bold text-secondary">
