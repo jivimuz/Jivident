@@ -289,7 +289,7 @@
                             <td class="r-number">R/ ${item.r_num}</td>
                             <td>
                                 <strong class="text-dark fs-6">${item.obat_name}</strong><br>
-                                <span class="signa-badge mt-1 d-inline-block">${item.signa}</span>
+                                <span class="signa-badge text-info mt-1 d-inline-block">${item.signa}</span>
                             </td>
                             <td class="fw-bold text-black">${item.qty} ${item.satuan}</td>
                             <td class="text-end fw-bold text-secondary">${formatRupiah(item.subtotal)}</td>
