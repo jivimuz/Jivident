@@ -217,8 +217,8 @@
         let stotal = 0;
 
         diagnosaList.forEach((item, i) => {
-            const subtotal = item.diagnosa_amount * item.qty;
-            stotal += item.diagnosa_amount;
+            const subtotal = parseFloat(item.diagnosa_amount) * parseFloat(item.qty);
+            stotal += parseFloat(item.diagnosa_amount);
             total += subtotal;
 
             tbody.append(`

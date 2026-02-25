@@ -18,10 +18,7 @@ return new class extends Migration
             $table->string('code', 100);
 
             // Mengikuti CI4 type double
-            $table->double('tarif_a')->default(0);
-            $table->double('tarif_b')->default(0);
-            $table->double('tarif_c')->default(0);
-            $table->double('tarif_d')->default(0);
+            $table->double('tarif')->default(0);
 
             $table->timestamps();
             $table->softDeletes();
