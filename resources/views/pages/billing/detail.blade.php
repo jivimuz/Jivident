@@ -202,15 +202,6 @@
             let selisih = 0
             const fk_daftarpasien = $('#fk_daftarpasien').val();
 
-            // Fungsi Format Rupiah
-            const formatRupiah = (angka) => {
-                return new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0
-                }).format(angka);
-            };
-
             // 1. Ambil Data Tagihan via AJAX
             const loadTagihan = () => {
                 $.ajax({

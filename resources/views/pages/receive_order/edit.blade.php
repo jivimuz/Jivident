@@ -289,14 +289,6 @@
                 }
             });
 
-            const formatRupiah = (angka) => {
-                return new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0
-                }).format(angka);
-            };
-
             const calculateRow = (row) => {
                 let qty = parseFloat(row.find('.input-qty').val()) || 0;
                 let harga = parseFloat(row.find('.input-harga').val()) || 0;
