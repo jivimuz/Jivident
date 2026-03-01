@@ -43,4 +43,11 @@ if (! function_exists('WIB')) {
         $umur = $tglLahir->diff($sekarang)->y; // ambil perbedaan tahun
         return $umur;
     }
+
+    function rupiah($angka)
+    {
+
+        $hasil_rupiah = "Rp " . number_format($angka, 2, ',', '.');
+        return $hasil_rupiah;
+    }
 }

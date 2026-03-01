@@ -389,8 +389,8 @@ class PemeriksaanController extends Controller
 
     public function resep($id)
     {
-        $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
-        $racikanprice = Setting::select('value')->where('parameter', 'jasa_racikan_price')->first();
+        $status = DaftarPasien::select(['status', 'pasienfk'])->where('id', base64_decode(base64_decode($id)))->first();
+        $racikanprice = Setting::select('value')->where('parameter', 'patient_jasa_racikan_price')->first();
 
         return view('pages/pemeriksaan/content/resep', compact('id', 'status', 'racikanprice'));
     }

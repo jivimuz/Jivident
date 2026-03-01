@@ -360,4 +360,5 @@ Route::middleware(['auth'])->group(function () {
 
 Route::prefix('print')->group(function () {
     Route::middleware(['checkAccess:PA'])->get('print-antrian/{id}', [PrintController::class, 'antrianPasien']);
+    Route::middleware(['checkAccess:DPP'])->get('print-resep-pasien/{id}', [PrintController::class, 'printResepPasien']);
 });

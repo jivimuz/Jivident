@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Models\Alamat;
 use App\Models\DaftarPasien;
+use App\Models\DiagnosaPasien;
 use App\Models\Etnis;
 use App\Models\JenisKelamin;
 use App\Models\Kebangsaan;
@@ -15,6 +16,7 @@ use App\Models\Patient;
 use App\Models\Pekerjaan;
 use App\Models\Religion;
 use App\Models\RuangPraktek;
+use App\Models\Setting;
 use App\Models\Study;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -369,12 +371,18 @@ class PatientController extends Controller
             ->leftJoin('m_study', 'm_study.id', 'm_pasien.fk_study')
             ->leftJoin('m_pekerjaan', 'm_pekerjaan.id', 'm_pasien.pekerjaanfk')
             ->where('m_pasien.id', base64_decode(base64_decode($id)))->first();
+        $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
 
         $ruangan = RuangPraktek::select(['m_ruangpraktek.*', 'm_users.id as dokterid', 'm_users.display_name as dokter'])
             ->join('m_users', 'm_ruangpraktek.fk_dokter', 'm_users.id')
             ->where('m_ruangpraktek.klienfk', Auth::user()->klienfk ?? 1)->get();
 
-        return view('pages/patient/register_patient', compact('id', 'pasien', 'ruangan'));
+        $riwayat = DiagnosaPasien::select('m_icdx.name')->where('tipe_diagnosa', 'X')
+            ->join('m_icdx', 't_diagnosapasien.fk_diagnosa', 'm_icdx.id')
+            ->where('fk_pasien', base64_decode(base64_decode($id)))
+            ->get();
+
+        return view('pages/patient/register_patient', compact('id', 'pasien', 'ruangan', 'registrasi', 'riwayat'));
     }
 
     public function processPatient(Request $request, $id)
@@ -399,6 +407,8 @@ class PatientController extends Controller
             ->whereDate('tglregistrasi', Carbon::parse($request->tglregistrasi)->format('Y-m-d'))
             ->count();
         $time = Carbon::now();
+        $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
+
         $insert = DaftarPasien::insertGetId([
             'klienfk' => Auth::user()->klienfk ?? 1,
             'noregistrasi' => 'RGX' . $time->format('Ymd') .  '-' . $time->format('Hi') . substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'), 0, 4),
@@ -411,6 +421,7 @@ class PatientController extends Controller
             'statuspasien' => $cekstatus ? 'LAMA' : 'BARU',
             'keluhan' => $request->keluhan,
             'noantrian' => ($ruangan->code ?? 'A') . '-' . sprintf('%003s', ($cekAntrian + 1)),
+            'biaya_registrasi' => $registrasi->value ?? 0,
 
         ]);
         if ($insert) {

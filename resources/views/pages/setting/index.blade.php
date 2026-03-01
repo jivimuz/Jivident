@@ -31,7 +31,7 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Parameter</th>
+                                        <th>Name</th>
                                         <th>Value</th>
                                         <th>-</th>
                                     </tr>
@@ -65,7 +65,7 @@
                     className: 'text-center'
                 },
                 {
-                    data: 'parameter'
+                    data: 'name'
                 },
                 {
                     data: 'value',

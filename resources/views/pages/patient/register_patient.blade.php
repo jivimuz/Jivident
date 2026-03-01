@@ -62,14 +62,33 @@
                             <div class="border-b">
                                 <h5 class="fw-500 text-primary-light bb-2 mt-20 pb-10 m-0">Alamat</h5>
                             </div>
-                            <div class=" bg-primary p-2 mt-2 text-center" style="border-radius: 20px">
+                            <div class=" p-2 mt-2 text-center" style="border-radius: 20px">
 
                                 <span class="me-20 fw-500 ">
                                     {{ $pasien->alamat ?? '-' }}{{ $pasien->kelurahan ? ', ' . $pasien->kelurahan : '' }}{{ $pasien->kecamatan ? ', ' . $pasien->kecamatan : '' }}{{ $pasien->kotakabupaten ? ', ' . $pasien->kotakabupaten : '' }}{{ $pasien->provinsi ? ', ' . $pasien->provinsi : '' }}
                                 </span>
                             </div>
 
+                            <hr>
+                            @if (!empty($riwayat) && count($riwayat))
+                                <br>
+                                <div class="border-b">
+                                    <h5 class="fw-500 text-primary-light bb-2 mt-20 pb-10 m-0">Riwayat</h5>
+                                </div>
 
+                                <div class="mt-2" style="max-height: 220px; overflow:auto;">
+                                    <ul class="list-group list-group-flush">
+                                        @foreach ($riwayat as $r)
+                                            <li class="list-group-item d-flex align-items-center justify-content-between">
+                                                <span class="fw-600 text-dark">
+                                                    {{ data_get($r, 'name', '-') }}
+                                                </span>
+                                                <span class="badge bg-primary rounded-pill">{{ $loop->iteration }}</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -79,7 +98,9 @@
                     data-iq-duration=".6" data-iq-delay=".4" data-iq-trigger="scroll" data-iq-ease="none">
                     <div class="card-header">
                         <div class="float-end">
-
+                            <h6 class="text-primary"> Biaya :
+                                <span class="text-danger">{{ $registrasi->value ? rupiah($registrasi->value) : 0 }}</span>
+                            </h6>
                         </div>
                         <h4 class="card-title">Data Pendaftaran</h4>
                         <small>Lengkapi data di bawah ini</small>
@@ -134,11 +155,13 @@
                                     Daftarkan</button>
                             </div>
                         </form>
+                        <code>*Harga registrasi di atur pada menu setting</code>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 @endsection
 
 @section('script')

@@ -31,6 +31,7 @@ return new class extends Migration
             $table->enum('statuspembayaran', ['Belum Verifikasi', 'Verifikasi Sebagian', 'Verifikasi', 'Lunas'])->default('Belum Verifikasi');
             $table->string('kondisi_kepulangan', 255)->nullable();
             $table->string('reportdisplay', 255)->nullable();
+            $table->double('biaya_registrasi');
 
             $table->timestamps(); // otomatis buat created_at & updated_at
             $table->softDeletes(); // buat deleted_at

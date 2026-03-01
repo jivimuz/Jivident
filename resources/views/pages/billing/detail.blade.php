@@ -68,7 +68,7 @@
                                     <thead class="bg-light">
                                         <tr>
                                             <th>Tipe</th>
-                                            <th>Tindakan / Item</th>
+                                            <th>Nama Item</th>
                                             <th>Dokter</th>
                                             <th class="text-center">Qty</th>
                                             <th class="text-end">Harga</th>
@@ -85,7 +85,6 @@
                                         </tr>
                                     </tbody>
                                 </table>
-                                <code>*Harga registrasi di atur pada menu setting</code>
                             </div>
                         </div>
                     </div>

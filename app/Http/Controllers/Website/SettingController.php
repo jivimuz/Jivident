@@ -24,9 +24,6 @@ class SettingController extends Controller
     public function saveSettingD(Request $request)
     {
         $setting = Setting::where('id', $request->param)->update(['value' => $request->val]);
-        if (!$setting) {
-            return response()->json(["error" => 'Update Fail', 'data' => $setting], 400);
-        }
         return response()->json(["message" => 'success', 'data' => $setting], 200);
     }
 

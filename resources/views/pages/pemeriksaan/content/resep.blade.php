@@ -194,11 +194,16 @@
         <div class="{{ $status->status == 'Di Periksa' ? 'col-lg-7' : 'col-lg-12' }}">
             <div class="card shadow-sm border-0 h-100" style="background-color: #f8fafc;">
                 <div class="card-body p-4 d-flex flex-column">
-                    <h4 class="fw-bold mb-3 text-dark d-flex justify-content-between align-items-center">
-                        <span>Kertas Resep (Preview)</span>
-                        <span class="badge bg-primary rounded-pill" id="total-item-badge">0 Item</span>
-                    </h4>
-
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="fw-bold mb-3 text-dark ">
+                            <span>Kertas Resep (Preview)</span> <br>
+                            <span class="badge bg-primary rounded-pill" id="total-item-badge">0 Item</span>
+                        </h4>
+                        <a class="btn btn-outline-info rounded-pill"
+                            onclick="openPopup(`{{ url('print/print-resep-pasien/' . base64_encode(base64_encode($status->pasienfk))) }}`)"><i
+                                class="fa fa-print"></i> Print
+                            Resep</a>
+                    </div>
                     @if ($status->status == 'Di Periksa')
                         <div class="info-box mb-3">
                             <i class="iconoir-info-circle"></i> Resep di bawah ini belum tersimpan ke database.
@@ -210,27 +215,29 @@
                     <!-- Kertas Resep Area -->
                     <div class="bg-white border rounded p-3 mb-3 flex-grow-1"
                         style="min-height: 400px; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.03);">
-                        <table class="cart-table" id="cart-table">
-                            <thead>
-                                <tr>
-                                    <th width="8%">R/</th>
-                                    <th width="45%">Deskripsi Obat & Signa</th>
-                                    <th width="12%">Qty</th>
-                                    <th width="20%">Subtotal Harga</th>
-                                    @if ($status->status == 'Di Periksa')
-                                        <th width="15%" class="text-center">Aksi</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody id="cart-body">
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-5">
-                                        <i class="fa fa-shopping-cart mb-2" style="font-size: 40px;"></i><br>
-                                        Belum ada obat yang dimasukkan ke dalam resep.
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="cart-table" id="cart-table">
+                                <thead>
+                                    <tr>
+                                        <th width="8%">R/</th>
+                                        <th width="45%">Deskripsi Obat & Signa</th>
+                                        <th width="12%">Qty</th>
+                                        <th width="20%">Subtotal Harga</th>
+                                        @if ($status->status == 'Di Periksa')
+                                            <th width="15%" class="text-center">Aksi</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-body">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-5">
+                                            <i class="fa fa-shopping-cart mb-2" style="font-size: 40px;"></i><br>
+                                            Belum ada obat yang dimasukkan ke dalam resep.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- Summary & Submit -->
@@ -238,7 +245,6 @@
                         <span class="fw-bold text-secondary">Estimasi Total Harga:</span>
                         <span class="fw-bold text-primary fs-4" id="grand-total-label">Rp 0</span>
                     </div>
-
                     @if ($status->status == 'Di Periksa')
                         <div class="d-flex gap-2">
                             <button class="btn btn-outline-danger rounded-pill px-4"
@@ -247,8 +253,10 @@
                                 onclick="savePrescription()">
                                 <i class="iconoir-check-circle"></i> Submit
                             </button>
+
                         </div>
                     @endif
+
                 </div>
             </div>
         </div>

@@ -140,7 +140,7 @@ class BillingController extends Controller
 
     public function getTagihanList(Request $request)
     {
-        $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
+        $registrasi =  DaftarPasien::select('biaya_pendaftaran')->where('id',  $request->daftarpasien_id)->first();
         $tagihanTindakan =  TindakanPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
         $tagihanDiagnosa =  DiagnosaPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
         $totalPaid = (float) DB::table('t_transactions')
@@ -155,7 +155,7 @@ class BillingController extends Controller
             'message' => 'Get data sukses',
             'tagihan_tindakan' => $tagihanTindakan,
             'tagihan_diagnosa' => $tagihanDiagnosa,
-            'registrasi' => $registrasi ? $registrasi->value : 50000,
+            'registrasi' => $registrasi ? $registrasi->biaya_pendaftaran : 0,
             'totalPaid' => $totalPaid ?? 0,
         ], 200);
     }
