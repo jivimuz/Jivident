@@ -824,4 +824,11 @@ class PemeriksaanController extends Controller
             ], 400);
         }
     }
+
+    public function  cetaksurat($id)
+    {
+        $status = DaftarPasien::select(['t_daftarpasien.status', 't_daftarpasien.pasienfk', 'm_pasien.nama'])->join('m_pasien', 'm_pasien.id', 't_daftarpasien.pasienfk')->where('t_daftarpasien.id', base64_decode(base64_decode($id)))->first();
+        $vitalsign = VitalSign::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
+        return view('pages/pemeriksaan/content/cetak_surat', compact('id', 'status', 'vitalsign'));
+    }
 }

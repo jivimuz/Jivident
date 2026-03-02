@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('m_provinsi', function (Blueprint $table) {
             $table->bigInteger('id')->nullable(); // bigint unsigned auto_increment
             $table->string('klienfk', 30);
-            $table->string('provinsi', 30);
+            $table->string('provinsi', 30)->index();
             $table->string('kdprovinsi', 255);
             $table->integer('urutan')->nullable();
             $table->string('kodebpjs', 30)->nullable();

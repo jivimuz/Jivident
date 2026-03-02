@@ -246,6 +246,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('resep/save', [PemeriksaanController::class, 'saveOrUpdateResep']);
             Route::post('resep/load', [PemeriksaanController::class, 'getCurrentResep']);
 
+            Route::post('cetaksurat', [PemeriksaanController::class, 'cetaksurat']);
+            Route::post('cetaksurat/save', [PemeriksaanController::class, 'saveCetaksurat']);
+
             Route::prefix('odontogram')->group(function () {
                 Route::post('/', [OdontogramController::class, 'index']);
                 Route::post('field', [OdontogramController::class, 'field']);
@@ -361,4 +364,7 @@ Route::middleware(['auth'])->group(function () {
 Route::prefix('print')->group(function () {
     Route::middleware(['checkAccess:PA'])->get('print-antrian/{id}', [PrintController::class, 'antrianPasien']);
     Route::middleware(['checkAccess:DPP'])->get('print-resep-pasien/{id}', [PrintController::class, 'printResepPasien']);
+    Route::middleware(['checkAccess:DPP'])->get('print-surat-sehat-pasien/{id}', [PrintController::class, 'printSuratSehatPasien']);
+    Route::middleware(['checkAccess:DPP'])->get('print-surat-sakit-pasien/{id}', [PrintController::class, 'printSuratSakitPasien']);
+    Route::middleware(['checkAccess:DPP'])->get('print-surat-rujukan-pasien/{id}', [PrintController::class, 'printSuratRujukanPasien']);
 });

@@ -137,13 +137,15 @@ function timeDiffPause(
     return hasil;
 }
 
-function openPopup(url) {
+function openPopup(url, isfocus = false) {
     var windowName = "popupWindow";
     var windowFeatures =
         "width=800,height=600,toolbar=no,location=no,menubar=no,scrollbars=yes,resizable=yes";
 
     var popupWindow = window.open(url, windowName, windowFeatures);
-    // popupWindow.focus();
+    if (isfocus) {
+        popupWindow.focus();
+    }
 }
 function countAge(tanggalLahir) {
     const today = new Date();

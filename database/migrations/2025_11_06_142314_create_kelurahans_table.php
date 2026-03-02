@@ -11,10 +11,10 @@ return new class extends Migration
         Schema::create('m_kelurahan', function (Blueprint $table) {
             $table->bigInteger('id')->nullable(); // bigint unsigned auto_increment
             $table->string('klienfk', 30);
-            $table->unsignedBigInteger('provinsifk');
-            $table->unsignedBigInteger('kotakabupatenfk');
-            $table->unsignedBigInteger('kecamatanfk');
-            $table->string('kelurahan', 255);
+            $table->unsignedBigInteger('provinsifk')->index();
+            $table->unsignedBigInteger('kotakabupatenfk')->index();
+            $table->unsignedBigInteger('kecamatanfk')->index();
+            $table->string('kelurahan', 255)->index();;
             $table->string('kdkelurahan', 30);
             $table->integer('urutan')->nullable();
             $table->timestamps(); // created_at & updated_at

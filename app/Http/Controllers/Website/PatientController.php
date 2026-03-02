@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class PatientController extends Controller
 {
@@ -162,7 +163,7 @@ class PatientController extends Controller
             ->join('m_provinsi as prov', 'prov.id', '=', 'kel.provinsifk')
             ->join('m_kecamatan as kec', 'kec.id', '=', 'kel.kecamatanfk')
             ->join('m_kotakabupaten as kab', 'kab.id', '=', 'kel.kotakabupatenfk')
-            ->select(['kel.id', 'kel.kelurahan', 'kec.kecamatan', 'kab.kotakabupaten', 'prov.provinsi'])
+            ->select(['kel.id', 'kel.kelurahan', 'kec.kecamatan', 'kab.kotakabupaten', 'prov.provinsi', 'kel.kecamatanfk', 'kel.kotakabupatenfk', 'kel.provinsifk'])
             ->where('kel.kelurahan', 'like', $like)
             ->limit(20);
 
@@ -170,7 +171,7 @@ class PatientController extends Controller
             ->join('m_provinsi as prov', 'prov.id', '=', 'kel.provinsifk')
             ->join('m_kecamatan as kec', 'kec.id', '=', 'kel.kecamatanfk')
             ->join('m_kotakabupaten as kab', 'kab.id', '=', 'kel.kotakabupatenfk')
-            ->select(['kel.id', 'kel.kelurahan', 'kec.kecamatan', 'kab.kotakabupaten', 'prov.provinsi'])
+            ->select(['kel.id', 'kel.kelurahan', 'kec.kecamatan', 'kab.kotakabupaten', 'prov.provinsi', 'kel.kecamatanfk', 'kel.kotakabupatenfk', 'kel.provinsifk'])
             ->where('kec.kecamatan', 'like', $like)
             ->limit(20);
 
@@ -188,17 +189,25 @@ class PatientController extends Controller
 
     public function saveData(Request $request)
     {
-        // Validasi input dasar
+        $klienfk = Auth::user()->klienfk ?? 1;
+
         $validator = Validator::make($request->all(), [
-            'nik' => 'required|string|max:20|unique:m_pasien,nik',
+            'nik' => [
+                'required',
+                'string',
+                'max:20',
+                // unik per klien (kalau tabel ada kolom klienfk)
+                Rule::unique('m_pasien', 'nik')->where(fn($q) => $q->where('klienfk', $klienfk)),
+            ],
             'nama' => 'required|string|max:100',
-            'umur' => 'required|numeric',
             'nohp' => 'required|string|max:20',
             'jeniskelaminfk' => 'required',
             'tgllahir' => 'required|date',
+
             'namapenanggungjawab' => 'required|string',
             'hubungandenganpasien' => 'required|string',
             'nohppenanggungjawab' => 'required|string',
+
             'alamat' => 'required|string',
             'kelurahanfk' => 'required|integer',
         ]);
@@ -208,62 +217,82 @@ class PatientController extends Controller
                 'error' => $validator->errors()->first()
             ], 422);
         }
-        $lastId = Patient::select('id')->orderBy('id', 'desc')->first();
+
         try {
-            $data = [
-                'klienfk' => Auth::user()->klienfk ?? 1,
-                'norm' => generateNoRM(date('is') . ($lastId ? $lastId->id + 1 : 1)),
-                'nobpjs' => $request->nobpjs,
-                'nik' => $request->nik,
-                'nama' => $request->nama,
-                'umur' => $request->umur,
-                'nohp' => $request->nohp,
-                'jeniskelaminfk' => $request->jeniskelaminfk,
-                'tempatlahir' => $request->tempatlahir,
-                'tgllahir' => $request->tgllahir,
-                'namaayah' => $request->namaayah,
-                'namaibu' => $request->namaibu,
-                'agamafk' => $request->agamafk,
-                'statusperkawinanfk' => $request->statusperkawinanfk,
-                'golongandarah' => $request->golongandarah,
-                'pendidikanfk' => $request->pendidikanfk,
-                'pekerjaanfk' => $request->pekerjaanfk,
-                'namapenanggungjawab' => $request->namapenanggungjawab,
-                'hubungandenganpasien' => $request->hubungandenganpasien,
-                'nohppenanggungjawab' => $request->nohppenanggungjawab,
-                'noasuransilain' => $request->noasuransilain,
-                'notelprumah' => $request->notelprumah,
-                'bahasadikuasai' => $request->bahasadikuasai,
-                'kebangsaanfk' => $request->kebangsaanfk,
-                'etnisfk' => $request->etnisfk,
-                'negarafk' => $request->negarafk,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ];
-            $insert = Patient::create($data);
-            $alamat = Alamat::insert([
-                'klienfk' => Auth::user()->klienfk ?? 1,
-                'alamat' => $request->alamat,
-                'kodepos' => $request->kodepos,
-                'rt' => $request->rt,
-                'rw' => $request->rw,
-                'kelurahanfk' => $request->kelurahanfk,
-                'kelurahan' => $request->kelurahan,
-                'kecamatanfk' => $request->kecamatanfk,
-                'kecamatan' => $request->kecamatan,
-                'kotakabupatenfk' => $request->kotakabupatenfk,
-                'kotakabupaten' => $request->kotakabupaten,
-                'provinsifk' => $request->provinsifk,
-                'provinsi' => $request->provinsi,
-                'pasienfk' => $insert->id,
-            ]);
+            $result = DB::transaction(function () use ($request, $klienfk) {
 
+                // umur mending dihitung dari tgllahir biar konsisten
+                $umur = Carbon::parse($request->tgllahir)->age;
 
-            return response()->json(['success' => true, 'message' => 'Data pasien berhasil disimpan.', 'data' => $insert]);
-        } catch (\Exception $e) {
+                // 1) bikin pasien dulu (tanpa norm dulu)
+                $pasien = Patient::create([
+                    'klienfk' => $klienfk,
+                    'norm' => null, // nanti diisi setelah punya ID
+                    'nobpjs' => $request->nobpjs,
+                    'nik' => $request->nik,
+                    'nama' => $request->nama,
+                    'umur' => $umur,
+                    'nohp' => $request->nohp,
+                    'jeniskelaminfk' => $request->jeniskelaminfk,
+                    'tempatlahir' => $request->tempatlahir,
+                    'tgllahir' => $request->tgllahir,
+                    'namaayah' => $request->namaayah,
+                    'namaibu' => $request->namaibu,
+                    'agamafk' => $request->agamafk,
+                    'statusperkawinanfk' => $request->statusperkawinanfk,
+                    'golongandarah' => $request->golongandarah,
+                    'pendidikanfk' => $request->pendidikanfk,
+                    'pekerjaanfk' => $request->pekerjaanfk,
+                    'namapenanggungjawab' => $request->namapenanggungjawab,
+                    'hubungandenganpasien' => $request->hubungandenganpasien,
+                    'nohppenanggungjawab' => $request->nohppenanggungjawab,
+                    'noasuransilain' => $request->noasuransilain,
+                    'notelprumah' => $request->notelprumah,
+                    'bahasadikuasai' => $request->bahasadikuasai,
+                    'kebangsaanfk' => $request->kebangsaanfk,
+                    'etnisfk' => $request->etnisfk,
+                    'negarafk' => $request->negarafk,
+                ]);
+
+                // 2) generate norm PAKAI ID biar anti tabrakan
+                // contoh: ymdHis + id (kamu bisa sesuaikan formatnya)
+                $pasien->norm = generateNoRM(Carbon::now()->format('ymdHis') . $pasien->id);
+                $pasien->save();
+
+                // 3) simpan alamat
+                $alamat = Alamat::create([
+                    'klienfk' => $klienfk,
+                    'alamat' => $request->alamat,
+                    'kodepos' => $request->kodepos,
+                    'rt' => $request->rt,
+                    'rw' => $request->rw,
+                    'kelurahanfk' => $request->kelurahanfk,
+                    'kelurahan' => $request->kelurahan,
+                    'kecamatanfk' => $request->kecamatanfk,
+                    'kecamatan' => $request->kecamatan,
+                    'kotakabupatenfk' => $request->kotakabupatenfk,
+                    'kotakabupaten' => $request->kotakabupaten,
+                    'provinsifk' => $request->provinsifk,
+                    'provinsi' => $request->provinsi,
+                    'pasienfk' => $pasien->id,
+                ]);
+
+                // 4) link alamat ke pasien
+                $pasien->alamatfk = $alamat->id;
+                $pasien->save();
+
+                return $pasien;
+            });
+
             return response()->json([
-                'error' => 'Gagal menyimpan data: ' . $e->getMessage(),
-                'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+                'success' => true,
+                'message' => 'Data pasien berhasil disimpan.',
+                'data' => $result
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan data: ' . $e->getMessage(),
             ], 400);
         }
     }
@@ -327,9 +356,47 @@ class PatientController extends Controller
                 'negarafk' => $request->negarafk,
                 'updated_at' => Carbon::now(),
             ]);
+            $cekal = Alamat::where('pasienfk', $request->id)->where('id', $pasien->alamatfk)->first();
+            $alamat_id = $pasien->alamatfk;
 
-            // Update alamat
+            if (!$cekal) {
+                $cekal2 = Alamat::where('pasienfk', $request->id)->first();
+                $alamat_id =  $cekal2 && $cekal2->id ? $cekal2->id : null;
+                if (!$pasien->alamatfk) {
+                    $al = Alamat::where('pasienfk', $request->id)->first();
+                    $alamat_id = $al && $al->id ? $al->id : null;
+
+                    if (!$al) {
+                        $aId = Alamat::insertGetId([
+                            'pasienfk' => $request->id,
+                            'alamat' => $request->alamat,
+                            'kodepos' => $request->kodepos,
+                            'rt' => $request->rt,
+                            'rw' => $request->rw,
+                            'kelurahanfk' => $request->kelurahanfk,
+                            'kelurahan' => $request->kelurahan,
+                            'kecamatanfk' => $request->kecamatanfk,
+                            'kecamatan' => $request->kecamatan,
+                            'kotakabupatenfk' => $request->kotakabupatenfk,
+                            'kotakabupaten' => $request->kotakabupaten,
+                            'provinsifk' => $request->provinsifk,
+                            'provinsi' => $request->provinsi,
+                        ]);
+                        $pasien->alamatfk =   $aId;
+                        $pasien->save();
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Data pasien berhasil diperbarui.',
+                            'data' => $pasien
+                        ]);
+                    }
+                }
+            }
+            $pasien->alamatfk =  $alamat_id;
+            $pasien->save();
+
             Alamat::updateOrCreate([
+                'id' => $alamat_id,
                 'pasienfk' => $request->id
             ], [
                 'alamat' => $request->alamat,
@@ -345,7 +412,6 @@ class PatientController extends Controller
                 'provinsifk' => $request->provinsifk,
                 'provinsi' => $request->provinsi,
             ]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Data pasien berhasil diperbarui.',

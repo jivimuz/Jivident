@@ -105,6 +105,10 @@
                                 <button class="nav-link" id="resep" aria-selected="false"><i
                                         class="fa fa-flask fa-fw"></i>Resep Obat</button>
                             </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="cetaksurat" aria-selected="false"><i
+                                        class="fa fa-folder fa-fw"></i>Cetak Surat</button>
+                            </li>
                         </ul>
 
                     </div>
