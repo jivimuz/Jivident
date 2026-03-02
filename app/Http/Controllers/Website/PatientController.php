@@ -152,30 +152,34 @@ class PatientController extends Controller
         $q = trim((string) $request->post('q', ''));
 
         // biar gak query pas user baru ketik 1-2 huruf
-        if (mb_strlen($q) < 2) {
+        if (mb_strlen($q) < 3) {
             return response()->json(["message" => "success", "data" => []], 200);
         }
 
         $like = $q . '%';
 
-        $results = DB::table('m_kelurahan as kel')
-            ->JOIN('m_provinsi as prov', 'prov.id', '=', 'kel.provinsifk')
-            ->JOIN('m_kecamatan as kec', 'kec.id', '=', 'kel.kecamatanfk')
-            ->JOIN('m_kotakabupaten as kab', 'kab.id', '=', 'kel.kotakabupatenfk')
-            ->select([
-                'kel.id',
-                'kel.kelurahan',
-                'kec.kecamatan',
-                'kab.kotakabupaten',
-                'prov.provinsi',
+        $q1 = DB::table('m_kelurahan as kel')
+            ->join('m_provinsi as prov', 'prov.id', '=', 'kel.provinsifk')
+            ->join('m_kecamatan as kec', 'kec.id', '=', 'kel.kecamatanfk')
+            ->join('m_kotakabupaten as kab', 'kab.id', '=', 'kel.kotakabupatenfk')
+            ->select(['kel.id', 'kel.kelurahan', 'kec.kecamatan', 'kab.kotakabupaten', 'prov.provinsi'])
+            ->where('kel.kelurahan', 'like', $like)
+            ->limit(20);
 
-            ])
-            ->where(function ($w) use ($like) {
-                $w->where('kel.kelurahan', 'like', $like)
-                    ->orWhere('kec.kecamatan', 'like', $like)
-                    ->orWhere('kab.kotakabupaten', 'like', $like)
-                    ->orWhere('prov.provinsi', 'like', $like);
-            })
+        $q2 = DB::table('m_kelurahan as kel')
+            ->join('m_provinsi as prov', 'prov.id', '=', 'kel.provinsifk')
+            ->join('m_kecamatan as kec', 'kec.id', '=', 'kel.kecamatanfk')
+            ->join('m_kotakabupaten as kab', 'kab.id', '=', 'kel.kotakabupatenfk')
+            ->select(['kel.id', 'kel.kelurahan', 'kec.kecamatan', 'kab.kotakabupaten', 'prov.provinsi'])
+            ->where('kec.kecamatan', 'like', $like)
+            ->limit(20);
+
+        $union = $q1->unionAll($q2);
+
+        $results = DB::query()
+            ->fromSub($union, 'x')
+            ->select('*')
+            ->distinct()
             ->limit(20)
             ->get();
 

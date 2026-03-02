@@ -352,7 +352,7 @@
                     cache: true
                 },
                 placeholder: 'Cari kelurahan...',
-                minimumInputLength: 2
+                minimumInputLength: 3
             });
 
             $('#kelurahanfk').on('select2:select', function(e) {

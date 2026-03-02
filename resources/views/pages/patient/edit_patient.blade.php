@@ -416,7 +416,7 @@
                     cache: true
                 },
                 placeholder: 'Cari kelurahan...',
-                minimumInputLength: 2
+                minimumInputLength: 3
             });
 
             // Auto-fill address fields on selection
