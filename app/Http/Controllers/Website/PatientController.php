@@ -149,33 +149,37 @@ class PatientController extends Controller
 
     public function searchAddress(Request $request)
     {
-        $searchTerm = $request->post('q');
+        $q = trim((string) $request->post('q', ''));
 
-        $results = DB::select("
-            SELECT
-                m_kelurahan.*,
-                m_provinsi.provinsi,
-                m_kotakabupaten.kotakabupaten,
-                m_kecamatan.kecamatan
-            FROM m_kelurahan
-             JOIN m_provinsi ON m_provinsi.id = m_kelurahan.provinsifk
-             JOIN m_kecamatan ON m_kecamatan.id = m_kelurahan.kecamatanfk
-             JOIN m_kotakabupaten ON m_kotakabupaten.id = m_kelurahan.kotakabupatenfk
-            WHERE
-                m_kelurahan.kelurahan LIKE ?
-                OR m_kecamatan.kecamatan LIKE ?
-                OR m_kotakabupaten.kotakabupaten LIKE ?
-                OR m_provinsi.provinsi LIKE ?
-            LIMIT 30
-        ", [
-            "%{$searchTerm}%",
-            "%{$searchTerm}%",
-            "%{$searchTerm}%",
-            "%{$searchTerm}%"
-        ]);
+        // biar gak query pas user baru ketik 1-2 huruf
+        if (mb_strlen($q) < 2) {
+            return response()->json(["message" => "success", "data" => []], 200);
+        }
 
+        $like = $q . '%';
 
-        return response()->json(["message" => 'success', 'data' => $results], 200);
+        $results = DB::table('m_kelurahan as kel')
+            ->JOIN('m_provinsi as prov', 'prov.id', '=', 'kel.provinsifk')
+            ->JOIN('m_kecamatan as kec', 'kec.id', '=', 'kel.kecamatanfk')
+            ->JOIN('m_kotakabupaten as kab', 'kab.id', '=', 'kel.kotakabupatenfk')
+            ->select([
+                'kel.id',
+                'kel.kelurahan',
+                'kec.kecamatan',
+                'kab.kotakabupaten',
+                'prov.provinsi',
+
+            ])
+            ->where(function ($w) use ($like) {
+                $w->where('kel.kelurahan', 'like', $like)
+                    ->orWhere('kec.kecamatan', 'like', $like)
+                    ->orWhere('kab.kotakabupaten', 'like', $like)
+                    ->orWhere('prov.provinsi', 'like', $like);
+            })
+            ->limit(20)
+            ->get();
+
+        return response()->json(["message" => "success", "data" => $results], 200);
     }
 
     public function saveData(Request $request)
