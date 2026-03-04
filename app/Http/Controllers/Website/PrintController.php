@@ -146,11 +146,12 @@ class PrintController extends Controller
 
         $company_name = Setting::whereLike('parameter', 'company_name')->first();
         $company_address = Setting::whereLike('parameter', 'company_address')->first();
+        $company_city = Setting::whereLike('parameter', 'company_city')->first();
         $lama_istirahat = $request->lama_hari;
         $tglmulai = Carbon::parse($request->tgl_mulai ?? now())->translatedFormat('d F Y');
         $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int)$lama_istirahat ?? 2)->translatedFormat('d F Y');
 
-        return view('print.suratpasien.surat_sakit', compact('id',  'pasien', 'company_name', 'company_address', 'tglmulai', 'tglselesai', 'lama_istirahat'));
+        return view('print.suratpasien.surat_sakit', compact('id',  'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'));
     }
 
     public function printSuratSehatPasien(Request $request, $id)
@@ -194,10 +195,60 @@ class PrintController extends Controller
 
         $company_name = Setting::whereLike('parameter', 'company_name')->first();
         $company_address = Setting::whereLike('parameter', 'company_address')->first();
+        $company_city = Setting::whereLike('parameter', 'company_city')->first();
         $lama_istirahat = $request->lama_hari;
         $tglmulai = Carbon::parse($request->tgl_mulai ?? now())->translatedFormat('d F Y');
         $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int)$lama_istirahat ?? 2)->translatedFormat('d F Y');
 
-        return view('print.suratpasien.surat_sehat', compact('id', 'data', 'pasien', 'company_name', 'company_address', 'tglmulai', 'tglselesai', 'lama_istirahat'));
+        return view('print.suratpasien.surat_sehat', compact('id', 'data', 'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'));
+    }
+
+    public function printSuratRujukanPasien(Request $request, $id)
+    {
+        $data = $request;
+        $pasien = DaftarPasien::select(
+            'm_pasien.nama',
+            'm_pasien.norm',
+            'm_pasien.tempatlahir',
+            'm_pasien.tgllahir',
+            'm_employee.fullname as dokter_name',
+            'm_employee.nik as dokter_nik',
+            'm_ruangpraktek.name as ruangan',
+            't_daftarpasien.tgldiperiksa',
+            'm_pekerjaan.pekerjaan',
+            'm_jeniskelamin.jeniskelamin'
+        )->selectRaw("
+    COALESCE(CONCAT_WS(', ',
+      NULLIF(alamat,''),
+      (
+        CASE
+          WHEN NULLIF(rt,'') IS NOT NULL AND NULLIF(rw,'') IS NOT NULL THEN CONCAT('RT ', rt, ' / RW ', rw)
+          WHEN NULLIF(rt,'') IS NOT NULL THEN CONCAT('RT ', rt)
+          WHEN NULLIF(rw,'') IS NOT NULL THEN CONCAT('RW ', rw)
+          ELSE NULL
+        END
+      ),
+      NULLIF(kelurahan,''),
+      NULLIF(kecamatan,''),
+      NULLIF(kotakabupaten,''),
+      NULLIF(provinsi,'')
+    ),'') AS alamat
+  ")
+            ->join('m_pasien', 'm_pasien.id', 't_daftarpasien.pasienfk')
+            ->leftjoin('m_employee', 'm_employee.id', 't_daftarpasien.dokterfk')
+            ->leftjoin('m_ruangpraktek', 'm_ruangpraktek.id', 't_daftarpasien.ruanganfk')
+            ->leftjoin('m_pekerjaan', 'm_pekerjaan.id', 'm_pasien.pekerjaanfk')
+            ->leftjoin('m_jeniskelamin', 'm_jeniskelamin.id', 'm_pasien.jeniskelaminfk')
+            ->leftjoin('m_alamat', 'm_alamat.id', 'm_pasien.alamatfk')
+            ->where('t_daftarpasien.id', base64_decode(base64_decode($id)))->first();
+
+        $company_name = Setting::whereLike('parameter', 'company_name')->first();
+        $company_address = Setting::whereLike('parameter', 'company_address')->first();
+        $company_city = Setting::whereLike('parameter', 'company_city')->first();
+        $lama_istirahat = $request->lama_hari;
+        $tglmulai = Carbon::parse($request->tgl_mulai ?? now())->translatedFormat('d F Y');
+        $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int)$lama_istirahat ?? 2)->translatedFormat('d F Y');
+
+        return view('print.suratpasien.surat_rujukan', compact('id', 'data', 'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'));
     }
 }

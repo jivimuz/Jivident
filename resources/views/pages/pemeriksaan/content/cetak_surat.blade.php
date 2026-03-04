@@ -265,20 +265,21 @@
                             <label class="fw-bold mb-1" style="font-size: 13px;">Keluhan Utama <span
                                     class="text-danger">*</span></label>
                             <textarea name="keluhan" class="form-control form-control-sm" rows="2"
-                                placeholder="Contoh: Nyeri dada menjalar ke punggung sejak 2 hari yang lalu..." required></textarea>
+                                placeholder="Contoh: Nyeri dada menjalar ke punggung sejak 2 hari yang lalu..." required>{{ $status->status ?? '-' }}</textarea>
                         </div>
                         <div class="col-12 mb-3">
                             <label class="fw-bold mb-1" style="font-size: 13px;">Pemeriksaan Fisik <span
                                     class="text-danger">*</span></label>
                             <textarea name="pemeriksaan_fisik" id="rujukan_fisik" class="form-control form-control-sm" rows="2"
-                                placeholder="Contoh: TD: 160/100 mmHg, N: 110 x/m, S: 37 C, RR: 24 x/m." required></textarea>
+                                placeholder="Contoh: TD: 160/100 mmHg, N: 110 x/m, S: 37 C, RR: 24 x/m." required>TD: {{ $vitalsign->siastole }}/{{ $vitalsign->diastole }} mmHg, N: {{ $vitalsign->nadi }} x/m, S: {{ $vitalsign->suhu }}, RR: {{ $vitalsign->pernapasan }} x/m</textarea>
                         </div>
                         <div class="col-12 mb-3">
                             <label class="fw-bold mb-1" style="font-size: 13px;">Diagnosis Sementara <span
                                     class="text-danger">*</span></label>
                             <input type="text" name="diagnosis" id="rujukan_diagnosis"
                                 class="form-control form-control-sm"
-                                placeholder="Contoh: Obs. Chest Pain e.c Susp. CAD" required>
+                                placeholder="Contoh: Obs. Chest Pain e.c Susp. CAD"
+                                value="{{ $diagnosa && $diagnosa->diagnosa ? $diagnosa->diagnosa : '' }}" required>
                         </div>
                         <div class="col-12 mb-3">
                             <label class="fw-bold mb-1" style="font-size: 13px;">Terapi yang telah diberikan</label>
@@ -362,13 +363,7 @@
         })
         $('#form-cetak-rujukan').submit(function(e) {
             e.preventDefault()
-
-            return Toast.fire({
-                icon: 'warning',
-                title: 'Fitur dalam masa pengembangan!'
-            })
             let data = $(this).serialize();
-
             openPopup("{{ url('print/print-surat-rujukan-pasien/' . $id) }}?" + data, true)
         })
     </script>

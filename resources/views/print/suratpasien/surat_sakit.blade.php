@@ -166,7 +166,7 @@
             <tr>
                 <td width="30%">Nama Lengkap</td>
                 <td width="3%">:</td>
-                <td><b>{{ $pasien->nama ?? 'Tn. Ahmad Santoso' }}</b></td>
+                <td><b>{{ $pasien->nama ?? '-' }}</b></td>
             </tr>
             <tr>
                 <td>Umur</td>
@@ -198,7 +198,8 @@
         </div>
 
         <div class="footer-ttd">
-            <p>Kota Medika,
+            <p>{{ $company_city->value ?? '' }},
+
                 {{ $tglmulai }}<br>Dokter
                 Pemeriksa,</p>
             <div class="nama-dokter">{{ $pasien->dokter_name ?? '-' }}</div>

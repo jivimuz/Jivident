@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Rujukan - {{ $patient->name ?? 'Pasien' }}</title>
+    <title>Surat Rujukan - {{ $pasien->name ?? 'Pasien' }}</title>
     <style>
         @page {
             size: A5 portrait;
@@ -150,15 +150,14 @@
 
     <div class="print-container">
         <div class="kop-surat">
-            <h2>KLINIK UTAMA SEHAT BERSAMA</h2>
-            <p>Jl. Kesehatan No. 123, Kota Medika, Jawa Barat 40123<br>Telp: (022) 1234567 | Email:
-                info@sehatbersama.com</p>
+            <h2>{{ $company_name->value ?? '' }}</h2>
+            <p>{{ $company_address->value ?? '' }}</p>
         </div>
 
         <div class="tujuan-surat">
             Kepada Yth,<br>
-            Teman Sejawat Dokter Spesialis {{ $rujukan->spesialis_tujuan ?? 'Penyakit Dalam' }}<br>
-            Di - {{ $rujukan->rs_tujuan ?? 'RSUD Kota Medika' }}
+            Teman Sejawat Dokter Spesialis {{ $data->spesialis_tujuan ?? '-' }}<br>
+            Di - {{ $data->rs_tujuan ?? '-' }}
         </div>
 
         <div class="judul-surat">
@@ -173,27 +172,27 @@
             <tr>
                 <td width="25%">Nama Lengkap</td>
                 <td width="3%">:</td>
-                <td><b>{{ $patient->name ?? 'Tn. Budi Santoso' }}</b></td>
+                <td><b>{{ $pasien->nama ?? '-' }}</b></td>
             </tr>
             <tr>
                 <td>Jenis Kelamin</td>
                 <td>:</td>
-                <td>{{ $patient->jenis_kelamin ?? 'Laki-laki' }}</td>
+                <td>{{ $pasien->jeniskelamin ?? '-' }}</td>
             </tr>
             <tr>
                 <td>Umur</td>
                 <td>:</td>
-                <td>{{ $patient->age ?? '45' }} Tahun</td>
+                <td>{{ $pasien->tgllahir ? countAge($pasien->tgllahir) : '-' }} Tahun</td>
             </tr>
             <tr>
                 <td>No. RM</td>
                 <td>:</td>
-                <td>{{ $patient->rm ?? '00-11-22-33' }}</td>
+                <td>{{ $pasien->norm ?? '-' }}</td>
             </tr>
             <tr>
                 <td>Alamat</td>
                 <td>:</td>
-                <td>{{ $patient->alamat ?? 'Jl. Merpati No. 5, Kota Medika' }}</td>
+                <td>{{ $pasien->alamat ?? '-' }}</td>
             </tr>
         </table>
 
@@ -205,23 +204,23 @@
             <tr>
                 <td width="25%">Keluhan Utama</td>
                 <td width="3%">:</td>
-                <td>{{ $rujukan->keluhan ?? 'Nyeri dada menjalar ke punggung sejak 2 hari yang lalu, disertai sesak napas.' }}
+                <td>{{ $data->keluhan ?? '-' }}
                 </td>
             </tr>
             <tr>
                 <td>Pemeriksaan Fisik</td>
                 <td>:</td>
-                <td>{{ $rujukan->pemeriksaan_fisik ?? 'TD: 160/100 mmHg, N: 110 x/m, S: 37 C, RR: 24 x/m.' }}</td>
+                <td>{{ $data->pemeriksaan_fisik ?? '-' }}</td>
             </tr>
             <tr>
                 <td>Diagnosis Sementara</td>
                 <td>:</td>
-                <td><b>{{ $rujukan->diagnosis ?? 'Obs. Chest Pain e.c Susp. CAD' }}</b></td>
+                <td><b>{{ $data->diagnosis ?? '-' }}</b></td>
             </tr>
             <tr>
                 <td>Terapi Diberikan</td>
                 <td>:</td>
-                <td>{{ $rujukan->terapi ?? 'Oksigen 3 LPM, Isosorbide Dinitrate 5mg (Sublingual).' }}</td>
+                <td>{{ $data->terapi ?? '-' }}</td>
             </tr>
         </table>
 
@@ -230,11 +229,12 @@
         </div>
 
         <div class="footer-ttd">
-            <p>Kota Medika,
-                {{ \Carbon\Carbon::parse($rujukan->tgl_surat ?? now())->translatedFormat('d F Y') }}<br>Hormat Kami,
+            <p>{{ $company_city->value ?? '' }},
+
+                {{ \Carbon\Carbon::parse($data->tgl_surat ?? now())->translatedFormat('d F Y') }}<br>Hormat Kami,
             </p>
-            <div class="nama-dokter">{{ $rujukan->doctor_name ?? 'dr. Sarah, Sp.PD' }}</div>
-            <div style="font-size: 11px; margin-top: 2px;">SIP: {{ $rujukan->doctor_sip ?? '123.456.789' }}</div>
+            <div class="nama-dokter">{{ $pasien->dokter_name ?? '' }}</div>
+            <div style="font-size: 11px; margin-top: 2px;">SIP/NIK: {{ $pasien->dokter_nik ?? '' }}</div>
         </div>
     </div>
 </body>
