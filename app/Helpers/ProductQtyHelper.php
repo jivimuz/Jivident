@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Helpers;
 
 use App\Models\ReceiveOrder;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -96,6 +97,10 @@ final class ProductQtyHelper
                 throw new InvalidArgumentException('Detail receive order kosong');
             }
 
+            // PPN pembelian diambil dari setting global (ppn_persen), bukan per baris detail,
+            // karena t_receiveorderdetails tidak punya kolom ppn_persen sendiri.
+            $ppnPersen = (float) (Setting::where('parameter', 'ppn_persen')->value('value') ?? 0);
+
             $rows = [];
             foreach ($details as $d) {
                 $qty = $this->toPositiveQty($d->qty ?? 0, 'qty detail receive');
@@ -118,7 +123,7 @@ final class ProductQtyHelper
                     'created_at'   => now(),
                     'updated_at'   => now(),
                 ];
-                $this->updateProductPrices($d->product_id, $d->harga_beli ?? 0, $d->ppn_persen ?? 0);
+                $this->updateProductPrices($d->product_id, $d->harga_beli ?? 0, $ppnPersen);
             }
 
             DB::table('t_productqty')->insert($rows);

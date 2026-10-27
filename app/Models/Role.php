@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Role extends Model
 {
     use HasFactory;
-    protected $table = "m_roles";
-    protected $guarded =['id'];
+
+    protected $table = 'm_roles';
+
+    protected $guarded = ['id'];
+
+    public $timestamps = false;
 }

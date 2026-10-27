@@ -26,7 +26,7 @@ class PrintController extends Controller
             ->join('m_users as c', 'c.id', 't_daftarpasien.dokterfk')
             ->where('t_daftarpasien.id', base64_decode(base64_decode($id)))->first();
 
-        return view('print/antrian/antrian', compact('data'));
+        return $this->viewOrPdf('print/antrian/antrian', compact('data'), "antrian-{$data->noantrian}.pdf");
     }
 
     public function printResepPasien($id)
@@ -104,7 +104,11 @@ class PrintController extends Controller
         $company_address = Setting::whereLike('parameter', 'company_address')->first();
 
 
-        return view('print.resep.eresep', compact('data', 'patient', 'company_name', 'company_address'));
+        return $this->viewOrPdf(
+            'print.resep.eresep',
+            compact('data', 'patient', 'company_name', 'company_address'),
+            "resep-{$daftarPasienId}.pdf"
+        );
     }
 
     public function printSuratSakitPasien(Request $request, $id)
@@ -151,7 +155,11 @@ class PrintController extends Controller
         $tglmulai = Carbon::parse($request->tgl_mulai ?? now())->translatedFormat('d F Y');
         $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int)$lama_istirahat ?? 2)->translatedFormat('d F Y');
 
-        return view('print.suratpasien.surat_sakit', compact('id',  'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'));
+        return $this->viewOrPdf(
+            'print.suratpasien.surat_sakit',
+            compact('id', 'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'),
+            "surat-sakit-{$id}.pdf"
+        );
     }
 
     public function printSuratSehatPasien(Request $request, $id)
@@ -200,7 +208,11 @@ class PrintController extends Controller
         $tglmulai = Carbon::parse($request->tgl_mulai ?? now())->translatedFormat('d F Y');
         $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int)$lama_istirahat ?? 2)->translatedFormat('d F Y');
 
-        return view('print.suratpasien.surat_sehat', compact('id', 'data', 'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'));
+        return $this->viewOrPdf(
+            'print.suratpasien.surat_sehat',
+            compact('id', 'data', 'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'),
+            "surat-sehat-{$id}.pdf"
+        );
     }
 
     public function printSuratRujukanPasien(Request $request, $id)
@@ -249,6 +261,10 @@ class PrintController extends Controller
         $tglmulai = Carbon::parse($request->tgl_mulai ?? now())->translatedFormat('d F Y');
         $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int)$lama_istirahat ?? 2)->translatedFormat('d F Y');
 
-        return view('print.suratpasien.surat_rujukan', compact('id', 'data', 'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'));
+        return $this->viewOrPdf(
+            'print.suratpasien.surat_rujukan',
+            compact('id', 'data', 'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'),
+            "surat-rujukan-{$id}.pdf"
+        );
     }
 }

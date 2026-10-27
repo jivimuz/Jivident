@@ -168,6 +168,8 @@
 
     <div class="btn-print-wrapper">
         <button class="btn-print" onclick="window.print()"><i class="iconoir-printer"></i> Cetak Resep Sekarang</button>
+        <a class="btn-print" style="background-color:#0d6efd; margin-left:10px; text-decoration:none; display:inline-block;"
+            href="{{ request()->fullUrlWithQuery(['pdf' => 1]) }}">Unduh PDF</a>
         <button class="btn-print" style="background-color:#6c757d; margin-left:10px;"
             onclick="window.close()">Tutup</button>
     </div>

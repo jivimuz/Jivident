@@ -81,36 +81,6 @@
                                         <a data-bs-toggle="tab" role="tab" aria-controls="ctab7" aria-selected="false"
                                             class="nav-link" id="tab7" data-toggle="tab" href-target="bank">Bank</a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a data-bs-toggle="tab" role="tab" aria-controls="ctab8"
-                                            aria-selected="false" class="nav-link" id="tab8" data-toggle="tab"
-                                            href-target="allowance">Allowance</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a data-bs-toggle="tab" role="tab" aria-controls="ctab9"
-                                            aria-selected="false" class="nav-link" id="tab9" data-toggle="tab"
-                                            href-target="attendace">Attendace</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a data-bs-toggle="tab" role="tab" aria-controls="ctab10"
-                                            aria-selected="false" class="nav-link" id="tab10" data-toggle="tab"
-                                            href-target="education">Education</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a data-bs-toggle="tab" role="tab" aria-controls="ctab11"
-                                            aria-selected="false" class="nav-link" id="tab11" data-toggle="tab"
-                                            href-target="family">Family</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a data-bs-toggle="tab" role="tab" aria-controls="ctab12"
-                                            aria-selected="false" class="nav-link" id="tab12" data-toggle="tab"
-                                            href-target="attachment">Attachment</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a data-bs-toggle="tab" role="tab" aria-controls="ctab13"
-                                            aria-selected="false" class="nav-link" id="tab13" data-toggle="tab"
-                                            href-target="others">Others</a>
-                                    </li>
                                 </ul>
                             </div>
                         </div>

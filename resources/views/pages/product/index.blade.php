@@ -12,6 +12,9 @@
                     <button class="btn btn-sm btn-outline-success rounded-pill ms-2" id="btnCategory">
                         Categories
                     </button>
+                    <button class="btn btn-sm btn-outline-dark rounded-pill ms-2" id="btnImport">
+                        Import CSV
+                    </button>
                 </div>
 
                 <h4 class="card-title">Products</h4>
@@ -87,6 +90,45 @@
                     </table>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalImport">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Import Produk dari CSV</h5>
+                    <a onclick="closeModal('modalImport')" class="btn text-lg">x</a>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        <a href="{{ url('product/import/template') }}" class="btn btn-sm btn-outline-primary">
+                            Download Template
+                        </a>
+                    </p>
+                    <form id="formImport">
+                        <div class="mb-3">
+                            <input type="file" class="form-control" name="file" id="importFile" accept=".csv">
+                        </div>
+                        <button type="submit" class="btn btn-success">Upload & Import</button>
+                    </form>
+
+                    <div id="importResult" class="mt-3" style="display:none">
+                        <div id="importSummary" class="alert"></div>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Baris</th>
+                                    <th>Kode</th>
+                                    <th>Status</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="importDetailBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -410,6 +452,71 @@
             });
         });
 
+
+        // IMPORT CSV
+        $('#btnImport').click(() => {
+            $('#importResult').hide();
+            $('#formImport')[0].reset();
+            $('#modalImport').modal('show');
+        });
+
+        $('#formImport').submit(function(e) {
+            e.preventDefault();
+
+            var fileInput = $('#importFile')[0];
+            if (!fileInput.files.length) {
+                return Toast.fire({
+                    icon: 'warning',
+                    title: 'Pilih file CSV dulu'
+                });
+            }
+
+            var formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            $.ajax({
+                url: "{{ url('product/import') }}",
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(res) {
+                    var s = res.summary;
+                    $('#importSummary')
+                        .removeClass('alert-success alert-warning')
+                        .addClass(s.failed > 0 ? 'alert-warning' : 'alert-success')
+                        .text(`Total ${s.total} baris — ${s.success} berhasil, ${s.failed} gagal.`);
+
+                    var rows = '';
+                    res.details.forEach(function(d) {
+                        var badge = d.status === 'success' ?
+                            '<span class="badge bg-success">OK</span>' :
+                            '<span class="badge bg-danger">Gagal</span>';
+                        rows += `<tr>
+                            <td>${d.row}</td>
+                            <td>${d.code}</td>
+                            <td>${badge}</td>
+                            <td>${d.message ?? '-'}</td>
+                        </tr>`;
+                    });
+                    $('#importDetailBody').html(rows);
+                    $('#importResult').show();
+
+                    if (s.success > 0) {
+                        table.ajax.reload();
+                    }
+                },
+                error: function(xhr) {
+                    Toast.fire({
+                        icon: 'error',
+                        title: JSON.parse(xhr.responseText).error ?? JSON.parse(xhr.responseText).message ?? 'Import gagal'
+                    });
+                }
+            });
+        });
 
         // REFRESH SELECT CATEGORY
         function refreshCategoryDropdown() {

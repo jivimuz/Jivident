@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class SOAPE extends Model
 {
 
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
     protected $table = 't_soap';
     protected $guarded = ["id"];
     public $timestamps = true;

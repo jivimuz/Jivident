@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Module extends Model
 {
     use HasFactory;
-    protected $table = "m_modules";
-    protected $guarded = ["id"];
+
+    protected $table = 'm_modules';
+
+    protected $guarded = ['id'];
+
+    public $timestamps = false;
 }

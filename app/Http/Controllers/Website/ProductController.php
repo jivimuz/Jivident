@@ -19,9 +19,9 @@ class ProductController extends Controller
     public function index()
     {
         $categories = ProductCategories::all();
+
         return view('pages/product/index', compact('categories'));
     }
-
 
     public function getList(Request $request)
     {
@@ -65,7 +65,6 @@ class ProductController extends Controller
                 DB::raw('COALESCE(q.total_qty, 0) as total_qty')
             );
 
-
         // 3. Hitung Total Data (Sebelum filtering search)
         $totalData = $query->count();
         $totalFiltered = $totalData;
@@ -76,7 +75,7 @@ class ProductController extends Controller
         $start = (int) $request->input('start', 0);
         $search = $request->input('search.value');
 
-        if (!empty($search)) {
+        if (! empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('m_products.name', 'LIKE', "%{$search}%")
                     ->orWhere('a.name', 'LIKE', "%{$search}%");
@@ -107,20 +106,21 @@ class ProductController extends Controller
 
         // 8. Formatting Data
 
-
         // 9. Return JSON
         return response()->json([
-            "draw"            => intval($request->input('draw')),
-            "recordsTotal"    => intval($totalData),
-            "recordsFiltered" => intval($totalFiltered),
-            "data"            => $dataRaw
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => intval($totalData),
+            'recordsFiltered' => intval($totalFiltered),
+            'data' => $dataRaw,
         ]);
     }
+
     public function add()
     {
         $categories = ProductCategories::all();
         $satuan = SatuanProduct::all();
         $unit = UnitProduct::all();
+
         return view('pages/product/add', compact('categories', 'unit', 'satuan'));
     }
 
@@ -177,15 +177,15 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data master produk/obat berhasil ditambahkan.'
+                'message' => 'Data master produk/obat berhasil ditambahkan.',
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error Insert Produk Farmasi: ' . $e->getMessage());
+            Log::error('Error Insert Produk Farmasi: '.$e->getMessage());
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Terjadi kesalahan sistem saat menyimpan data.'
+                'message' => 'Terjadi kesalahan sistem saat menyimpan data.',
             ], 500);
         }
     }
@@ -196,6 +196,7 @@ class ProductController extends Controller
         $categories = ProductCategories::all();
         $satuan = SatuanProduct::all();
         $unit = UnitProduct::all();
+
         return view('pages/product/edit', compact('data', 'categories', 'unit', 'satuan', 'id'));
     }
 
@@ -252,20 +253,18 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data master produk/obat berhasil ditambahkan.'
+                'message' => 'Data master produk/obat berhasil ditambahkan.',
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error Insert Produk Farmasi: ' . $e->getMessage());
+            Log::error('Error Insert Produk Farmasi: '.$e->getMessage());
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Terjadi kesalahan sistem saat menyimpan data.'
+                'message' => 'Terjadi kesalahan sistem saat menyimpan data.',
             ], 500);
         }
     }
-
-
 
     public function destroy($id)
     {
@@ -279,5 +278,153 @@ class ProductController extends Controller
         $product->delete();
 
         return response()->json(['message' => 'Deleted']);
+    }
+
+    private const IMPORT_HEADER = [
+        'code', 'name', 'strength', 'satuan', 'unit', 'kategori',
+        'harga_beli', 'hpp', 'harga_jual',
+        'is_fornas', 'is_generik', 'is_antibiotik', 'is_psikotropika', 'is_narkotika', 'is_kronis',
+    ];
+
+    public function downloadImportTemplate()
+    {
+        $lines = [
+            implode(',', self::IMPORT_HEADER),
+            'PCT001,Paracetamol 500mg,500,Strip,Tablet,Analgesik,8000,10000,15000,1,1,0,0,0,0',
+        ];
+
+        return response(implode("\n", $lines))
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="template-import-produk.csv"');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:5120',
+        ]);
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if ($handle === false) {
+            return response()->json(['error' => 'Gagal membuka file CSV'], 400);
+        }
+
+        // Baris pertama dianggap header dan dilewati — tidak dicocokkan posisinya,
+        // supaya urutan kolom di file tetap harus sama dengan template yang disediakan.
+        fgetcsv($handle);
+
+        $klienfk = Auth::user()->klienfk ?? 1;
+        $seenCodes = [];
+        $results = [];
+        $rowNumber = 1;
+
+        while (($line = fgetcsv($handle)) !== false) {
+            $rowNumber++;
+
+            if (count(array_filter($line, fn ($v) => trim((string) $v) !== '')) === 0) {
+                continue; // baris kosong, skip tanpa dihitung error
+            }
+
+            $row = array_combine(self::IMPORT_HEADER, array_pad(array_slice($line, 0, count(self::IMPORT_HEADER)), count(self::IMPORT_HEADER), null));
+            $row = array_map(fn ($v) => is_string($v) ? trim($v) : $v, $row);
+
+            $error = $this->importRow($row, $klienfk, $seenCodes);
+
+            $results[] = [
+                'row' => $rowNumber,
+                'code' => $row['code'],
+                'status' => $error ? 'error' : 'success',
+                'message' => $error,
+            ];
+
+            if (! $error) {
+                $seenCodes[] = $row['code'];
+            }
+        }
+        fclose($handle);
+
+        $success = count(array_filter($results, fn ($r) => $r['status'] === 'success'));
+
+        return response()->json([
+            'message' => 'success',
+            'summary' => [
+                'total' => count($results),
+                'success' => $success,
+                'failed' => count($results) - $success,
+            ],
+            'details' => $results,
+        ], 200);
+    }
+
+    /**
+     * Validate + insert satu baris produk. Return null kalau sukses, atau pesan error.
+     */
+    private function importRow(array $row, $klienfk, array $seenCodes): ?string
+    {
+        if (empty($row['code'])) {
+            return 'Kode produk wajib diisi';
+        }
+        if (empty($row['name'])) {
+            return 'Nama produk wajib diisi';
+        }
+        if ($row['strength'] === null || $row['strength'] === '' || ! is_numeric($row['strength'])) {
+            return 'Strength wajib diisi angka';
+        }
+        if (empty($row['unit'])) {
+            return 'Unit wajib diisi';
+        }
+
+        if (in_array($row['code'], $seenCodes, true)) {
+            return "Kode '{$row['code']}' duplikat di dalam file ini";
+        }
+        if (Product::where('code', $row['code'])->exists()) {
+            return "Kode '{$row['code']}' sudah dipakai produk lain";
+        }
+
+        $unit = UnitProduct::where('name', $row['unit'])->first();
+        if (! $unit) {
+            return "Unit '{$row['unit']}' tidak ditemukan — buat dulu di master data Unit";
+        }
+
+        $satuanId = null;
+        if (! empty($row['satuan'])) {
+            $satuan = SatuanProduct::where('name', $row['satuan'])->first();
+            if (! $satuan) {
+                return "Satuan '{$row['satuan']}' tidak ditemukan — buat dulu di master data Satuan";
+            }
+            $satuanId = $satuan->id;
+        }
+
+        $kategoriId = null;
+        if (! empty($row['kategori'])) {
+            $kategori = ProductCategories::where('name', $row['kategori'])->first();
+            if (! $kategori) {
+                return "Kategori '{$row['kategori']}' tidak ditemukan — buat dulu di master data Kategori";
+            }
+            $kategoriId = $kategori->id;
+        }
+
+        $toBool = fn ($v) => in_array(strtolower(trim((string) $v)), ['1', 'ya', 'yes', 'true'], true);
+
+        Product::create([
+            'klienfk' => $klienfk,
+            'code' => $row['code'],
+            'name' => $row['name'],
+            'strength' => $row['strength'],
+            'unitfk' => $unit->id,
+            'satuanfk' => $satuanId,
+            'kategorifk' => $kategoriId,
+            'is_fornas' => $toBool($row['is_fornas'] ?? null),
+            'is_generik' => $toBool($row['is_generik'] ?? null),
+            'is_antibiotik' => $toBool($row['is_antibiotik'] ?? null),
+            'is_psikotropika' => $toBool($row['is_psikotropika'] ?? null),
+            'is_narkotika' => $toBool($row['is_narkotika'] ?? null),
+            'is_kronis' => $toBool($row['is_kronis'] ?? null),
+            'harga_beli' => is_numeric($row['harga_beli'] ?? null) ? $row['harga_beli'] : 0,
+            'hpp' => is_numeric($row['hpp'] ?? null) ? $row['hpp'] : 0,
+            'harga_jual' => is_numeric($row['harga_jual'] ?? null) ? $row['harga_jual'] : 0,
+        ]);
+
+        return null;
     }
 }

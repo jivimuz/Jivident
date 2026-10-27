@@ -2,18 +2,22 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
-     * A basic test example.
+     * Every request (even to "/") goes through the global license gate first,
+     * so a guest without an activated license is always redirected to the
+     * license screen rather than ever seeing a 200 here.
      */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_guest_without_license_is_redirected_to_license_screen(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertRedirect(route('license'));
     }
 }

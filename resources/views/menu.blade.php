@@ -31,6 +31,49 @@
                     <div style="width:45px;"></div> <!-- spacer biar teks tetap di tengah -->
                 </div>
             </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">Pasien Hari Ini</small>
+                            <h3 class="mb-0">{{ $patientsToday }}</h3>
+                        </div>
+                        <i class="iconoir-group" style="font-size:28px"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">Omset Hari Ini</small>
+                            <h3 class="mb-0">{{ rupiah($revenueToday) }}</h3>
+                        </div>
+                        <i class="iconoir-coins" style="font-size:28px"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">Produk Stok Habis</small>
+                            <h3 class="mb-0">{{ $outOfStockCount }}</h3>
+                        </div>
+                        <i class="iconoir-warning-triangle" style="font-size:28px"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Omset 7 Hari Terakhir</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="revenueChart"></div>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-12">
                 <div class="card" data-iq-gsap="onStart" data-iq-opacity="0" data-iq-position-y="-40" data-iq-duration=".6"
                     data-iq-delay=".4" data-iq-trigger="scroll" data-iq-ease="none">
@@ -62,6 +105,38 @@
     <script>
         $(document).ready(function() {
             searchMenu()
+
+            new ApexCharts(document.querySelector("#revenueChart"), {
+                chart: {
+                    type: 'bar',
+                    height: 250,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                series: [{
+                    name: 'Omset',
+                    data: @json($revenueChartValues)
+                }],
+                xaxis: {
+                    categories: @json($revenueChartLabels)
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function(val) {
+                            return 'Rp ' + val.toLocaleString('id-ID')
+                        }
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return 'Rp ' + val.toLocaleString('id-ID')
+                        }
+                    }
+                },
+                colors: ['#3b82f6']
+            }).render()
         })
 
         function searchMenu() {

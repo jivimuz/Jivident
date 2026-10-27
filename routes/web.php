@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Website\ActivityLogController;
 use App\Http\Controllers\Website\AntrianController;
 use App\Http\Controllers\Website\HomeController;
 use App\Http\Controllers\Website\ModuleController;
@@ -11,16 +12,22 @@ use App\Http\Controllers\Website\DiperiksaController;
 use App\Http\Controllers\Website\profileController;
 use App\Http\Controllers\Website\SettingController;
 use App\Http\Controllers\Website\EmployeesController;
+use App\Http\Controllers\Website\CutiController;
 use App\Http\Controllers\Website\ICDController;
+use App\Http\Controllers\Website\JadwalKerjaController;
 use App\Http\Controllers\Website\MonitorController;
 use App\Http\Controllers\Website\OdontogramController;
 use App\Http\Controllers\Website\PatientController;
+use App\Http\Controllers\Website\PayrollController;
 use App\Http\Controllers\Website\PaymentsController;
 use App\Http\Controllers\Website\PemeriksaanController;
+use App\Http\Controllers\Website\PosController;
 use App\Http\Controllers\Website\PrintController;
 use App\Http\Controllers\Website\ProductCategoriesController;
 use App\Http\Controllers\Website\ProductController;
 use App\Http\Controllers\Website\ReceiveOrderController;
+use App\Http\Controllers\Website\ReportController;
+use App\Http\Controllers\Website\RoleController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
 use App\Http\Controllers\Website\SupplierController;
@@ -36,7 +43,7 @@ Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('auth-license', [AuthController::class, 'authLicense']);
 Route::get('license', [AuthController::class, 'license'])->name('license');
 Route::post('license/validate', [AuthController::class, 'validateLicense'])->name('license.validate');
-// Route::get('error', [AuthController::class, 'error'])->name('error');
+Route::get('error', [AuthController::class, 'error'])->name('error');
 
 Route::get('/test', function () {
     return view('3dglb');
@@ -108,6 +115,47 @@ Route::middleware(['auth'])->group(function () {
         Route::post('saveAccess', [ModuleController::class, 'saveAccess']);
     });
 
+    Route::middleware(['checkAccess:RPA'])->prefix('report')->group(function () {
+        Route::get('/', [ReportController::class, 'index']);
+        Route::post('getOmsetBulanan', [ReportController::class, 'getOmsetBulanan']);
+        Route::post('getTindakanTerlaris', [ReportController::class, 'getTindakanTerlaris']);
+        Route::post('getPerformaDokter', [ReportController::class, 'getPerformaDokter']);
+        Route::post('getDemografiPasien', [ReportController::class, 'getDemografiPasien']);
+    });
+
+    Route::middleware(['checkAccess:JDW'])->prefix('jadwal-kerja')->group(function () {
+        Route::get('/', [JadwalKerjaController::class, 'index']);
+        Route::post('getList', [JadwalKerjaController::class, 'getList']);
+        Route::post('store', [JadwalKerjaController::class, 'store']);
+        Route::post('update/{id}', [JadwalKerjaController::class, 'update']);
+        Route::post('delete/{id}', [JadwalKerjaController::class, 'destroy']);
+        Route::post('getTemplates', [JadwalKerjaController::class, 'getTemplates']);
+        Route::post('storeTemplate', [JadwalKerjaController::class, 'storeTemplate']);
+        Route::post('deleteTemplate/{id}', [JadwalKerjaController::class, 'destroyTemplate']);
+        Route::post('getEmployeeList', [JadwalKerjaController::class, 'getEmployeeList']);
+    });
+
+    Route::middleware(['checkAccess:CUT'])->prefix('cuti')->group(function () {
+        Route::get('/', [CutiController::class, 'index']);
+        Route::post('getList', [CutiController::class, 'getList']);
+        Route::post('store', [CutiController::class, 'store']);
+        Route::post('approve/{id}', [CutiController::class, 'approve']);
+        Route::post('reject/{id}', [CutiController::class, 'reject']);
+        Route::post('delete/{id}', [CutiController::class, 'destroy']);
+        Route::post('getEmployeeList', [CutiController::class, 'getEmployeeList']);
+        Route::post('getJenisCutiList', [CutiController::class, 'getJenisCutiList']);
+    });
+
+    Route::middleware(['checkAccess:ROL'])->prefix('roles')->group(function () {
+        Route::get('/', [RoleController::class, 'index']);
+        Route::post('getList', [RoleController::class, 'getList']);
+        Route::post('add', [RoleController::class, 'add']);
+        Route::post('edit/{id}', [RoleController::class, 'edit']);
+        Route::post('store', [RoleController::class, 'store']);
+        Route::post('update/{id}', [RoleController::class, 'update']);
+        Route::post('delete/{id}', [RoleController::class, 'destroy']);
+    });
+
     Route::middleware(['checkAccess:MTU'])->prefix('users')->group(function () {
         Route::get('/', [UserListController::class, 'index']);
         Route::post('getList', [UserListController::class, 'getList']);
@@ -132,6 +180,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getParameter', [SettingController::class, 'getParameter']);
         Route::post('saveSettingD', [SettingController::class, 'saveSettingD']);
         Route::post('saveSettingF', [SettingController::class, 'saveSettingF']);
+    });
+
+    Route::middleware(['checkAccess:LOG'])->prefix('activity-log')->group(function () {
+        Route::get('/', [ActivityLogController::class, 'index']);
+        Route::post('getList', [ActivityLogController::class, 'getList']);
     });
 
     Route::middleware(['checkAccess:MTR'])->prefix('ruang-praktek')->group(function () {
@@ -168,15 +221,13 @@ Route::middleware(['auth'])->group(function () {
             });
 
             Route::get('statutory', [EmployeesController::class, 'statutory']);
+            Route::post('statutory/save', [EmployeesController::class, 'saveStatutory']);
             Route::get('salary', [EmployeesController::class, 'salary']);
+            Route::post('salary/save', [EmployeesController::class, 'saveSalary']);
+            Route::post('salary/calculate', [PayrollController::class, 'calculate']);
+            Route::post('salary/generateSlip', [PayrollController::class, 'generateSlip']);
+            Route::post('salary/getSlips', [PayrollController::class, 'getSlips']);
             Route::get('bank', [EmployeesController::class, 'bank']);
-            Route::get('allowancee', [EmployeesController::class, 'allowancee']);
-            Route::get('attendance', [EmployeesController::class, 'attendance']);
-            Route::get('education', [EmployeesController::class, 'education']);
-            Route::get('family', [EmployeesController::class, 'family']);
-            Route::get('attachment', [EmployeesController::class, 'attachment']);
-            Route::get('others', [EmployeesController::class, 'others']);
-            Route::get('account', [EmployeesController::class, 'attachment']);
         });
     });
     Route::middleware(['checkAccess:MTT'])->prefix('tindakan')->group(function () {
@@ -326,6 +377,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('edit/{id}', [ProductController::class, 'edit']);
             Route::post('update/{id}', [ProductController::class, 'update']);
             Route::post('delete/{id}', [ProductController::class, 'destroy']);
+            Route::get('import/template', [ProductController::class, 'downloadImportTemplate']);
+            Route::post('import', [ProductController::class, 'import']);
         });
         Route::prefix('categories')->group(function () {
             Route::get('getList', [ProductCategoriesController::class, 'getList']);
@@ -334,6 +387,15 @@ Route::middleware(['auth'])->group(function () {
             Route::post('update/{id}', [ProductCategoriesController::class, 'update']);
             Route::post('delete/{id}', [ProductCategoriesController::class, 'destroy']);
         });
+    });
+
+    Route::middleware(['checkAccess:POS'])->prefix('pos')->group(function () {
+        Route::get('/', [PosController::class, 'index']);
+        Route::post('getProductList', [PosController::class, 'getProductList']);
+        Route::post('checkout', [PosController::class, 'checkout']);
+        Route::post('void/{id}', [PosController::class, 'void']);
+        Route::post('getList', [PosController::class, 'getList']);
+        Route::get('receipt/{id}', [PosController::class, 'receipt']);
     });
 
     Route::middleware(['checkAccess:SUP'])->prefix('supplier')->group(function () {
@@ -359,7 +421,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getProductList', [ReceiveOrderController::class, 'getProductList']);
         Route::post('getUnitList', [ReceiveOrderController::class, 'getUnitList']);
     });
-})->middleware('throttle:10,1');
+})->middleware('throttle:300,1');
 
 Route::prefix('print')->group(function () {
     Route::middleware(['checkAccess:PA'])->get('print-antrian/{id}', [PrintController::class, 'antrianPasien']);

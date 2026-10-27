@@ -177,7 +177,17 @@ class EmployeesController extends Controller
     {
         $id = base64_decode($idn);
         $data = Employee::where('id', $id)->first();
-        return view('pages/employees/content/statutory', compact('idn', 'data'));
+        $ptkp = Ptkp::orderBy('name')->get();
+        return view('pages/employees/content/statutory', compact('idn', 'data', 'ptkp'));
+    }
+
+    public function saveStatutory(Request $request, $idn)
+    {
+        $id = base64_decode($idn);
+        Employee::where('id', $id)->update($request->only([
+            'npwp', 'fk_ptkp', 'bpjs_kesehatan_no', 'bpjs_tk_no',
+        ]));
+        return response()->json(['message' => 'success'], 200);
     }
 
     public function salary($idn)
@@ -185,6 +195,14 @@ class EmployeesController extends Controller
         $id = base64_decode($idn);
         $data = Employee::where('id', $id)->first();
         return view('pages/employees/content/salary', compact('idn', 'data'));
+    }
+
+    public function saveSalary(Request $request, $idn)
+    {
+        $request->validate(['gajipokok' => 'required|numeric|min:0']);
+        $id = base64_decode($idn);
+        Employee::where('id', $id)->update(['gajipokok' => $request->gajipokok]);
+        return response()->json(['message' => 'success'], 200);
     }
 
     public function bank($idn)

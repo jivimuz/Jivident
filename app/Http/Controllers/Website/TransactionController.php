@@ -169,23 +169,6 @@ class TransactionController extends Controller
         }
     }
 
-    public function storeCompressedImageAsWebp($file, $userId)
-    {
-        $filename = 'transaction_' . $userId . '_' . time() . '.webp';
-        $path = 'attachments/transactions';
-        $file->storeAs($path, $filename, 'public');
-        return $path . '/' . $filename;
-    }
-
-    public function storeCompressedPdf($file, $userId)
-    {
-        $filename = 'transaction_' . $userId . '_' . time() . '.pdf';
-        $path = 'attachments/transactions';
-        $file->storeAs($path, $filename, 'public');
-        return $path . '/' . $filename;
-    }
-
-
     public function printInvoice($no_transaction, $mode)
     {
         $mode = strtolower($mode);
@@ -229,8 +212,9 @@ class TransactionController extends Controller
         ];
 
         if ($mode === 'thermal') {
-            return view('print/transaction/print-thermal', $data);
+            return $this->viewOrPdf('print/transaction/print-thermal', $data, "invoice-{$no_transaction}.pdf");
         }
-        return view('print/transaction/print-a4', $data);
+
+        return $this->viewOrPdf('print/transaction/print-a4', $data, "invoice-{$no_transaction}.pdf");
     }
 }

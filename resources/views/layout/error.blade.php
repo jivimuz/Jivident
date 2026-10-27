@@ -11,13 +11,12 @@
     <meta content="Multipurpose, super flexible, powerful, clean modern responsive bootstrap 5 admin template"
         name="description">
     <meta
-        content="admin template, axelit admin template, dashboard template, flat admin template, responsive admin template, web app"
+        content="admin template,  admin template, dashboard template, flat admin template, responsive admin template, web app"
         name="keywords">
     <meta content="la-themes" name="author">
     <link href="{{ url('') }}/assets/images/logo/favicon.png" rel="icon" type="image/x-icon">
     <link href="{{ url('') }}/assets/images/logo/favicon.png" rel="shortcut icon" type="image/x-icon">
 
-    <title>axelit - Premium Admin Template</title>
 
     <!--font-awesome-css-->
     <link href="{{ url('') }}/assets/vendor/fontawesome/css/all.css" rel="stylesheet">
