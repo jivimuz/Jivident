@@ -109,6 +109,10 @@
                                 <button class="nav-link" id="cetaksurat" aria-selected="false"><i
                                         class="fa fa-folder fa-fw"></i>Cetak Surat</button>
                             </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="consent" aria-selected="false"><i
+                                        class="fa fa-file-signature fa-fw"></i>Persetujuan</button>
+                            </li>
                         </ul>
 
                     </div>

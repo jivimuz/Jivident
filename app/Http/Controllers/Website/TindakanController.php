@@ -47,6 +47,7 @@ class TindakanController extends Controller
 
         $t->name = $request->name;
         $t->amount = $request->amount;
+        $t->butuh_consent = $request->boolean('butuh_consent');
         $t->save();
 
         return response()->json(['status' => 'success']);

@@ -760,6 +760,39 @@ final class ProductQtyHelper
     }
 
     /**
+     * Lot (lintas semua produk) yang akan expired dalam N hari ke depan dan masih
+     * punya saldo > 0 — dipakai untuk reminder operasional (produk mendekati expired).
+     */
+    public function getLotsExpiringSoon(int $withinDays = 30): Collection
+    {
+        $today = now()->toDateString();
+        $cutoff = now()->addDays($withinDays)->toDateString();
+
+        return DB::table('t_productqty')
+            ->join('m_products', 'm_products.id', 't_productqty.product_id')
+            ->whereNull('t_productqty.deleted_at')
+            ->whereNotNull('t_productqty.expired_date')
+            ->whereDate('t_productqty.expired_date', '>=', $today)
+            ->whereDate('t_productqty.expired_date', '<=', $cutoff)
+            ->selectRaw("
+                t_productqty.product_id,
+                m_products.name as product_name,
+                t_productqty.expired_date,
+                COALESCE(SUM(CASE
+                    WHEN t_productqty.type = 'in' THEN t_productqty.qty
+                    WHEN t_productqty.type = 'out' THEN -t_productqty.qty
+                    ELSE 0 END), 0) as available_qty
+            ")
+            ->groupBy('t_productqty.product_id', 'm_products.name', 't_productqty.expired_date')
+            ->havingRaw("COALESCE(SUM(CASE
+                WHEN t_productqty.type = 'in' THEN t_productqty.qty
+                WHEN t_productqty.type = 'out' THEN -t_productqty.qty
+                ELSE 0 END), 0) > 0")
+            ->orderBy('t_productqty.expired_date')
+            ->get();
+    }
+
+    /**
      * Debug helper: cek apakah stok cukup sebelum save transaksi
      */
     public function hasEnoughStock(int $productId, int $locationId, float $qty, bool $excludeExpired = true): bool

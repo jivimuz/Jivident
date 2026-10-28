@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Website\ActivityLogController;
 use App\Http\Controllers\Website\AntrianController;
+use App\Http\Controllers\Website\AppointmentController;
 use App\Http\Controllers\Website\HomeController;
 use App\Http\Controllers\Website\ModuleController;
 use App\Http\Controllers\Website\UserListController;
@@ -14,19 +15,24 @@ use App\Http\Controllers\Website\SettingController;
 use App\Http\Controllers\Website\EmployeesController;
 use App\Http\Controllers\Website\CutiController;
 use App\Http\Controllers\Website\ICDController;
+use App\Http\Controllers\Website\JadwalDokterController;
 use App\Http\Controllers\Website\JadwalKerjaController;
+use App\Http\Controllers\Website\KlienController;
 use App\Http\Controllers\Website\MonitorController;
 use App\Http\Controllers\Website\OdontogramController;
 use App\Http\Controllers\Website\PatientController;
 use App\Http\Controllers\Website\PayrollController;
 use App\Http\Controllers\Website\PaymentsController;
 use App\Http\Controllers\Website\PemeriksaanController;
+use App\Http\Controllers\Website\PortalController;
 use App\Http\Controllers\Website\PosController;
 use App\Http\Controllers\Website\PrintController;
 use App\Http\Controllers\Website\ProductCategoriesController;
 use App\Http\Controllers\Website\ProductController;
 use App\Http\Controllers\Website\ReceiveOrderController;
 use App\Http\Controllers\Website\ReportController;
+use App\Http\Controllers\Website\ReportFinansialController;
+use App\Http\Controllers\Website\ReportKlinisController;
 use App\Http\Controllers\Website\RoleController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
@@ -105,6 +111,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('profile')->group(function () {
         Route::post('changePassword', [profileController::class, 'changePassword']);
+        Route::post('signature', [profileController::class, 'getSignature']);
+        Route::post('signature/save', [profileController::class, 'saveSignature']);
+        Route::post('signature/delete', [profileController::class, 'deleteSignature']);
     });
 
 
@@ -121,6 +130,46 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getTindakanTerlaris', [ReportController::class, 'getTindakanTerlaris']);
         Route::post('getPerformaDokter', [ReportController::class, 'getPerformaDokter']);
         Route::post('getDemografiPasien', [ReportController::class, 'getDemografiPasien']);
+    });
+
+    Route::middleware(['checkAccess:RPB'])->prefix('report-finansial')->group(function () {
+        Route::get('/', [ReportFinansialController::class, 'index']);
+        Route::post('getPiutang', [ReportFinansialController::class, 'getPiutang']);
+        Route::post('getRekapPembayaran', [ReportFinansialController::class, 'getRekapPembayaran']);
+        Route::post('getLabaRugi', [ReportFinansialController::class, 'getLabaRugi']);
+        Route::post('getProductOptions', [ReportFinansialController::class, 'getProductOptions']);
+        Route::post('getKartuStok', [ReportFinansialController::class, 'getKartuStok']);
+        Route::post('getStokOpname', [ReportFinansialController::class, 'getStokOpname']);
+        Route::post('getPembelianSupplier', [ReportFinansialController::class, 'getPembelianSupplier']);
+    });
+
+    Route::middleware(['checkAccess:RPC'])->prefix('report-klinis')->group(function () {
+        Route::get('/', [ReportKlinisController::class, 'index']);
+        Route::post('getTrendKunjungan', [ReportKlinisController::class, 'getTrendKunjungan']);
+        Route::post('getDiagnosaTerbanyak', [ReportKlinisController::class, 'getDiagnosaTerbanyak']);
+        Route::post('getRekapPayroll', [ReportKlinisController::class, 'getRekapPayroll']);
+        Route::post('getKehadiranCuti', [ReportKlinisController::class, 'getKehadiranCuti']);
+    });
+
+    Route::middleware(['checkAccess:JDD'])->prefix('jadwal-dokter')->group(function () {
+        Route::get('/', [JadwalDokterController::class, 'index']);
+        Route::post('getList', [JadwalDokterController::class, 'getList']);
+        Route::post('getDokterList', [JadwalDokterController::class, 'getDokterList']);
+        Route::get('getRuangPraktekByDokter/{dokterId}', [JadwalDokterController::class, 'getRuangPraktekByDokter']);
+        Route::post('store', [JadwalDokterController::class, 'store']);
+        Route::post('update/{id}', [JadwalDokterController::class, 'update']);
+        Route::post('delete/{id}', [JadwalDokterController::class, 'destroy']);
+    });
+
+    Route::middleware(['checkAccess:BKG'])->prefix('booking')->group(function () {
+        Route::get('/', [AppointmentController::class, 'index']);
+        Route::post('getList', [AppointmentController::class, 'getList']);
+        Route::post('getDokterList', [AppointmentController::class, 'getDokterList']);
+        Route::get('getRuangPraktekByDokter/{dokterId}', [AppointmentController::class, 'getRuangPraktekByDokter']);
+        Route::post('getPatientList', [AppointmentController::class, 'getPatientList']);
+        Route::post('getAvailableSlots', [AppointmentController::class, 'getAvailableSlots']);
+        Route::post('store', [AppointmentController::class, 'store']);
+        Route::post('cancel/{id}', [AppointmentController::class, 'cancel']);
     });
 
     Route::middleware(['checkAccess:JDW'])->prefix('jadwal-kerja')->group(function () {
@@ -145,6 +194,19 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getEmployeeList', [CutiController::class, 'getEmployeeList']);
         Route::post('getJenisCutiList', [CutiController::class, 'getJenisCutiList']);
     });
+
+    Route::middleware(['checkAccess:CAB'])->prefix('klien')->group(function () {
+        Route::get('/', [KlienController::class, 'index']);
+        Route::post('getList', [KlienController::class, 'getList']);
+        Route::post('store', [KlienController::class, 'store']);
+        Route::get('edit/{id}', [KlienController::class, 'edit']);
+        Route::post('update/{id}', [KlienController::class, 'update']);
+        Route::post('delete/{id}', [KlienController::class, 'destroy']);
+    });
+
+    // Dipakai lintas modul (dropdown "Cabang" di form user) — bukan di balik
+    // checkAccess:CAB supaya tetap bisa diakses dari halaman Users biasa.
+    Route::get('klien/getActiveList', [KlienController::class, 'getActiveList']);
 
     Route::middleware(['checkAccess:ROL'])->prefix('roles')->group(function () {
         Route::get('/', [RoleController::class, 'index']);
@@ -180,6 +242,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getParameter', [SettingController::class, 'getParameter']);
         Route::post('saveSettingD', [SettingController::class, 'saveSettingD']);
         Route::post('saveSettingF', [SettingController::class, 'saveSettingF']);
+        Route::get('backup', [SettingController::class, 'downloadBackup']);
     });
 
     Route::middleware(['checkAccess:LOG'])->prefix('activity-log')->group(function () {
@@ -299,6 +362,10 @@ Route::middleware(['auth'])->group(function () {
 
             Route::post('cetaksurat', [PemeriksaanController::class, 'cetaksurat']);
             Route::post('cetaksurat/save', [PemeriksaanController::class, 'saveCetaksurat']);
+
+            Route::post('consent', [PemeriksaanController::class, 'consent']);
+            Route::post('consent/getList', [PemeriksaanController::class, 'getConsentList']);
+            Route::post('consent/save', [PemeriksaanController::class, 'saveConsent']);
 
             Route::prefix('odontogram')->group(function () {
                 Route::post('/', [OdontogramController::class, 'index']);
@@ -429,4 +496,31 @@ Route::prefix('print')->group(function () {
     Route::middleware(['checkAccess:DPP'])->get('print-surat-sehat-pasien/{id}', [PrintController::class, 'printSuratSehatPasien']);
     Route::middleware(['checkAccess:DPP'])->get('print-surat-sakit-pasien/{id}', [PrintController::class, 'printSuratSakitPasien']);
     Route::middleware(['checkAccess:DPP'])->get('print-surat-rujukan-pasien/{id}', [PrintController::class, 'printSuratRujukanPasien']);
+    Route::middleware(['checkAccess:DPP'])->get('print-consent/{id}', [PrintController::class, 'printConsent']);
+});
+
+// Portal pasien self-service — tanpa akun m_users, identitas dicek manual lewat
+// No. RM + tanggal lahir (lihat PortalController/PortalAuth). Login di-throttle
+// lebih ketat dari grup staf karena No. RM + tanggal lahir tebakan salah
+// berulang berarti seseorang mencoba mengakses rekam medis pasien lain.
+Route::prefix('portal')->group(function () {
+    Route::get('login', [PortalController::class, 'showLogin'])->name('portal.login');
+    Route::post('login', [PortalController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('logout', [PortalController::class, 'logout']);
+
+    Route::middleware('portal.auth')->group(function () {
+        Route::get('/', [PortalController::class, 'dashboard'])->name('portal.dashboard');
+        Route::get('riwayat', [PortalController::class, 'riwayat']);
+        Route::get('resep', [PortalController::class, 'resep']);
+        Route::get('tagihan', [PortalController::class, 'tagihan']);
+
+        Route::prefix('booking')->group(function () {
+            Route::get('/', [PortalController::class, 'booking']);
+            Route::post('getDokterList', [PortalController::class, 'bookingDokterList']);
+            Route::get('getRuangPraktekByDokter/{dokterId}', [PortalController::class, 'bookingRuangPraktekByDokter']);
+            Route::post('getAvailableSlots', [PortalController::class, 'bookingAvailableSlots']);
+            Route::post('store', [PortalController::class, 'bookingStore']);
+            Route::post('cancel/{id}', [PortalController::class, 'bookingCancel']);
+        });
+    });
 });

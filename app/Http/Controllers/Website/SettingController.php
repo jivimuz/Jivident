@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\DatabaseBackupHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
@@ -66,5 +67,14 @@ class SettingController extends Controller
         } catch (\Throwable $e) {
             return response()->json(["error" => $e->getMessage()], 400);
         }
+    }
+
+    public function downloadBackup()
+    {
+        $filename = 'backup-jivident-'.now()->format('Y-m-d_His').'.sql';
+
+        return response()->streamDownload(function () {
+            app(DatabaseBackupHelper::class)->streamSqlDump();
+        }, $filename, ['Content-Type' => 'application/sql']);
     }
 }

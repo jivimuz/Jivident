@@ -91,6 +91,12 @@
                                 onchange="noMinus(this);maxValue(this, 9999999999)" max="9999999999" required>
                         </div>
 
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" name="butuh_consent" id="butuh_consent">
+                            <label class="form-check-label" for="butuh_consent">Butuh persetujuan tindakan (informed
+                                consent) sebelum dilakukan</label>
+                        </div>
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
@@ -224,6 +230,7 @@
                     $('#id').val(res.id)
                     $('#name').val(res.name)
                     $('#amount').val(res.amount)
+                    $('#butuh_consent').prop('checked', !!res.butuh_consent)
                     $('#modalForm').modal('show')
                 }
             })

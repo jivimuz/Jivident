@@ -244,9 +244,14 @@
         </div>
 
         <div class="footer-ttd">
-            <p>{{ $company_city->value ?? '' }},
+            <p style="{{ ($pasien->dokter_signature ?? null) ? 'margin-bottom:5px' : '' }}">
+                {{ $company_city->value ?? '' }},
                 {{ $tglmulai }}<br>Dokter
                 Pemeriksa,</p>
+            @if ($pasien->dokter_signature ?? null)
+                <img src="{{ request()->boolean('pdf') ? public_path($pasien->dokter_signature) : url($pasien->dokter_signature) }}"
+                    style="max-height:55px;display:block;margin:0 auto 4px auto">
+            @endif
             <div class="nama-dokter">{{ $pasien->dokter_name ?? '-' }}</div>
             <div style="font-size: 11px; margin-top: 2px;">NIK/SIP: {{ $pasien->dokter_nik ?? '123.456.789' }}
             </div>

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthApiMiddleware;
 use App\Http\Middleware\CheckModuleAccess;
+use App\Http\Middleware\PortalAuth;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Add Middleware API
         $middleware->alias([
             'checkAccess' => CheckModuleAccess::class,
+            'portal.auth' => PortalAuth::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

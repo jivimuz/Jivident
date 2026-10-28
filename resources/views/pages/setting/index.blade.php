@@ -14,7 +14,10 @@
                 <div class="card" data-iq-gsap="onStart" data-iq-opacity="0" data-iq-position-y="-40" data-iq-duration=".6"
                     data-iq-delay=".4" data-iq-trigger="scroll" data-iq-ease="none">
                     <div class="card-header">
-                        <div class="float-end">
+                        <div class="float-end d-flex gap-2">
+                            <a href="{{ url('setting/backup') }}" class="btn btn-sm btn-outline-dark rounded-pill">
+                                Download Backup Database
+                            </a>
                             <input type="search" class="form-control" placeholder="Search..."
                                 data-listener-added_aa86fd06="true"id="namaMenu" onchange="searchMenu()"
                                 style="width: 200px">

@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\DiagnosaPasien;
+use App\Models\InformedConsent;
 use App\Models\Patient;
 use App\Models\PenggunaanProduct;
 use App\Models\Product;
 use App\Models\ResepPasien;
 use App\Models\Setting;
+use App\Models\Tindakan;
 use App\Models\TindakanPasien;
 use App\Models\SOAPE;
 use App\Models\VitalSign;
@@ -831,5 +833,96 @@ class PemeriksaanController extends Controller
         $vitalsign = VitalSign::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
         $diagnosa = DiagnosaPasien::where('tipe_diagnosa', 'X')->where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
         return view('pages/pemeriksaan/content/cetak_surat', compact('id', 'status', 'vitalsign', 'diagnosa'));
+    }
+
+    /**
+     * Teks persetujuan di bawah ini draf generik yang saya tulis sendiri — BUKAN teks
+     * yang sudah direview dokter/penasihat hukum. Minta dokter/klinik meninjau dan
+     * menyesuaikan sebelum benar-benar diandalkan sebagai bukti persetujuan tindakan.
+     */
+    public const CONSENT_TEXT_GENERAL = 'Saya yang bertanda tangan di bawah ini menyatakan telah menerima penjelasan mengenai prosedur pelayanan kesehatan gigi di klinik ini, termasuk pemeriksaan, tindakan, dan pengobatan yang mungkin diperlukan. Saya menyetujui untuk menerima pelayanan tersebut dan memahami bahwa saya dapat bertanya atau menolak tindakan tertentu kapan saja.';
+
+    public function consent($id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $status = DaftarPasien::select(['t_daftarpasien.status', 't_daftarpasien.pasienfk', 'm_pasien.nama'])
+            ->join('m_pasien', 'm_pasien.id', 't_daftarpasien.pasienfk')
+            ->where('t_daftarpasien.id', $daftarpasienId)->first();
+
+        $tindakanOptions = Tindakan::where('klienfk', Auth::user()->klienfk ?? 1)
+            ->where('butuh_consent', true)
+            ->get(['id', 'name']);
+
+        return view('pages/pemeriksaan/content/consent', compact('id', 'status', 'tindakanOptions'));
+    }
+
+    public function getConsentList($id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $pasienfk = DaftarPasien::where('id', $daftarpasienId)->value('pasienfk');
+
+        $data = InformedConsent::where('fk_pasien', $pasienfk)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
+    }
+
+    public function saveConsent(Request $request, $id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+
+        $validated = $request->validate([
+            'tipe' => ['required', Rule::in(['general', 'tindakan'])],
+            'tindakan_id' => 'required_if:tipe,tindakan|nullable|integer',
+            'ditandatangani_oleh' => 'required|string|max:255',
+            'hubungan_dengan_pasien' => 'required|string|max:255',
+            'signature' => 'required|string',
+        ]);
+
+        try {
+            $daftarPasien = DaftarPasien::findOrFail($daftarpasienId);
+
+            $isiConsent = self::CONSENT_TEXT_GENERAL;
+            $tindakanNama = null;
+            if ($validated['tipe'] === 'tindakan') {
+                $tindakan = Tindakan::findOrFail($validated['tindakan_id']);
+                $tindakanNama = $tindakan->name;
+                $isiConsent = "Saya yang bertanda tangan di bawah ini menyatakan telah menerima penjelasan mengenai tindakan \"{$tindakan->name}\" yang akan dilakukan, termasuk tujuan, prosedur, risiko, dan alternatif yang tersedia. Saya menyetujui untuk dilakukan tindakan tersebut.";
+            }
+
+            if (! str_starts_with($validated['signature'], 'data:image/png;base64,')) {
+                throw new InvalidArgumentException('Format tanda tangan tidak valid');
+            }
+            $binary = base64_decode(substr($validated['signature'], strlen('data:image/png;base64,')), true);
+            if ($binary === false) {
+                throw new InvalidArgumentException('Format tanda tangan tidak valid');
+            }
+
+            $uploadDir = 'images/consent-signatures';
+            if (! is_dir(public_path($uploadDir))) {
+                mkdir(public_path($uploadDir), 0755, true);
+            }
+            $filePath = $uploadDir.'/consent-'.$daftarpasienId.'-'.uniqid().'.png';
+            file_put_contents(public_path($filePath), $binary);
+
+            $consent = InformedConsent::create([
+                'klienfk' => Auth::user()->klienfk ?? 1,
+                'fk_daftarpasien' => $daftarpasienId,
+                'fk_pasien' => $daftarPasien->pasienfk,
+                'tipe' => $validated['tipe'],
+                'fk_tindakan' => $validated['tindakan_id'] ?? null,
+                'tindakan_nama' => $tindakanNama,
+                'isi_consent' => $isiConsent,
+                'ditandatangani_oleh' => $validated['ditandatangani_oleh'],
+                'hubungan_dengan_pasien' => $validated['hubungan_dengan_pasien'],
+                'signature_path' => $filePath,
+                'fk_userhandler' => Auth::id(),
+            ]);
+
+            return response()->json(['message' => 'success', 'data' => $consent], 200);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
     }
 }

@@ -271,7 +271,7 @@
                             <label class="fw-bold mb-1" style="font-size: 13px;">Pemeriksaan Fisik <span
                                     class="text-danger">*</span></label>
                             <textarea name="pemeriksaan_fisik" id="rujukan_fisik" class="form-control form-control-sm" rows="2"
-                                placeholder="Contoh: TD: 160/100 mmHg, N: 110 x/m, S: 37 C, RR: 24 x/m." required>TD: {{ $vitalsign->siastole }}/{{ $vitalsign->diastole }} mmHg, N: {{ $vitalsign->nadi }} x/m, S: {{ $vitalsign->suhu }}, RR: {{ $vitalsign->pernapasan }} x/m</textarea>
+                                placeholder="Contoh: TD: 160/100 mmHg, N: 110 x/m, S: 37 C, RR: 24 x/m." required>TD: {{ $vitalsign->siastole ?? 0 }}/{{ $vitalsign->diastole ?? 0 }} mmHg, N: {{ $vitalsign->nadi ?? 0 }} x/m, S: {{ $vitalsign->suhu ?? 0 }}, RR: {{ $vitalsign->pernapasan ?? 0 }} x/m</textarea>
                         </div>
                         <div class="col-12 mb-3">
                             <label class="fw-bold mb-1" style="font-size: 13px;">Diagnosis Sementara <span

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
+use App\Models\InformedConsent;
 use App\Models\ResepPasien;
 use App\Models\ResepPasienRacikan;
 use App\Models\Setting;
@@ -119,6 +120,7 @@ class PrintController extends Controller
             'm_pasien.tgllahir',
             'm_employee.fullname as dokter_name',
             'm_employee.nik as dokter_nik',
+            'm_employee.signature_path as dokter_signature',
             'm_ruangpraktek.name as ruangan',
             't_daftarpasien.tgldiperiksa',
             'm_pekerjaan.pekerjaan',
@@ -172,6 +174,7 @@ class PrintController extends Controller
             'm_pasien.tgllahir',
             'm_employee.fullname as dokter_name',
             'm_employee.nik as dokter_nik',
+            'm_employee.signature_path as dokter_signature',
             'm_ruangpraktek.name as ruangan',
             't_daftarpasien.tgldiperiksa',
             'm_pekerjaan.pekerjaan',
@@ -225,6 +228,7 @@ class PrintController extends Controller
             'm_pasien.tgllahir',
             'm_employee.fullname as dokter_name',
             'm_employee.nik as dokter_nik',
+            'm_employee.signature_path as dokter_signature',
             'm_ruangpraktek.name as ruangan',
             't_daftarpasien.tgldiperiksa',
             'm_pekerjaan.pekerjaan',
@@ -265,6 +269,28 @@ class PrintController extends Controller
             'print.suratpasien.surat_rujukan',
             compact('id', 'data', 'pasien', 'company_name', 'company_address', 'company_city', 'tglmulai', 'tglselesai', 'lama_istirahat'),
             "surat-rujukan-{$id}.pdf"
+        );
+    }
+
+    public function printConsent($id)
+    {
+        $consent = InformedConsent::select([
+            't_informed_consent.*',
+            'm_pasien.nama as pasien_nama',
+            'm_pasien.norm as pasien_norm',
+        ])
+            ->join('m_pasien', 'm_pasien.id', 't_informed_consent.fk_pasien')
+            ->where('t_informed_consent.id', base64_decode(base64_decode($id)))
+            ->first();
+
+        $company_name = Setting::whereLike('parameter', 'company_name')->first();
+        $company_address = Setting::whereLike('parameter', 'company_address')->first();
+        $company_city = Setting::whereLike('parameter', 'company_city')->first();
+
+        return $this->viewOrPdf(
+            'print.suratpasien.consent',
+            compact('id', 'consent', 'company_name', 'company_address', 'company_city'),
+            "informed-consent-{$id}.pdf"
         );
     }
 }

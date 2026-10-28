@@ -231,10 +231,15 @@
         </div>
 
         <div class="footer-ttd">
-            <p>{{ $company_city->value ?? '' }},
+            <p style="{{ ($pasien->dokter_signature ?? null) ? 'margin-bottom:5px' : '' }}">
+                {{ $company_city->value ?? '' }},
 
                 {{ \Carbon\Carbon::parse($data->tgl_surat ?? now())->translatedFormat('d F Y') }}<br>Hormat Kami,
             </p>
+            @if ($pasien->dokter_signature ?? null)
+                <img src="{{ request()->boolean('pdf') ? public_path($pasien->dokter_signature) : url($pasien->dokter_signature) }}"
+                    style="max-height:55px;display:block;margin:0 auto 4px auto">
+            @endif
             <div class="nama-dokter">{{ $pasien->dokter_name ?? '' }}</div>
             <div style="font-size: 11px; margin-top: 2px;">SIP/NIK: {{ $pasien->dokter_nik ?? '' }}</div>
         </div>

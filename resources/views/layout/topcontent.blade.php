@@ -400,6 +400,11 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                                             <i class="iconoir-password-cursor pe-1 f-s-20"></i> Change Password
                                         </a>
                                     </li>
+                                    <li>
+                                        <a class="f-w-500 hover-border-b" onclick="openSignatureModal()">
+                                            <i class="iconoir-pen-tablet pe-1 f-s-20"></i> Tanda Tangan Saya
+                                        </a>
+                                    </li>
                                     <li class="app-divider-v dotted py-1"></li>
 
                                     <li>

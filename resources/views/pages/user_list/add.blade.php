@@ -123,6 +123,19 @@
                                     id="cpwd" name="cpwd" placeholder="Confirm Password" />
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Cabang</label>
+                                <select class="form-control select2modal" id="klienfk" name="klienfk"
+                                    style="width:100% !important">
+                                    @foreach ($klienList as $k)
+                                        <option value="{{ $k->id }}" {{ $k->isholding ? 'selected' : '' }}>
+                                            {{ $k->kodeklinik }} - {{ $k->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

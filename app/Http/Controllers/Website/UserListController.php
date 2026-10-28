@@ -7,6 +7,7 @@ use App\Models\Bank;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
+use App\Models\Klien;
 use App\Models\JobLevel;
 use App\Models\JobType;
 use App\Models\MarialStatus;
@@ -57,7 +58,8 @@ class UserListController extends Controller
         $ptkp = Ptkp::get();
         $rl = Religion::get();
         $bk = Bank::get();
-        return view('pages/user_list/add', compact('top', 'jl', 'jt', 'ds', 'ms', 'ptkp', 'rl', 'bk'));
+        $klienList = Klien::orderBy('nama')->get();
+        return view('pages/user_list/add', compact('top', 'jl', 'jt', 'ds', 'ms', 'ptkp', 'rl', 'bk', 'klienList'));
     }
 
     public function edit(Request $request)
@@ -72,7 +74,8 @@ class UserListController extends Controller
         $ptkp = Ptkp::get();
         $rl = Religion::get();
         $bk = Bank::get();
-        return view('pages/user_list/edit', compact('user', 'data', 'jl', 'jt', 'ds', 'ms', 'ptkp', 'rl', 'bk', 'id'));
+        $klienList = Klien::orderBy('nama')->get();
+        return view('pages/user_list/edit', compact('user', 'data', 'jl', 'jt', 'ds', 'ms', 'ptkp', 'rl', 'bk', 'id', 'klienList'));
     }
 
     public function cekEmail(Request $request)

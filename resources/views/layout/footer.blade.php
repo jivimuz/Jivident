@@ -65,6 +65,39 @@
      </div>
  </div>
 
+ <div class="modal fade" id="signatureModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="signatureModalLabel" aria-hidden="true">
+     <div class="modal-dialog modal-dialog-centered" role="document">
+         <div class="modal-content">
+             <div class="modal-header">
+                 <h5 class="modal-title" id="signatureModalLabel">Tanda Tangan Elektronik Saya</h5>
+                 <a type="button" class="btn rounded-pill btn-outline-dark btn-sm" onclick="closeModal('signatureModal')"
+                     aria-label="Close">
+                     <span aria-hidden="true">&times;</span>
+                 </a>
+             </div>
+             <div class="modal-body" id="signatureModalBody">
+                 <p class="text-muted" style="font-size:12px">Tanda tangan ini otomatis dipakai setiap Anda mencetak
+                     surat pasien (surat sakit/sehat/rujukan). Bukan tanda tangan elektronik tersertifikasi — cuma
+                     gambar + timestamp.</p>
+                 <div id="signatureExistingWrapper" style="display:none" class="text-center mb-3">
+                     <img id="signatureExistingImg" src="" style="max-height:100px;border:1px solid #ddd;border-radius:6px;padding:5px">
+                     <div><small class="text-muted">Tanda tangan tersimpan saat ini</small></div>
+                 </div>
+                 <canvas id="signatureCanvas" width="400" height="150"
+                     style="border:1px dashed #999;border-radius:6px;width:100%;touch-action:none;cursor:crosshair;background:#fff"></canvas>
+                 <div class="d-flex justify-content-between mt-2">
+                     <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSignatureCanvas()">Bersihkan</button>
+                     <div>
+                         <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSignatureBtn"
+                             style="display:none" onclick="deleteSignatureSaved()">Hapus Tersimpan</button>
+                         <button type="button" class="btn btn-outline-success btn-sm" id="saveSignatureBtn">Simpan</button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
 
 
 
@@ -177,6 +210,140 @@
  <script>
      function changePass() {
          showModal('changePass');
+     }
+
+     var sigCanvas, sigCtx, sigDrawing = false,
+         sigHasDrawn = false;
+
+     function openSignatureModal() {
+         showModal('signatureModal');
+         setTimeout(initSignatureCanvas, 150); // tunggu modal selesai animasi biar canvas tidak 0x0
+
+         $.ajax({
+             url: "{{ url('profile/signature') }}",
+             method: 'POST',
+             headers: {
+                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+             },
+             success: function(res) {
+                 if (res.data.signature_path) {
+                     $('#signatureExistingImg').attr('src', "{{ url('') }}/" + res.data.signature_path + '?t=' +
+                         Date.now());
+                     $('#signatureExistingWrapper').show();
+                     $('#deleteSignatureBtn').show();
+                 } else {
+                     $('#signatureExistingWrapper').hide();
+                     $('#deleteSignatureBtn').hide();
+                 }
+             }
+         });
+     }
+
+     function initSignatureCanvas() {
+         sigCanvas = document.getElementById('signatureCanvas');
+         if (!sigCanvas) return;
+         sigCtx = sigCanvas.getContext('2d');
+         sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+         sigHasDrawn = false;
+         sigCtx.lineWidth = 2;
+         sigCtx.lineCap = 'round';
+         sigCtx.strokeStyle = '#000';
+
+         function getSigPos(e) {
+             var rect = sigCanvas.getBoundingClientRect();
+             var scaleX = sigCanvas.width / rect.width;
+             var scaleY = sigCanvas.height / rect.height;
+             return {
+                 x: (e.clientX - rect.left) * scaleX,
+                 y: (e.clientY - rect.top) * scaleY
+             };
+         }
+
+         sigCanvas.onpointerdown = function(e) {
+             sigDrawing = true;
+             var pos = getSigPos(e);
+             sigCtx.beginPath();
+             sigCtx.moveTo(pos.x, pos.y);
+         };
+         sigCanvas.onpointermove = function(e) {
+             if (!sigDrawing) return;
+             var pos = getSigPos(e);
+             sigCtx.lineTo(pos.x, pos.y);
+             sigCtx.stroke();
+             sigHasDrawn = true;
+         };
+         sigCanvas.onpointerup = function() {
+             sigDrawing = false;
+         };
+         sigCanvas.onpointerleave = function() {
+             sigDrawing = false;
+         };
+     }
+
+     function clearSignatureCanvas() {
+         if (sigCtx) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+         sigHasDrawn = false;
+     }
+
+     $('#saveSignatureBtn').on('click', function() {
+         if (!sigHasDrawn) {
+             return Toast.fire({
+                 icon: 'warning',
+                 title: 'Gambar tanda tangan dulu'
+             });
+         }
+         var dataUrl = sigCanvas.toDataURL('image/png');
+         $.ajax({
+             url: "{{ url('profile/signature/save') }}",
+             method: 'POST',
+             headers: {
+                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+             },
+             data: {
+                 signature: dataUrl
+             },
+             success: function() {
+                 Toast.fire({
+                     icon: 'success',
+                     title: 'Tanda tangan disimpan'
+                 });
+                 closeModal('signatureModal');
+             },
+             error: function(xhr) {
+                 Toast.fire({
+                     icon: 'error',
+                     title: JSON.parse(xhr.responseText).error ?? 'Gagal menyimpan'
+                 });
+             }
+         });
+     });
+
+     function deleteSignatureSaved() {
+         Swal.fire({
+             title: 'Hapus tanda tangan tersimpan?',
+             icon: 'warning',
+             showCancelButton: true,
+             confirmButtonText: 'Hapus',
+             cancelButtonText: 'Batal'
+         }).then(function(result) {
+             if (result.isConfirmed) {
+                 $.ajax({
+                     url: "{{ url('profile/signature/delete') }}",
+                     method: 'POST',
+                     headers: {
+                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                     },
+                     success: function() {
+                         Toast.fire({
+                             icon: 'success',
+                             title: 'Tanda tangan dihapus'
+                         });
+                         $('#signatureExistingWrapper').hide();
+                         $('#deleteSignatureBtn').hide();
+                     }
+                 });
+             }
+         });
      }
 
      $('#submitPass').on('click', function() {
