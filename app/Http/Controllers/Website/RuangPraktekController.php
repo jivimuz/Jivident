@@ -29,7 +29,7 @@ class RuangPraktekController extends Controller
     public function addRoom()
     {
         try {
-            $cek = RuangPraktek::whereNull('fk_dokter')->first();
+            $cek = RuangPraktek::where('klienfk', Auth::user()->klienfk ?? 1)->whereNull('fk_dokter')->first();
             if ($cek) {
                 throw new \Exception("Masih ada ruangan kosong.");
             }
@@ -60,6 +60,7 @@ class RuangPraktekController extends Controller
             ->join('m_employee', 'm_employee.id', '=', 'm_users.fk_employee')
             ->where('m_users.id', '!=', Auth::user()->id)
             ->where('m_users.id', '!=', 1)
+            ->where('m_users.klienfk', Auth::user()->klienfk ?? 1)
             ->where('m_employee.is_pemeriksapasien', 1)
             ->where(function ($query) use ($request) {
                 $query->where('m_employee.fullname', 'like', '%' . $request->params . '%')
@@ -80,7 +81,7 @@ class RuangPraktekController extends Controller
             'roomscd' => 'required|string|max:5',
         ]);
 
-        $room = RuangPraktek::find($request->roomsid);
+        $room = RuangPraktek::where('klienfk', Auth::user()->klienfk ?? 1)->find($request->roomsid);
 
         if (!$room) {
             return response()->json(['error' => 'Room not found'], 404);
@@ -100,7 +101,7 @@ class RuangPraktekController extends Controller
 
     public function deleteRoom(Request $request)
     {
-        $room = RuangPraktek::find($request->roomsid);
+        $room = RuangPraktek::where('klienfk', Auth::user()->klienfk ?? 1)->find($request->roomsid);
         if ($room) {
             $room->delete();
             return response()->json(["message" => 'Delete success'], 200);

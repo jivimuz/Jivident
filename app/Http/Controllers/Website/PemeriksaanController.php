@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\DiagnosaPasien;
 use App\Models\InformedConsent;
+use App\Models\JenisPemeriksaanLab;
+use App\Models\JenisPemeriksaanRadiologi;
+use App\Models\LabPasien;
+use App\Models\RadiologiPasien;
 use App\Models\Patient;
 use App\Models\PenggunaanProduct;
 use App\Models\Product;
@@ -921,6 +925,96 @@ class PemeriksaanController extends Controller
             ]);
 
             return response()->json(['message' => 'success', 'data' => $consent], 200);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function lab($id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $status = DaftarPasien::select(['t_daftarpasien.status', 't_daftarpasien.pasienfk', 'm_pasien.nama'])
+            ->join('m_pasien', 'm_pasien.id', 't_daftarpasien.pasienfk')
+            ->where('t_daftarpasien.id', $daftarpasienId)->first();
+
+        $jenisOptions = JenisPemeriksaanLab::where('klienfk', Auth::user()->klienfk ?? 1)->orderBy('nama')->get();
+        $orders = LabPasien::where('fk_daftarpasien', $daftarpasienId)->orderByDesc('tgl_diminta')->get();
+
+        return view('pages/pemeriksaan/content/lab', compact('id', 'status', 'jenisOptions', 'orders'));
+    }
+
+    public function saveLab(Request $request, $id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+
+        $validated = $request->validate([
+            'fk_jenispemeriksaan' => 'required|integer',
+        ]);
+
+        try {
+            $daftarPasien = DaftarPasien::findOrFail($daftarpasienId);
+            $jenis = JenisPemeriksaanLab::findOrFail($validated['fk_jenispemeriksaan']);
+
+            $order = LabPasien::create([
+                'klienfk' => Auth::user()->klienfk ?? 1,
+                'fk_daftarpasien' => $daftarpasienId,
+                'fk_pasien' => $daftarPasien->pasienfk,
+                'fk_jenispemeriksaan' => $jenis->id,
+                'jenis_nama' => $jenis->nama,
+                'satuan_snapshot' => $jenis->satuan,
+                'nilai_rujukan_snapshot' => $jenis->nilai_rujukan,
+                'harga_snapshot' => $jenis->harga,
+                'status' => 'diminta',
+                'fk_dokter_minta' => Auth::id(),
+                'tgl_diminta' => now(),
+            ]);
+
+            return response()->json(['message' => 'success', 'data' => $order], 200);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function radiologi($id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $status = DaftarPasien::select(['t_daftarpasien.status', 't_daftarpasien.pasienfk', 'm_pasien.nama'])
+            ->join('m_pasien', 'm_pasien.id', 't_daftarpasien.pasienfk')
+            ->where('t_daftarpasien.id', $daftarpasienId)->first();
+
+        $jenisOptions = JenisPemeriksaanRadiologi::where('klienfk', Auth::user()->klienfk ?? 1)->orderBy('nama')->get();
+        $orders = RadiologiPasien::where('fk_daftarpasien', $daftarpasienId)->orderByDesc('tgl_diminta')->get();
+
+        return view('pages/pemeriksaan/content/radiologi', compact('id', 'status', 'jenisOptions', 'orders'));
+    }
+
+    public function saveRadiologi(Request $request, $id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+
+        $validated = $request->validate([
+            'fk_jenispemeriksaan' => 'required|integer',
+            'catatan_klinis' => 'required|string|max:1000',
+        ]);
+
+        try {
+            $daftarPasien = DaftarPasien::findOrFail($daftarpasienId);
+            $jenis = JenisPemeriksaanRadiologi::findOrFail($validated['fk_jenispemeriksaan']);
+
+            $order = RadiologiPasien::create([
+                'klienfk' => Auth::user()->klienfk ?? 1,
+                'fk_daftarpasien' => $daftarpasienId,
+                'fk_pasien' => $daftarPasien->pasienfk,
+                'fk_jenispemeriksaan' => $jenis->id,
+                'jenis_nama' => $jenis->nama,
+                'harga_snapshot' => $jenis->harga,
+                'catatan_klinis' => $validated['catatan_klinis'],
+                'status' => 'diminta',
+                'fk_dokter_pengirim' => Auth::id(),
+                'tgl_diminta' => now(),
+            ]);
+
+            return response()->json(['message' => 'success', 'data' => $order], 200);
         } catch (InvalidArgumentException $e) {
             return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
         }

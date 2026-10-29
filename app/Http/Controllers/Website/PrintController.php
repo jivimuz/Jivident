@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\InformedConsent;
+use App\Models\RadiologiPasien;
 use App\Models\ResepPasien;
 use App\Models\ResepPasienRacikan;
 use App\Models\Setting;
@@ -291,6 +292,29 @@ class PrintController extends Controller
             'print.suratpasien.consent',
             compact('id', 'consent', 'company_name', 'company_address', 'company_city'),
             "informed-consent-{$id}.pdf"
+        );
+    }
+
+    public function printRadiologi($id)
+    {
+        $radiologi = RadiologiPasien::select([
+            't_radiologipasien.*',
+            'm_pasien.nama as pasien_nama',
+            'm_pasien.norm as pasien_norm',
+            'm_pasien.tgllahir as pasien_tgllahir',
+        ])
+            ->join('m_pasien', 'm_pasien.id', 't_radiologipasien.fk_pasien')
+            ->where('t_radiologipasien.id', base64_decode(base64_decode($id)))
+            ->first();
+
+        $company_name = Setting::whereLike('parameter', 'company_name')->first();
+        $company_address = Setting::whereLike('parameter', 'company_address')->first();
+        $company_city = Setting::whereLike('parameter', 'company_city')->first();
+
+        return $this->viewOrPdf(
+            'print.suratpasien.radiologi',
+            compact('id', 'radiologi', 'company_name', 'company_address', 'company_city'),
+            "laporan-radiologi-{$id}.pdf"
         );
     }
 }

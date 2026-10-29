@@ -141,6 +141,7 @@ class PatientController extends Controller
         )
             ->leftJoin('m_alamat as a', 'a.pasienfk', 'm_pasien.id')
             ->where('m_pasien.id', base64_decode(base64_decode($id)))
+            ->where('m_pasien.klienfk', Auth::user()->klienfk ?? 1)
             ->first();
         if (!$data) {
             return abort(404, 'Data pasien tidak ditemukan');
@@ -300,7 +301,7 @@ class PatientController extends Controller
     public function updateData(Request $request)
     {
         // Cari pasiennya
-        $pasien = Patient::find($request->id);
+        $pasien = Patient::where('id', $request->id)->where('klienfk', Auth::user()->klienfk ?? 1)->first();
         if (!$pasien) {
             return response()->json(['error' => 'Data pasien tidak ditemukan'], 404);
         }
@@ -444,7 +445,12 @@ class PatientController extends Controller
             ->leftJoin('m_alamat', 'm_alamat.pasienfk', 'm_pasien.id')
             ->leftJoin('m_study', 'm_study.id', 'm_pasien.fk_study')
             ->leftJoin('m_pekerjaan', 'm_pekerjaan.id', 'm_pasien.pekerjaanfk')
-            ->where('m_pasien.id', base64_decode(base64_decode($id)))->first();
+            ->where('m_pasien.id', base64_decode(base64_decode($id)))
+            ->where('m_pasien.klienfk', Auth::user()->klienfk ?? 1)
+            ->first();
+        if (!$pasien) {
+            return abort(404, 'Data pasien tidak ditemukan');
+        }
         $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
 
         $ruangan = RuangPraktek::select(['m_ruangpraktek.*', 'm_users.id as dokterid', 'm_users.display_name as dokter'])
@@ -461,22 +467,32 @@ class PatientController extends Controller
 
     public function processPatient(Request $request, $id)
     {
+        $klienfk = Auth::user()->klienfk ?? 1;
+        $pasienId = base64_decode(base64_decode($id));
+
+        if (! Patient::where('id', $pasienId)->where('klienfk', $klienfk)->exists()) {
+            return response()->json([
+                'error' => 'Data pasien tidak ditemukan',
+                'message' => 'Data pasien tidak ditemukan'
+            ], 404);
+        }
+
         $ruangan = RuangPraktek::select(['fk_dokter', 'code'])
-            ->where('klienfk', Auth::user()->klienfk ?? 1)->where('id', $request->ruanganfk)->first();
+            ->where('klienfk', $klienfk)->where('id', $request->ruanganfk)->first();
         if (!$ruangan || !$ruangan->fk_dokter) {
             return response()->json([
                 'error' => 'Tidak ada dokter di ruangan terpilih ',
                 'message' => 'Tidak ada dokter di ruangan terpilih '
             ], 400);
         }
-        $cek = DaftarPasien::select('id')->where('pasienfk', base64_decode(base64_decode($id)))->whereDate('tglregistrasi', Carbon::parse($request->tglregistrasi)->format('Y-m-d'))->first();
+        $cek = DaftarPasien::select('id')->where('pasienfk', $pasienId)->whereDate('tglregistrasi', Carbon::parse($request->tglregistrasi)->format('Y-m-d'))->first();
         if ($cek) {
             return response()->json([
                 'error' => 'Pasien sudah mendaftar hari ini',
                 'message' => 'Pasien sudah mendaftar hari ini'
             ], 400);
         }
-        $cekstatus = DaftarPasien::select('id')->where('pasienfk', base64_decode(base64_decode($id)))->first();
+        $cekstatus = DaftarPasien::select('id')->where('pasienfk', $pasienId)->first();
         $cekAntrian = DaftarPasien::where('ruanganfk', $request->ruanganfk)
             ->whereDate('tglregistrasi', Carbon::parse($request->tglregistrasi)->format('Y-m-d'))
             ->count();
@@ -484,12 +500,12 @@ class PatientController extends Controller
         $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
 
         $insert = DaftarPasien::insertGetId([
-            'klienfk' => Auth::user()->klienfk ?? 1,
+            'klienfk' => $klienfk,
             'noregistrasi' => 'RGX' . $time->format('Ymd') .  '-' . $time->format('Hi') . substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'), 0, 4),
             'dokterfk' => $ruangan->fk_dokter,
             'pegawaifk' => Auth::user()->id ?? null,
             'ruanganfk' => $request->ruanganfk,
-            'pasienfk' => base64_decode(base64_decode($id)),
+            'pasienfk' => $pasienId,
             'jenispembayaran' => $request->jenispembayaran,
             'tglregistrasi' => Carbon::parse($request->tglregistrasi),
             'statuspasien' => $cekstatus ? 'LAMA' : 'BARU',

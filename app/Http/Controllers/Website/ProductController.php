@@ -192,7 +192,7 @@ class ProductController extends Controller
 
     public function edit($id)
     {
-        $data = Product::findOrFail(base64_decode(base64_decode($id)));
+        $data = Product::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail(base64_decode(base64_decode($id)));
         $categories = ProductCategories::all();
         $satuan = SatuanProduct::all();
         $unit = UnitProduct::all();
@@ -220,11 +220,12 @@ class ProductController extends Controller
         ]);
 
         DB::beginTransaction();
-        Product::findOrFail(base64_decode(base64_decode($id)));
+        $klienfk = Auth::user()->klienfk ?? 1;
+        Product::where('klienfk', $klienfk)->findOrFail(base64_decode(base64_decode($id)));
 
         try {
             // 2. Insert ke tabel m_products
-            DB::table('m_products')->where('id', base64_decode(base64_decode($id)))->update([
+            DB::table('m_products')->where('id', base64_decode(base64_decode($id)))->where('klienfk', $klienfk)->update([
                 'code' => $request->code,
                 'name' => $request->name,
                 'strength' => $request->strength,
@@ -268,7 +269,7 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $product = Product::findOrFail(base64_decode(base64_decode($id)));
+        $product = Product::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail(base64_decode(base64_decode($id)));
 
         // 🗑️ hapus foto kalau ada
         if ($product->image && Storage::disk('public')->exists($product->image)) {

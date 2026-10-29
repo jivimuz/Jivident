@@ -15,9 +15,11 @@ use App\Http\Controllers\Website\SettingController;
 use App\Http\Controllers\Website\EmployeesController;
 use App\Http\Controllers\Website\CutiController;
 use App\Http\Controllers\Website\ICDController;
+use App\Http\Controllers\Website\IgdController;
 use App\Http\Controllers\Website\JadwalDokterController;
 use App\Http\Controllers\Website\JadwalKerjaController;
 use App\Http\Controllers\Website\KlienController;
+use App\Http\Controllers\Website\LabController;
 use App\Http\Controllers\Website\MonitorController;
 use App\Http\Controllers\Website\OdontogramController;
 use App\Http\Controllers\Website\PatientController;
@@ -29,6 +31,8 @@ use App\Http\Controllers\Website\PosController;
 use App\Http\Controllers\Website\PrintController;
 use App\Http\Controllers\Website\ProductCategoriesController;
 use App\Http\Controllers\Website\ProductController;
+use App\Http\Controllers\Website\RadiologiController;
+use App\Http\Controllers\Website\RawatInapController;
 use App\Http\Controllers\Website\ReceiveOrderController;
 use App\Http\Controllers\Website\ReportController;
 use App\Http\Controllers\Website\ReportFinansialController;
@@ -326,6 +330,50 @@ Route::middleware(['auth'])->group(function () {
         Route::post('register-patient/{id}', [PatientController::class, 'processPatient']);
     });
 
+    Route::middleware(['checkAccess:LAB'])->prefix('lab')->group(function () {
+        Route::get('/', [LabController::class, 'index']);
+        Route::post('getMasterList', [LabController::class, 'getMasterList']);
+        Route::post('saveMaster', [LabController::class, 'saveMaster']);
+        Route::post('deleteMaster/{id}', [LabController::class, 'deleteMaster']);
+        Route::post('getWorklist', [LabController::class, 'getWorklist']);
+        Route::post('saveHasil/{id}', [LabController::class, 'saveHasil']);
+    });
+
+    Route::middleware(['checkAccess:RAD'])->prefix('radiologi')->group(function () {
+        Route::get('/', [RadiologiController::class, 'index']);
+        Route::post('getMasterList', [RadiologiController::class, 'getMasterList']);
+        Route::post('saveMaster', [RadiologiController::class, 'saveMaster']);
+        Route::post('deleteMaster/{id}', [RadiologiController::class, 'deleteMaster']);
+        Route::post('getWorklist', [RadiologiController::class, 'getWorklist']);
+        Route::post('jadwalkan/{id}', [RadiologiController::class, 'jadwalkan']);
+        Route::post('saveHasil/{id}', [RadiologiController::class, 'saveHasil']);
+    });
+
+    Route::middleware(['checkAccess:RWI'])->prefix('rawat-inap')->group(function () {
+        Route::get('/', [RawatInapController::class, 'index']);
+        Route::post('getKamarList', [RawatInapController::class, 'getKamarList']);
+        Route::post('saveKamar', [RawatInapController::class, 'saveKamar']);
+        Route::post('deleteKamar/{id}', [RawatInapController::class, 'deleteKamar']);
+        Route::post('getAvailableKamar', [RawatInapController::class, 'getAvailableKamar']);
+        Route::post('getDaftarPasienOptions', [RawatInapController::class, 'getDaftarPasienOptions']);
+        Route::post('getDokterList', [RawatInapController::class, 'getDokterList']);
+        Route::post('getAdmissionList', [RawatInapController::class, 'getAdmissionList']);
+        Route::post('admit', [RawatInapController::class, 'admit']);
+        Route::post('getBilling/{id}', [RawatInapController::class, 'getBilling']);
+        Route::post('discharge/{id}', [RawatInapController::class, 'discharge']);
+        Route::post('getCatatanList/{id}', [RawatInapController::class, 'getCatatanList']);
+        Route::post('saveCatatan/{id}', [RawatInapController::class, 'saveCatatan']);
+    });
+
+    Route::middleware(['checkAccess:IGD'])->prefix('igd')->group(function () {
+        Route::get('/', [IgdController::class, 'index']);
+        Route::post('getPatientList', [IgdController::class, 'getPatientList']);
+        Route::post('getRuanganList', [IgdController::class, 'getRuanganList']);
+        Route::post('getQueueList', [IgdController::class, 'getQueueList']);
+        Route::post('store', [IgdController::class, 'store']);
+        Route::post('updateTriase/{id}', [IgdController::class, 'updateTriase']);
+    });
+
     Route::middleware(['checkAccess:DPP'])->prefix('ruang-tunggu')->group(function () {
         Route::get('/', [RuangTungguController::class, 'index']);
         Route::post('getList', [RuangTungguController::class, 'getList']);
@@ -336,7 +384,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getProductList', [PemeriksaanController::class, 'getProductList']);
         Route::post('getPenggunaanList', [PemeriksaanController::class, 'getPenggunaanList']);
 
-        Route::prefix('pasien/{id}')->group(function () {
+        Route::middleware(['verifyDaftarPasienBranch'])->prefix('pasien/{id}')->group(function () {
             Route::get('/', [PemeriksaanController::class, 'index']);
 
             Route::post('updateKeluhan/{idp}', [PemeriksaanController::class, 'updateKeluhan']);
@@ -366,6 +414,12 @@ Route::middleware(['auth'])->group(function () {
             Route::post('consent', [PemeriksaanController::class, 'consent']);
             Route::post('consent/getList', [PemeriksaanController::class, 'getConsentList']);
             Route::post('consent/save', [PemeriksaanController::class, 'saveConsent']);
+
+            Route::post('lab', [PemeriksaanController::class, 'lab']);
+            Route::post('lab/save', [PemeriksaanController::class, 'saveLab']);
+
+            Route::post('radiologi', [PemeriksaanController::class, 'radiologi']);
+            Route::post('radiologi/save', [PemeriksaanController::class, 'saveRadiologi']);
 
             Route::prefix('odontogram')->group(function () {
                 Route::post('/', [OdontogramController::class, 'index']);
@@ -497,6 +551,7 @@ Route::prefix('print')->group(function () {
     Route::middleware(['checkAccess:DPP'])->get('print-surat-sakit-pasien/{id}', [PrintController::class, 'printSuratSakitPasien']);
     Route::middleware(['checkAccess:DPP'])->get('print-surat-rujukan-pasien/{id}', [PrintController::class, 'printSuratRujukanPasien']);
     Route::middleware(['checkAccess:DPP'])->get('print-consent/{id}', [PrintController::class, 'printConsent']);
+    Route::middleware(['checkAccess:RAD'])->get('print-radiologi/{id}', [PrintController::class, 'printRadiologi']);
 });
 
 // Portal pasien self-service — tanpa akun m_users, identitas dicek manual lewat

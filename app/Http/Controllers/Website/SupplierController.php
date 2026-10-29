@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -16,7 +17,7 @@ class SupplierController extends Controller
 
     public function getData(Request $request)
     {
-        $query = DB::table('m_suppliers')->whereNull('deleted_at');
+        $query = DB::table('m_suppliers')->whereNull('deleted_at')->where('klienfk', Auth::user()->klienfk ?? 1);
 
         if ($request->search_name) {
             $query->where('name', 'like', '%' . $request->search_name . '%');
@@ -37,7 +38,9 @@ class SupplierController extends Controller
 
         try {
             DB::table('m_suppliers')->insert([
-                'klienfk' => 1,
+                // Sebelumnya hardcode 1 untuk semua cabang — supplier baru dari
+                // cabang mana pun selalu tercatat sebagai milik cabang 1.
+                'klienfk' => Auth::user()->klienfk ?? 1,
                 'name' => $request->name,
                 'address' => $request->address,
                 'phone' => $request->phone,
@@ -57,7 +60,7 @@ class SupplierController extends Controller
 
     public function show($id)
     {
-        $data = DB::table('m_suppliers')->find($id);
+        $data = DB::table('m_suppliers')->where('id', $id)->where('klienfk', Auth::user()->klienfk ?? 1)->first();
         if ($data) {
             return response()->json(['status' => 'success', 'data' => $data]);
         }
@@ -71,7 +74,7 @@ class SupplierController extends Controller
         ]);
 
         try {
-            DB::table('m_suppliers')->where('id', $id)->update([
+            $updated = DB::table('m_suppliers')->where('id', $id)->where('klienfk', Auth::user()->klienfk ?? 1)->update([
                 'name' => $request->name,
                 'address' => $request->address,
                 'phone' => $request->phone,
@@ -80,6 +83,10 @@ class SupplierController extends Controller
                 'is_active' => $request->is_active ?? 1,
                 'updated_at' => now(),
             ]);
+
+            if (! $updated) {
+                return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan.'], 404);
+            }
 
             return response()->json(['status' => 'success', 'message' => 'Supplier berhasil diperbarui.']);
         } catch (\Exception $e) {
@@ -91,7 +98,10 @@ class SupplierController extends Controller
     public function destroy($id)
     {
         try {
-            DB::table('m_suppliers')->where('id', $id)->update(['deleted_at' => now()]);
+            $updated = DB::table('m_suppliers')->where('id', $id)->where('klienfk', Auth::user()->klienfk ?? 1)->update(['deleted_at' => now()]);
+            if (! $updated) {
+                return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan.'], 404);
+            }
             return response()->json(['status' => 'success', 'message' => 'Supplier berhasil dihapus.']);
         } catch (\Exception $e) {
             Log::error('Error Delete Supplier: ' . $e->getMessage());

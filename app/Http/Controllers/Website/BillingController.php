@@ -103,9 +103,10 @@ class BillingController extends Controller
             }
         }
         $query->where('t_daftarpasien.status', '!=', 'Dalam Antrian');
+        $query->where('t_daftarpasien.klienfk', Auth::user()->klienfk ?? 1);
 
         // Total record sebelum filter
-        $totalData = DaftarPasien::count();
+        $totalData = DaftarPasien::where('klienfk', Auth::user()->klienfk ?? 1)->count();
 
         // Total setelah filter
         $filteredData = $query->count();
@@ -128,7 +129,7 @@ class BillingController extends Controller
     public function billingDetail($id)
     {
         $id = base64_decode(base64_decode($id));
-        $data =  DaftarPasien::where('id', $id)->first();
+        $data =  DaftarPasien::where('id', $id)->where('klienfk', Auth::user()->klienfk ?? 1)->first();
         $payments = Payments::all();
 
         if ($data) {
@@ -140,9 +141,26 @@ class BillingController extends Controller
 
     public function getTagihanList(Request $request)
     {
-        $registrasi =  DaftarPasien::select('biaya_pendaftaran')->where('id',  $request->daftarpasien_id)->first();
+        // Verifikasi kepemilikan cabang dulu — semua query di bawah pakai
+        // daftarpasien_id ini langsung tanpa cek ulang, jadi guard di sini
+        // saja sudah cukup untuk mencegah lihat tagihan cabang lain.
+        if (! DaftarPasien::where('id', $request->daftarpasien_id)->where('klienfk', Auth::user()->klienfk ?? 1)->exists()) {
+            return response()->json(['message' => 'error', 'error' => 'Daftar Pasien tidak ditemukan'], 404);
+        }
+
+        // Kolom yang benar adalah `biaya_registrasi` — sebelumnya select()
+        // ke `biaya_pendaftaran` (kolom yang tidak pernah ada), bikin endpoint
+        // ini selalu gagal dengan SQL error "Unknown column" di setiap
+        // pemanggilan. Ditemukan & diperbaiki saat menambahkan tagihan lab/radiologi.
+        $registrasi =  DaftarPasien::select('biaya_registrasi')->where('id',  $request->daftarpasien_id)->first();
         $tagihanTindakan =  TindakanPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
         $tagihanDiagnosa =  DiagnosaPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
+        $tagihanLab = DB::table('t_labpasien')
+            ->where('fk_daftarpasien', $request->daftarpasien_id)->whereNull('deleted_at')
+            ->select('id', 'jenis_nama as nama', 'harga_snapshot as amount')->get();
+        $tagihanRadiologi = DB::table('t_radiologipasien')
+            ->where('fk_daftarpasien', $request->daftarpasien_id)->whereNull('deleted_at')
+            ->select('id', 'jenis_nama as nama', 'harga_snapshot as amount')->get();
         $totalPaid = (float) DB::table('t_transactions')
             ->where('daftarpasien_id', $request->daftarpasien_id)
             ->selectRaw("COALESCE(SUM(CASE
@@ -155,7 +173,9 @@ class BillingController extends Controller
             'message' => 'Get data sukses',
             'tagihan_tindakan' => $tagihanTindakan,
             'tagihan_diagnosa' => $tagihanDiagnosa,
-            'registrasi' => $registrasi ? $registrasi->biaya_pendaftaran : 0,
+            'tagihan_lab' => $tagihanLab,
+            'tagihan_radiologi' => $tagihanRadiologi,
+            'registrasi' => $registrasi ? $registrasi->biaya_registrasi : 0,
             'totalPaid' => $totalPaid ?? 0,
         ], 200);
     }
@@ -176,6 +196,7 @@ class BillingController extends Controller
             $transaction = new TransactionHelper();
             $daftarPasien = DaftarPasien::select('noregistrasi', 'status')
                 ->where('id', $validated['fk_daftarpasien'])
+                ->where('klienfk', Auth::user()->klienfk ?? 1)
                 ->first();
 
             if (!$daftarPasien) {

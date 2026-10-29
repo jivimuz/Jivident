@@ -22,7 +22,7 @@ class ICDController extends Controller
     // =========================
     public function dataICDIX(Request $request)
     {
-        $query = ICDIX::query();
+        $query = ICDIX::where('klienfk', Auth::user()->klienfk ?? 1);
 
         // Total sebelum filter
         $recordsTotal = (clone $query)->count();
@@ -91,7 +91,7 @@ class ICDController extends Controller
 
     public function dataICDX(Request $request)
     {
-        $query = ICDX::query();
+        $query = ICDX::where('klienfk', Auth::user()->klienfk ?? 1);
 
         // Total sebelum filter
         $recordsTotal = (clone $query)->count();
@@ -185,15 +185,14 @@ class ICDController extends Controller
 
     public function showICD(int $id, int $tipe)
     {
-        $model = $this->resolveModelByType($tipe);
-        $row = $model->findOrFail($id);
+        $row = $this->resolveModelByType($tipe)->where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id);
 
         return view('pages/icd/partials/show', compact('row', 'tipe'));
     }
 
     public function editICDIX(int $id)
     {
-        $row = ICDIX::findOrFail($id);
+        $row = ICDIX::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id);
 
         return view('pages/icd/partials/form', [
             'tipe' => 9,
@@ -206,7 +205,7 @@ class ICDController extends Controller
 
     public function editICDX(int $id)
     {
-        $row = ICDX::findOrFail($id);
+        $row = ICDX::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id);
 
         return view('pages/icd/partials/form', [
             'tipe' => 10,
@@ -255,7 +254,7 @@ class ICDController extends Controller
     // =========================
     public function updateICDIX(Request $request, int $id)
     {
-        $row = ICDIX::findOrFail($id);
+        $row = ICDIX::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id);
 
         $validated = $this->validateICD($request, 'm_icdix', $id);
 
@@ -269,7 +268,7 @@ class ICDController extends Controller
 
     public function updateICDX(Request $request, int $id)
     {
-        $row = ICDX::findOrFail($id);
+        $row = ICDX::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id);
 
         $validated = $this->validateICD($request, 'm_icdx', $id);
 
@@ -286,8 +285,7 @@ class ICDController extends Controller
     // =========================
     public function deleteICD(int $id, int $tipe)
     {
-        $model = $this->resolveModelByType($tipe);
-        $row = $model->findOrFail($id);
+        $row = $this->resolveModelByType($tipe)->where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id);
         $row->delete();
 
         return response()->json([
@@ -302,8 +300,8 @@ class ICDController extends Controller
     protected function resolveModelByType(int $tipe)
     {
         return match ($tipe) {
-            9 => new ICDIX(),
-            10 => new ICDX(),
+            9 => ICDIX::query(),
+            10 => ICDX::query(),
             default => abort(404, 'Tipe ICD tidak valid'),
         };
     }

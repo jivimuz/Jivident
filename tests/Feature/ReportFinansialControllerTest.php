@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\BillingTransaction;
 use App\Models\DaftarPasien;
+use App\Models\LabPasien;
 use App\Models\Module;
 use App\Models\Patient;
 use App\Models\Payments;
 use App\Models\Product;
 use App\Models\ProductQTY;
+use App\Models\RadiologiPasien;
 use App\Models\ReceiveOrder;
 use App\Models\Serial;
 use App\Models\Supplier;
@@ -107,6 +109,49 @@ class ReportFinansialControllerTest extends TestCase
         $this->assertEquals(30000, $data[0]['total_paid']);
         $this->assertEquals(40000, $data[0]['sisa']);
         $this->assertEquals(40000, $response->json('total_piutang'));
+    }
+
+    public function test_piutang_includes_lab_and_radiologi_charges(): void
+    {
+        $user = $this->authorizedUser();
+
+        $patient = Patient::create([
+            'klienfk' => $user->klienfk,
+            'norm' => 'RM011',
+            'nik' => '3334',
+            'nama' => 'Pasien Piutang Lab',
+        ]);
+
+        $daftar = DaftarPasien::create([
+            'klienfk' => $user->klienfk,
+            'noregistrasi' => 'REG-002',
+            'ruanganfk' => 1,
+            'pasienfk' => $patient->id,
+            'tglregistrasi' => now(),
+            'statuspasien' => 'BARU',
+            'status' => 'Selesai',
+            'noantrian' => 'A2',
+            'statuspembayaran' => 'Belum Verifikasi',
+            'biaya_registrasi' => 0,
+        ]);
+
+        LabPasien::create([
+            'klienfk' => $user->klienfk, 'fk_daftarpasien' => $daftar->id, 'fk_pasien' => $patient->id,
+            'jenis_nama' => 'Gula Darah', 'harga_snapshot' => 25000, 'status' => 'selesai', 'tgl_diminta' => now(),
+        ]);
+        RadiologiPasien::create([
+            'klienfk' => $user->klienfk, 'fk_daftarpasien' => $daftar->id, 'fk_pasien' => $patient->id,
+            'jenis_nama' => 'Panoramic', 'harga_snapshot' => 150000, 'status' => 'selesai', 'tgl_diminta' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->post('/report-finansial/getPiutang', [
+            'start_date' => now()->startOfMonth()->toDateString(),
+            'end_date' => now()->toDateString(),
+        ]);
+
+        $response->assertOk();
+        $data = collect($response->json('data'))->firstWhere('noregistrasi', 'REG-002');
+        $this->assertEquals(175000, $data['total_tagihan']);
     }
 
     public function test_rekap_pembayaran_groups_billing_transactions_by_method(): void

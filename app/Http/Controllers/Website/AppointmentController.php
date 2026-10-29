@@ -89,6 +89,14 @@ class AppointmentController extends Controller
 
     public function cancel($id)
     {
+        // AppointmentHelper::cancel() sendiri tidak men-scope ke klienfk (lihat
+        // catatan di AppointmentHelper), jadi cek kepemilikan cabang dilakukan
+        // di sini dulu — tanpa ini staf dari cabang lain bisa membatalkan
+        // appointment milik cabang yang bukan miliknya lewat ID.
+        if (! Appointment::where('id', $id)->where('klienfk', Auth::user()->klienfk ?? 1)->exists()) {
+            return response()->json(['error' => 'Appointment tidak ditemukan'], 404);
+        }
+
         try {
             app(AppointmentHelper::class)->cancel((int) $id);
 

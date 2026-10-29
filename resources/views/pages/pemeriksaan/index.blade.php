@@ -113,6 +113,14 @@
                                 <button class="nav-link" id="consent" aria-selected="false"><i
                                         class="fa fa-file-signature fa-fw"></i>Persetujuan</button>
                             </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="lab" aria-selected="false"><i
+                                        class="fa fa-flask fa-fw"></i>Lab</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="radiologi" aria-selected="false"><i
+                                        class="fa fa-x-ray fa-fw"></i>Radiologi</button>
+                            </li>
                         </ul>
 
                     </div>

@@ -519,7 +519,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
 
         async function fetchCurrentQueue() {
             try {
-                let res = await fetch(`{{ url('') }}/monitor/currentAntrian`);
+                let res = await fetch(`{{ url('') }}/monitor/currentAntrian?klienfk={{ $klienfk }}`);
                 let data = await res.json();
 
                 if (data.status === 'ok') {

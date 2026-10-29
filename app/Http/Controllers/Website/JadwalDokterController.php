@@ -25,6 +25,7 @@ class JadwalDokterController extends Controller
         $data = User::select(['m_users.id', 'm_employee.fullname', 'm_employee.nik'])
             ->join('m_employee', 'm_employee.id', '=', 'm_users.fk_employee')
             ->where('m_employee.is_pemeriksapasien', 1)
+            ->where('m_users.klienfk', Auth::user()->klienfk ?? 1)
             ->when($q, function ($query) use ($q) {
                 $query->where('m_employee.fullname', 'like', "%{$q}%")
                     ->orWhere('m_employee.nik', 'like', "%{$q}%");
@@ -37,14 +38,15 @@ class JadwalDokterController extends Controller
 
     public function getRuangPraktekByDokter($dokterId)
     {
-        $data = RuangPraktek::where('fk_dokter', $dokterId)->get(['id', 'name']);
+        $data = RuangPraktek::where('fk_dokter', $dokterId)->where('klienfk', Auth::user()->klienfk ?? 1)->get(['id', 'name']);
 
         return response()->json(['message' => 'success', 'data' => $data], 200);
     }
 
     public function getList(Request $request)
     {
-        $query = JadwalDokter::with(['dokter:id', 'dokter.employee:id,fullname', 'ruangPraktek:id,name']);
+        $query = JadwalDokter::with(['dokter:id', 'dokter.employee:id,fullname', 'ruangPraktek:id,name'])
+            ->where('klienfk', Auth::user()->klienfk ?? 1);
 
         $recordsTotal = $query->count();
 
@@ -88,14 +90,14 @@ class JadwalDokterController extends Controller
     {
         $validated = $this->validateRequest($request);
 
-        JadwalDokter::findOrFail($id)->update($validated);
+        JadwalDokter::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id)->update($validated);
 
         return response()->json(['message' => 'success'], 200);
     }
 
     public function destroy($id)
     {
-        JadwalDokter::findOrFail($id)->delete();
+        JadwalDokter::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id)->delete();
 
         return response()->json(['message' => 'success'], 200);
     }

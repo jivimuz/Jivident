@@ -143,4 +143,30 @@ class AppointmentControllerTest extends TestCase
 
         $second->assertStatus(400);
     }
+
+    /**
+     * Regresi: AppointmentController::cancel() tidak men-scope ke klienfk
+     * sebelum memanggil AppointmentHelper::cancel() — staf dari cabang lain
+     * bisa membatalkan appointment milik cabang yang bukan miliknya lewat ID.
+     */
+    public function test_cannot_cancel_an_appointment_belonging_to_another_branch(): void
+    {
+        $owner = $this->authorizedUser('BKG');
+        [$dokter, $ruangPraktek, $tanggal] = $this->makeDokterWithTemplate();
+        $patient = Patient::create(['klienfk' => 1, 'norm' => 'RM003', 'nik' => '3', 'nama' => 'Pasien Cabang 1']);
+        $book = $this->actingAs($owner)->post('/booking/store', [
+            'fk_dokter' => $dokter->id, 'fk_ruangpraktek' => $ruangPraktek->id,
+            'fk_pasien' => $patient->id, 'tanggal' => $tanggal, 'jam_mulai' => '08:30',
+        ]);
+        $appointmentId = $book->json('data.id');
+
+        $intruder = $this->authorizedUser('BKG');
+        $intruder->klienfk = 2;
+        $intruder->save();
+
+        $response = $this->actingAs($intruder)->post('/booking/cancel/'.$appointmentId);
+
+        $response->assertStatus(404);
+        $this->assertDatabaseHas('t_appointments', ['id' => $appointmentId, 'status' => 'booked']);
+    }
 }

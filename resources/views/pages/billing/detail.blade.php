@@ -234,7 +234,9 @@
                         }
 
                         if ((response.tagihan_tindakan && response.tagihan_tindakan.length > 0) || (
-                                response.tagihanDiagnosa && response.tagihanDiagnosa.length > 0)) {
+                                response.tagihan_diagnosa && response.tagihan_diagnosa.length > 0) || (
+                                response.tagihan_lab && response.tagihan_lab.length > 0) || (
+                                response.tagihan_radiologi && response.tagihan_radiologi.length > 0)) {
 
                             if (response.tagihan_tindakan && response.tagihan_tindakan.length > 0) {
                                 response.tagihan_tindakan.forEach(function(item) {
@@ -269,6 +271,42 @@
                                         <td>${item.dokter || '-'}</td>
                                         <td class="text-center">${parseInt(item.qty)}</td>
                                         <td class="text-end text-nowrap">${formatRupiah(item.price)}</td>
+                                        <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
+                                    </tr>
+                                `;
+                                });
+                            }
+                            if (response.tagihan_lab && response.tagihan_lab.length > 0) {
+                                response.tagihan_lab.forEach(function(item) {
+                                    totalAll += parseFloat(item.amount) || 0;
+                                    html += `
+                                    <tr>
+                                        <td>LAB</td>
+                                        <td>
+                                            <input type="hidden" name="tagihan_id[]" value="${item.id}">
+                                            ${item.nama}
+                                        </td>
+                                        <td>-</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end text-nowrap">${formatRupiah(item.amount)}</td>
+                                        <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
+                                    </tr>
+                                `;
+                                });
+                            }
+                            if (response.tagihan_radiologi && response.tagihan_radiologi.length > 0) {
+                                response.tagihan_radiologi.forEach(function(item) {
+                                    totalAll += parseFloat(item.amount) || 0;
+                                    html += `
+                                    <tr>
+                                        <td>RAD</td>
+                                        <td>
+                                            <input type="hidden" name="tagihan_id[]" value="${item.id}">
+                                            ${item.nama}
+                                        </td>
+                                        <td>-</td>
+                                        <td class="text-center">1</td>
+                                        <td class="text-end text-nowrap">${formatRupiah(item.amount)}</td>
                                         <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
                                     </tr>
                                 `;

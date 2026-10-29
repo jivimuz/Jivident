@@ -36,6 +36,16 @@ class ReportFinansialController extends Controller
             ->selectRaw('fk_daftarpasien, SUM(amount) as total_diagnosa')
             ->groupBy('fk_daftarpasien');
 
+        $labSub = DB::table('t_labpasien')
+            ->whereNull('deleted_at')
+            ->selectRaw('fk_daftarpasien, SUM(harga_snapshot) as total_lab')
+            ->groupBy('fk_daftarpasien');
+
+        $radiologiSub = DB::table('t_radiologipasien')
+            ->whereNull('deleted_at')
+            ->selectRaw('fk_daftarpasien, SUM(harga_snapshot) as total_radiologi')
+            ->groupBy('fk_daftarpasien');
+
         $paidSub = DB::table('t_transactions')
             ->whereNull('deleted_at')
             ->whereNotNull('daftarpasien_id')
@@ -46,6 +56,8 @@ class ReportFinansialController extends Controller
             ->leftJoin('m_pasien as p', 'p.id', 'dp.pasienfk')
             ->leftJoinSub($tindakanSub, 'ti', 'ti.fk_daftarpasien', '=', 'dp.id')
             ->leftJoinSub($diagnosaSub, 'di', 'di.fk_daftarpasien', '=', 'dp.id')
+            ->leftJoinSub($labSub, 'lb', 'lb.fk_daftarpasien', '=', 'dp.id')
+            ->leftJoinSub($radiologiSub, 'rd', 'rd.fk_daftarpasien', '=', 'dp.id')
             ->leftJoinSub($paidSub, 'pay', 'pay.daftarpasien_id', '=', 'dp.id')
             ->where('dp.klienfk', $klienfk)
             ->where('dp.status', '!=', 'Dibatalkan')
@@ -53,7 +65,7 @@ class ReportFinansialController extends Controller
             ->whereDate('dp.tglregistrasi', '>=', $start)
             ->whereDate('dp.tglregistrasi', '<=', $end)
             ->selectRaw('dp.id, dp.noregistrasi, dp.tglregistrasi, dp.statuspembayaran, p.nama as pasien_nama,
-                (dp.biaya_registrasi + COALESCE(ti.total_tindakan, 0) + COALESCE(di.total_diagnosa, 0)) as total_tagihan,
+                (dp.biaya_registrasi + COALESCE(ti.total_tindakan, 0) + COALESCE(di.total_diagnosa, 0) + COALESCE(lb.total_lab, 0) + COALESCE(rd.total_radiologi, 0)) as total_tagihan,
                 COALESCE(pay.total_paid, 0) as total_paid')
             ->orderBy('dp.tglregistrasi')
             ->get();

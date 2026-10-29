@@ -15,6 +15,7 @@ use App\Models\Ptkp;
 use App\Models\Religion;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
@@ -42,6 +43,7 @@ class UserListController extends Controller
             ->join('m_employee', "m_users.fk_employee", "m_employee.id")
             ->leftJoin('m_designation', "m_designation.id", "m_employee.fk_designation")
             ->leftJoin('m_department', "m_department.id", "m_designation.fk_department")
+            ->where('m_users.klienfk', Auth::user()->klienfk ?? 1)
             ->whereNot('m_users.id', 1)->get();
         return response()->json(["message" => 'success', 'data' => $data], 200);
     }
@@ -65,7 +67,7 @@ class UserListController extends Controller
     public function edit(Request $request)
     {
         $id = $request->id;
-        $user = User::where('id', $id)->first();
+        $user = User::where('id', $id)->where('klienfk', Auth::user()->klienfk ?? 1)->firstOrFail();
         $data = Employee::where('id', $user->fk_employee)->first();
         $jl = JobLevel::get();
         $jt = JobType::get();
@@ -155,15 +157,20 @@ class UserListController extends Controller
     public function updateData(Request $request)
     {
         try {
+            $klienfk = Auth::user()->klienfk ?? 1;
+            $target = User::select('id', 'fk_employee')->where('id', $request->id)->where('klienfk', $klienfk)->first();
+            if (! $target) {
+                return response()->json(["message" => 'error', 'data' => null, 'error' => 'User tidak ditemukan'], 404);
+            }
+
             DB::beginTransaction();
 
             if ($request->pwd) {
-                User::where('id', $request->id)->update([
+                User::where('id', $target->id)->update([
                     'password' =>  Hash::make($request->pwd),
                 ],);
             }
-            $employee = User::select('fk_employee')->where('id', $request->id)->first();
-            Employee::where('id', $employee->fk_employee)->update([
+            Employee::where('id', $target->fk_employee)->update([
                 'nik' => $request->nik,
                 'fullname' => $request->fullname,
                 "fk_joblevel" => $request->fk_joblevel,
@@ -200,23 +207,29 @@ class UserListController extends Controller
 
     public function activateUser(Request $request)
     {
-        User::where('id', $request->id)->update([
+        $updated = User::where('id', $request->id)->where('klienfk', Auth::user()->klienfk ?? 1)->update([
             'is_active' => true,
         ]);
+        if (! $updated) {
+            return response()->json(["error" => 'User tidak ditemukan', 'data' => null], 404);
+        }
         return response()->json(["message" => 'success', 'data' => null], 200);
     }
 
     public function deactivateUser(Request $request)
     {
-        User::where('id', $request->id)->update([
+        $updated = User::where('id', $request->id)->where('klienfk', Auth::user()->klienfk ?? 1)->update([
             'is_active' => false,
         ]);
+        if (! $updated) {
+            return response()->json(["error" => 'User tidak ditemukan', 'data' => null], 404);
+        }
         return response()->json(["message" => 'success', 'data' => null], 200);
     }
 
     public function deleteUser(Request $request)
     {
-        $check = User::where('id', $request->id)->first();
+        $check = User::where('id', $request->id)->where('klienfk', Auth::user()->klienfk ?? 1)->first();
         if ($check) {
             User::where('id', $request->id)->delete();
             return response()->json(["message" => 'success', 'data' => null], 200);
@@ -226,7 +239,7 @@ class UserListController extends Controller
 
     public function deleteUserWithEmployee(Request $request)
     {
-        $checkUser = User::select(['id', 'fk_employee'])->where('id', $request->id)->first();
+        $checkUser = User::select(['id', 'fk_employee'])->where('id', $request->id)->where('klienfk', Auth::user()->klienfk ?? 1)->first();
         if ($checkUser) {
             $checkEmployee = $checkUser->fk_user ? Employee::select('id')->where('id', $checkUser->fk_employee)->first() : null;
             if ($checkEmployee) {
@@ -295,6 +308,11 @@ class UserListController extends Controller
     public function resetPass(Request $request)
     {
         try {
+            $klienfk = Auth::user()->klienfk ?? 1;
+            if (! User::where('id', $request->id)->where('klienfk', $klienfk)->exists()) {
+                return response()->json(["message" => 'error', 'data' => null, 'error' => 'User tidak ditemukan'], 404);
+            }
+
             DB::beginTransaction();
 
             if ($request->pass) {

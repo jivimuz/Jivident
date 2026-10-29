@@ -26,7 +26,7 @@ class TindakanController extends Controller
     public function showTindakan(Request $request)
     {
         $id = $request->id;
-        $data = Tindakan::find($id);
+        $data = Tindakan::where('klienfk', Auth::user()->klienfk ?? 1)->find($id);
         return response()->json($data);
     }
 
@@ -38,11 +38,16 @@ class TindakanController extends Controller
             'amount' => 'required|numeric|min:0|max:9999999999'
         ]);
 
+        $klienfk = Auth::user()->klienfk ?? 1;
+
         // Jika ada ID = update
         if ($request->id) {
-            $t = Tindakan::find($request->id);
+            $t = Tindakan::where('klienfk', $klienfk)->find($request->id);
+            if (! $t) {
+                return response()->json(['status' => 'error', 'message' => 'Tindakan tidak ditemukan'], 404);
+            }
         } else {
-            $t = new Tindakan();
+            $t = new Tindakan(['klienfk' => $klienfk]);
         }
 
         $t->name = $request->name;
@@ -56,7 +61,7 @@ class TindakanController extends Controller
     // DELETE
     public function deleteTindakan(Request $request)
     {
-        Tindakan::where('id', $request->id)->delete();
+        Tindakan::where('id', $request->id)->where('klienfk', Auth::user()->klienfk ?? 1)->delete();
         return response()->json(['status' => 'deleted']);
     }
 

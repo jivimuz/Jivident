@@ -6,7 +6,9 @@ use App\Models\Appointment;
 use App\Models\DaftarPasien;
 use App\Models\Employee;
 use App\Models\JadwalDokter;
+use App\Models\LabPasien;
 use App\Models\Patient;
+use App\Models\RadiologiPasien;
 use App\Models\ResepPasien;
 use App\Models\RuangPraktek;
 use App\Models\Serial;
@@ -179,6 +181,27 @@ class PortalControllerTest extends TestCase
         $response->assertSee('Rp 70.000');
         $response->assertSee('Rp 30.000');
         $response->assertSee('Rp 40.000');
+    }
+
+    public function test_tagihan_includes_lab_and_radiologi_charges(): void
+    {
+        $this->activateLicense();
+        $patient = $this->makePatient();
+        $daftar = $this->makeDaftarPasien($patient, ['biaya_registrasi' => 0]);
+
+        LabPasien::create([
+            'klienfk' => 1, 'fk_daftarpasien' => $daftar->id, 'fk_pasien' => $patient->id,
+            'jenis_nama' => 'Gula Darah', 'harga_snapshot' => 25000, 'status' => 'selesai', 'tgl_diminta' => now(),
+        ]);
+        RadiologiPasien::create([
+            'klienfk' => 1, 'fk_daftarpasien' => $daftar->id, 'fk_pasien' => $patient->id,
+            'jenis_nama' => 'Panoramic', 'harga_snapshot' => 150000, 'status' => 'selesai', 'tgl_diminta' => now(),
+        ]);
+
+        $response = $this->withSession(['portal_patient_id' => $patient->id])->get('/portal/tagihan');
+
+        $response->assertOk();
+        $response->assertSee('Rp 175.000');
     }
 
     public function test_resep_lists_prescriptions_for_the_patient(): void

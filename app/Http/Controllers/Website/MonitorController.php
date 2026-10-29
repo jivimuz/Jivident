@@ -9,15 +9,21 @@ use Illuminate\Http\Request;
 
 class MonitorController extends Controller
 {
-    public function antrian()
+    public function antrian(Request $request)
     {
         $urlVid = Setting::where('parameter', 'id_youtube_monitor')->first();
+        // Papan monitor ini publik (tanpa login), jadi tidak ada Auth::user()->klienfk
+        // untuk tahu cabang mana yang mau ditampilkan — tiap TV/perangkat monitor di
+        // cabang tertentu harus dibuka dengan ?klienfk=<id cabang>, default ke cabang 1
+        // untuk klinik yang belum pakai multi-cabang.
+        $klienfk = $request->input('klienfk', 1);
 
-        return view('public/monitor-antrian', compact('urlVid'));
+        return view('public/monitor-antrian', compact('urlVid', 'klienfk'));
     }
 
-    public function currentAntrian()
+    public function currentAntrian(Request $request)
     {
+        $klienfk = $request->input('klienfk', 1);
         $today = now('Asia/Jakarta')->toDateString();
 
         // Ambil pasien yang statusnya 'Di Periksa' hari ini
@@ -27,6 +33,7 @@ class MonitorController extends Controller
             'b.name as ruangan',
             't_daftarpasien.tgldiperiksa',
         ])
+            ->where('t_daftarpasien.klienfk', $klienfk)
             ->where('status', 'Di Periksa')
             ->whereDate('tgldiperiksa', $today)
             ->leftJoin('m_users as a', 't_daftarpasien.dokterfk', 'a.id')
@@ -46,6 +53,7 @@ class MonitorController extends Controller
             'b.name as ruangan',
             't_daftarpasien.tgldiperiksa',
         ])
+            ->where('t_daftarpasien.klienfk', $klienfk)
             ->where('status', '!=', 'Dalam Antrian') // sesuaikan kalau status history beda
             ->whereDate('tgldiperiksa', $today)
             ->where('noantrian', '!=', $current->noantrian)
