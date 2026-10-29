@@ -83,9 +83,14 @@
                                 <button class="nav-link active" id="vitalsign" aria-selected="true"><i
                                         class="fa fa-heartbeat fa-fw"></i> Vital Sign</button>
                             </li>
+
                             <li class="nav-item">
                                 <button class="nav-link" id="diagnosa" aria-selected="true"><i
                                         class="fa fa-stethoscope fa-fw"></i> Diagnosa</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="consent" aria-selected="false"><i
+                                        class="fa fa-file-signature fa-fw"></i>Persetujuan</button>
                             </li>
                             <li class="nav-item">
                                 <button class="nav-link" id="odontogram" aria-selected="false"><i
@@ -101,18 +106,8 @@
                                 <button class="nav-link" id="tindakan" aria-selected="false"><i
                                         class="fa fa-list-ol fa-fw"></i>Tindakan </button>
                             </li>
-                            <li class="nav-item">
-                                <button class="nav-link" id="resep" aria-selected="false"><i
-                                        class="fa fa-flask fa-fw"></i>Resep Obat</button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link" id="cetaksurat" aria-selected="false"><i
-                                        class="fa fa-folder fa-fw"></i>Cetak Surat</button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link" id="consent" aria-selected="false"><i
-                                        class="fa fa-file-signature fa-fw"></i>Persetujuan</button>
-                            </li>
+
+
                             <li class="nav-item">
                                 <button class="nav-link" id="lab" aria-selected="false"><i
                                         class="fa fa-flask fa-fw"></i>Lab</button>
@@ -120,6 +115,14 @@
                             <li class="nav-item">
                                 <button class="nav-link" id="radiologi" aria-selected="false"><i
                                         class="fa fa-x-ray fa-fw"></i>Radiologi</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="resep" aria-selected="false"><i
+                                        class="fa fa-flask fa-fw"></i>Resep Obat</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="cetaksurat" aria-selected="false"><i
+                                        class="fa fa-folder fa-fw"></i>Cetak Surat</button>
                             </li>
                         </ul>
 

@@ -215,7 +215,10 @@
                     success: function(response) {
                         let html = '';
                         let totalAll = 0;
+                        let hasAnyItem = false;
+
                         if (response.registrasi) {
+                            hasAnyItem = true;
                             totalAll += parseFloat(response.registrasi) || 0;
                             html += `
                                     <tr>
@@ -233,94 +236,97 @@
                                 `;
                         }
 
-                        if ((response.tagihan_tindakan && response.tagihan_tindakan.length > 0) || (
-                                response.tagihan_diagnosa && response.tagihan_diagnosa.length > 0) || (
-                                response.tagihan_lab && response.tagihan_lab.length > 0) || (
-                                response.tagihan_radiologi && response.tagihan_radiologi.length > 0)) {
-
-                            if (response.tagihan_tindakan && response.tagihan_tindakan.length > 0) {
-                                response.tagihan_tindakan.forEach(function(item) {
-                                    totalAll += parseFloat(item.amount) || 0;
-                                    html += `
-                                    <tr>
-                                        <td>TDK</td>
-                                        <td>
-                                            <!-- Hidden input agar tetap terbaca backend sebagai array -->
-                                            <input type="hidden" name="tagihan_id[]" value="${item.id}">
-                                            ${(item.tindakan || '').length > 20 ? (item.tindakan || '').slice(0, 20) + '...' : (item.tindakan || '')}
-                                        </td>
-                                        <td>${item.dokter || '-'}</td>
-                                        <td class="text-center">${parseInt(item.qty)}</td>
-                                        <td class="text-end text-nowrap">${formatRupiah(item.price)}</td>
-                                        <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
-                                    </tr>
-                                `;
-                                });
-                            }
-                            if (response.tagihan_diagnosa && response.tagihan_diagnosa.length > 0) {
-                                response.tagihan_diagnosa.forEach(function(item) {
-                                    totalAll += parseFloat(item.amount) || 0;
-                                    html += `
-                                    <tr>
-                                        <td>ICD</td>
-                                        <td>
-                                            <!-- Hidden input agar tetap terbaca backend sebagai array -->
-                                            <input type="hidden" name="tagihan_id[]" value="${item.id}">
-                                            IDC ${item.tipe_diagnosa} || ${(item.diagnosa || '').length > 20 ? (item.diagnosa || '').slice(0, 20) + '...' : (item.diagnosa || '')}
-                                        </td>
-                                        <td>${item.dokter || '-'}</td>
-                                        <td class="text-center">${parseInt(item.qty)}</td>
-                                        <td class="text-end text-nowrap">${formatRupiah(item.price)}</td>
-                                        <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
-                                    </tr>
-                                `;
-                                });
-                            }
-                            if (response.tagihan_lab && response.tagihan_lab.length > 0) {
-                                response.tagihan_lab.forEach(function(item) {
-                                    totalAll += parseFloat(item.amount) || 0;
-                                    html += `
-                                    <tr>
-                                        <td>LAB</td>
-                                        <td>
-                                            <input type="hidden" name="tagihan_id[]" value="${item.id}">
-                                            ${item.nama}
-                                        </td>
-                                        <td>-</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end text-nowrap">${formatRupiah(item.amount)}</td>
-                                        <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
-                                    </tr>
-                                `;
-                                });
-                            }
-                            if (response.tagihan_radiologi && response.tagihan_radiologi.length > 0) {
-                                response.tagihan_radiologi.forEach(function(item) {
-                                    totalAll += parseFloat(item.amount) || 0;
-                                    html += `
-                                    <tr>
-                                        <td>RAD</td>
-                                        <td>
-                                            <input type="hidden" name="tagihan_id[]" value="${item.id}">
-                                            ${item.nama}
-                                        </td>
-                                        <td>-</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end text-nowrap">${formatRupiah(item.amount)}</td>
-                                        <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
-                                    </tr>
-                                `;
-                                });
-                            }
-
-                            $('#input-total-tagihan').val(totalAll);
-                            $('#display-total-tagihan').text(formatRupiah(totalAll));
-                        } else {
-                            html =
-                                `<tr><td colspan="5" class="text-center text-muted">Tidak ada tagihan.</td></tr>`;
-                            $('#input-total-tagihan').val(0);
-                            $('#display-total-tagihan').text(formatRupiah(0));
+                        if (response.tagihan_tindakan && response.tagihan_tindakan.length > 0) {
+                            hasAnyItem = true;
+                            response.tagihan_tindakan.forEach(function(item) {
+                                totalAll += parseFloat(item.amount) || 0;
+                                html += `
+                                <tr>
+                                    <td>TDK</td>
+                                    <td>
+                                        <!-- Hidden input agar tetap terbaca backend sebagai array -->
+                                        <input type="hidden" name="tagihan_id[]" value="${item.id}">
+                                        ${(item.tindakan || '').length > 20 ? (item.tindakan || '').slice(0, 20) + '...' : (item.tindakan || '')}
+                                    </td>
+                                    <td>${item.dokter || '-'}</td>
+                                    <td class="text-center">${parseInt(item.qty)}</td>
+                                    <td class="text-end text-nowrap">${formatRupiah(item.price)}</td>
+                                    <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
+                                </tr>
+                            `;
+                            });
                         }
+                        if (response.tagihan_diagnosa && response.tagihan_diagnosa.length > 0) {
+                            hasAnyItem = true;
+                            response.tagihan_diagnosa.forEach(function(item) {
+                                totalAll += parseFloat(item.amount) || 0;
+                                html += `
+                                <tr>
+                                    <td>ICD</td>
+                                    <td>
+                                        <!-- Hidden input agar tetap terbaca backend sebagai array -->
+                                        <input type="hidden" name="tagihan_id[]" value="${item.id}">
+                                        IDC ${item.tipe_diagnosa} || ${(item.diagnosa || '').length > 20 ? (item.diagnosa || '').slice(0, 20) + '...' : (item.diagnosa || '')}
+                                    </td>
+                                    <td>${item.dokter || '-'}</td>
+                                    <td class="text-center">${parseInt(item.qty)}</td>
+                                    <td class="text-end text-nowrap">${formatRupiah(item.price)}</td>
+                                    <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
+                                </tr>
+                            `;
+                            });
+                        }
+                        if (response.tagihan_lab && response.tagihan_lab.length > 0) {
+                            hasAnyItem = true;
+                            response.tagihan_lab.forEach(function(item) {
+                                totalAll += parseFloat(item.amount) || 0;
+                                html += `
+                                <tr>
+                                    <td>LAB</td>
+                                    <td>
+                                        <input type="hidden" name="tagihan_id[]" value="${item.id}">
+                                        ${item.nama}
+                                    </td>
+                                    <td>-</td>
+                                    <td class="text-center">1</td>
+                                    <td class="text-end text-nowrap">${formatRupiah(item.amount)}</td>
+                                    <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
+                                </tr>
+                            `;
+                            });
+                        }
+                        if (response.tagihan_radiologi && response.tagihan_radiologi.length > 0) {
+                            hasAnyItem = true;
+                            response.tagihan_radiologi.forEach(function(item) {
+                                totalAll += parseFloat(item.amount) || 0;
+                                html += `
+                                <tr>
+                                    <td>RAD</td>
+                                    <td>
+                                        <input type="hidden" name="tagihan_id[]" value="${item.id}">
+                                        ${item.nama}
+                                    </td>
+                                    <td>-</td>
+                                    <td class="text-center">1</td>
+                                    <td class="text-end text-nowrap">${formatRupiah(item.amount)}</td>
+                                    <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
+                                </tr>
+                            `;
+                            });
+                        }
+
+                        // Baris "Tidak ada tagihan" cuma ditampilkan kalau BENAR-BENAR tidak ada
+                        // apa pun (termasuk biaya registrasi) — sebelumnya baris ini mengganti
+                        // ($html = ...) seluruh html setiap kali tindakan/diagnosa/lab/radiologi
+                        // kosong, padahal biaya registrasi (yang independen) bisa saja tetap ada,
+                        // jadi tagihan registrasi hilang dari tampilan dan dari total yang ditagih.
+                        if (!hasAnyItem) {
+                            html =
+                                `<tr><td colspan="6" class="text-center text-muted">Tidak ada tagihan.</td></tr>`;
+                        }
+
+                        $('#input-total-tagihan').val(totalAll);
+                        $('#display-total-tagihan').text(formatRupiah(totalAll));
 
                         if (response.totalPaid) {
                             $('#input-total-dibayar').val(response.totalPaid);
@@ -329,13 +335,20 @@
 
 
                         $('#billing-list').html(html);
-                        $('#billing-table').DataTable()
+                        // colspan baris "Tidak ada tagihan"/error sebelumnya 5, padahal header
+                        // tabel ini punya 6 kolom (Tipe/Nama Item/Dokter/Qty/Harga/Subtotal) —
+                        // mismatch itu bikin DataTables melempar error "Incorrect column count"
+                        // persis saat belum ada tindakan sama sekali.
+                        if ($.fn.DataTable.isDataTable('#billing-table')) {
+                            $('#billing-table').DataTable().destroy();
+                        }
+                        $('#billing-table').DataTable();
 
                         kalkulasiPembayaran();
                     },
                     error: function(xhr) {
                         $('#billing-list').html(
-                            `<tr><td colspan="5" class="text-center text-danger">Gagal memuat data tagihan.</td></tr>`
+                            `<tr><td colspan="6" class="text-center text-danger">Gagal memuat data tagihan.</td></tr>`
                         );
                         console.error(xhr.responseText);
                     }

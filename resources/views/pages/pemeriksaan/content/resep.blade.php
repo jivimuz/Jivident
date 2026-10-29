@@ -280,7 +280,7 @@
 
         if (cart.length === 0) {
             tbody.html(
-                `<tr><td colspan="5" class="text-center text-muted py-5"><i class="iconoir-shopping-cart" style="font-size: 40px; color: #cbd5e1;"></i><br>Belum ada obat yang dimasukkan ke dalam resep.</td></tr>`
+                `<tr><td colspan="5" class="text-center text-muted py-5"><i class="fa fa-shopping-cart mb-2" style="font-size: 40px;"></i><br>Belum ada obat yang dimasukkan ke dalam resep.</td></tr>`
             );
             $('#grand-total-label').text('Rp 0');
             $('#total-item-badge').text('0 Item');

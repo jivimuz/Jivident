@@ -3,8 +3,8 @@
         <h5 class="card-title fw-bold text-primary mb-0">
             <i class="iconoir-page-edit me-2"></i>Formulir Persetujuan Tindakan (Informed Consent)
         </h5>
-        <small class="text-muted">Tanda tangan elektronik sederhana (bukan tersertifikasi) — gambar + timestamp,
-            bukan pengganti tanda tangan basah yang tersertifikasi secara hukum.</small>
+        {{-- <small class="text-muted">Tanda tangan elektronik sederhana (bukan tersertifikasi) — gambar + timestamp,
+            bukan pengganti tanda tangan basah yang tersertifikasi secara hukum.</small> --}}
     </div>
     <div class="card-body p-4">
         <div class="mb-3">
@@ -12,7 +12,8 @@
             <select class="form-select" id="consentTipe">
                 <option value="general">Persetujuan Umum Pelayanan (General Consent)</option>
                 @foreach ($tindakanOptions as $t)
-                    <option value="tindakan" data-tindakan-id="{{ $t->id }}" data-tindakan-nama="{{ $t->name }}">
+                    <option value="tindakan" data-tindakan-id="{{ $t->id }}"
+                        data-tindakan-nama="{{ $t->name }}">
                         Tindakan: {{ $t->name }}</option>
                 @endforeach
             </select>
@@ -46,7 +47,8 @@
                 style="border:1px dashed #999;border-radius:6px;width:100%;touch-action:none;cursor:crosshair;background:#fff"></canvas>
         </div>
         <div class="d-flex justify-content-between mb-3">
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearConsentCanvas()">Bersihkan</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="clearConsentCanvas()">Bersihkan</button>
             <button type="button" class="btn btn-success rounded-pill px-4 fw-bold" id="btnSimpanConsent">
                 <i class="iconoir-check-circle me-1"></i> Simpan Persetujuan
             </button>
@@ -83,7 +85,8 @@
     // Teks di sini HARUS sama persis dengan PemeriksaanController::CONSENT_TEXT_GENERAL
     // dan template tindakan di PemeriksaanController::saveConsent — ini preview sebelum
     // tanda tangan, teks yang benar-benar disimpan dibuat ulang di server.
-    const CONSENT_TEXT_GENERAL = 'Saya yang bertanda tangan di bawah ini menyatakan telah menerima penjelasan mengenai prosedur pelayanan kesehatan gigi di klinik ini, termasuk pemeriksaan, tindakan, dan pengobatan yang mungkin diperlukan. Saya menyetujui untuk menerima pelayanan tersebut dan memahami bahwa saya dapat bertanya atau menolak tindakan tertentu kapan saja.';
+    const CONSENT_TEXT_GENERAL =
+        'Saya yang bertanda tangan di bawah ini menyatakan telah menerima penjelasan mengenai prosedur pelayanan kesehatan gigi di klinik ini, termasuk pemeriksaan, tindakan, dan pengobatan yang mungkin diperlukan. Saya menyetujui untuk menerima pelayanan tersebut dan memahami bahwa saya dapat bertanya atau menolak tindakan tertentu kapan saja.';
 
     function consentTindakanText(nama) {
         return `Saya yang bertanda tangan di bawah ini menyatakan telah menerima penjelasan mengenai tindakan "${nama}" yang akan dilakukan, termasuk tujuan, prosedur, risiko, dan alternatif yang tersedia. Saya menyetujui untuk dilakukan tindakan tersebut.`;
@@ -156,7 +159,9 @@
                     <td>${d.hubungan_dengan_pasien}</td>
                     <td><a class="btn btn-xs btn-outline-primary" href="{{ url('print/print-consent/') }}/${btoa(btoa(d.id))}" target="_blank">Lihat</a></td>
                 </tr>`);
-                $('#consentHistoryBody').html(rows || '<tr><td colspan="5" class="text-muted text-center">Belum ada persetujuan tercatat</td></tr>');
+                $('#consentHistoryBody').html(rows ||
+                    '<tr><td colspan="5" class="text-muted text-center">Belum ada persetujuan tercatat</td></tr>'
+                    );
             }
         });
     }
