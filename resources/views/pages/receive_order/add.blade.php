@@ -453,7 +453,7 @@
                             timer: 2000,
                             showConfirmButton: false
                         }).then(() => {
-                            window.location.href = "{{ url('receive_order') }}";
+                            Turbo.visit("{{ url('receive_order') }}");
                         });
                     },
                     error: function(xhr) {

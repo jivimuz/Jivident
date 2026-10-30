@@ -570,7 +570,7 @@
                             timer: 1500,
                             showConfirmButton: false
                         }).then(() => {
-                            window.location.href = "{{ url('billing') }}";
+                            Turbo.visit("{{ url('billing') }}");
                         });
                     },
                     error: function(xhr) {

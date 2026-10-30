@@ -256,7 +256,7 @@
         });
 
 
-        $(document).on('click', '.delete', function() {
+        $('main').on('click', '.delete', function() {
             let id = $(this).data('id');
 
             Swal.fire({
@@ -392,7 +392,7 @@
         });
 
         // EDIT
-        $(document).on('click', '.editCat', function() {
+        $('main').on('click', '.editCat', function() {
             $('.cats').removeClass('text-primary');
             $.get(`{{ url('categories/edit') }}/${$(this).data('id')}`, function(res) {
                 $('#cat_' + res.id).addClass('text-primary');
@@ -404,7 +404,7 @@
         });
 
         // DELETE
-        $(document).on('click', '.deleteCat', function() {
+        $('main').on('click', '.deleteCat', function() {
             let id = $(this).data('id');
 
             Swal.fire({

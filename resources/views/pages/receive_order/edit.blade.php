@@ -463,8 +463,7 @@
                             timer: 2000,
                             showConfirmButton: false
                         }).then(() => {
-                            window.location.href =
-                                "{{ url('receive_order') }}"; // Redirect ke Index
+                            Turbo.visit("{{ url('receive_order') }}"); // Redirect ke Index
                         });
                     },
                     error: function(xhr) {

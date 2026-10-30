@@ -124,7 +124,7 @@
                         </div>
 
                         <div class="mt-4 pt-2">
-                            <a href="{{ url('license') }}"
+                            <a href="{{ url('license') }}" data-turbo="false"
                                 class="btn btn-primary w-100 rounded-pill fw-bold py-3 text-uppercase"
                                 style="letter-spacing: 1px;">
                                 <i class="iconoir-refresh-double" style="margin-right: 5px;"></i> Perbarui Lisensi

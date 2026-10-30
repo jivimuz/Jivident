@@ -298,11 +298,12 @@
     <script src="{{ url('') }}/assets/js/3dmodel/2dglobal.js"></script>
     <script>
         // State Management
-        let cart = [];
-        let rCounter = 1;
-        let ishold = false;
-        let tindakanInitial = []
-        let tindakanList = [];
+        // var, not let: Turbo re-runs this script on every visit to this page
+        var cart = [];
+        var rCounter = 1;
+        var ishold = false;
+        var tindakanInitial = []
+        var tindakanList = [];
         var id = $('#idF').attr('value')
         // Toggle dropdowns
         $(document).ready(function() {

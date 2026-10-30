@@ -137,54 +137,64 @@
  <!--customizer-->
  <div id="customizer"></div>
 
+ {{-- Turbo Drive swaps <body> on every navigation, so any script tag here would
+ normally re-execute every time it comes back into the DOM. For pure libraries
+ (no page-specific DOM binding, just defining a global/plugin once) that's wasted
+ work at best and a redeclaration crash at worst (`const`/`let` can't be declared
+ twice in the same JS realm) — so they're marked data-turbo-permanent, which makes
+ Turbo keep the already-executed tag in place instead of replacing it.
+ customizer.js, script.js and date_picker.js are deliberately NOT permanent: they
+ bind to/reapply state on this specific page's nav/sidebar/date-input elements and
+ must re-run on every visit (they've been made safe to re-run — see those files). --}}
+
  <!-- latest jquery-->
- <script src="{{ url('') }}/assets/js/jquery-3.6.3.min.js"></script>
+ <script id="js-jquery" data-turbo-permanent src="{{ url('') }}/assets/js/jquery-3.6.3.min.js"></script>
 
  <!-- Bootstrap js-->
- <script src="{{ url('') }}/assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+ <script id="js-bootstrap" data-turbo-permanent src="{{ url('') }}/assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
 
  <!-- Simple bar js-->
- <script src="{{ url('') }}/assets/vendor/simplebar/simplebar.js"></script>
+ <script id="js-simplebar" data-turbo-permanent src="{{ url('') }}/assets/vendor/simplebar/simplebar.js"></script>
 
  <!-- apexcharts -->
- <script src="{{ url('') }}/assets/vendor/apexcharts/apexcharts.min.js"></script>
- <script src="{{ url('') }}/assets/vendor/apexcharts/column/dayjs.min.js"></script>
- <script src="{{ url('') }}/assets/vendor/apexcharts/column/quarterOfYear.min.js"></script>
- <script src="{{ url('') }}/assets/vendor/apexcharts/timelinechart/moment.min.js"></script>
+ <script id="js-apexcharts" data-turbo-permanent src="{{ url('') }}/assets/vendor/apexcharts/apexcharts.min.js"></script>
+ <script id="js-apexcharts-dayjs" data-turbo-permanent src="{{ url('') }}/assets/vendor/apexcharts/column/dayjs.min.js"></script>
+ <script id="js-apexcharts-quarter" data-turbo-permanent src="{{ url('') }}/assets/vendor/apexcharts/column/quarterOfYear.min.js"></script>
+ <script id="js-apexcharts-moment" data-turbo-permanent src="{{ url('') }}/assets/vendor/apexcharts/timelinechart/moment.min.js"></script>
 
- <!-- Customizer js-->
+ <!-- Customizer js (re-runs every visit, see comment above) -->
  <script src="{{ url('') }}/assets/js/customizer.js"></script>
 
  <!-- phosphor js -->
- <script src="{{ url('') }}/assets/vendor/phosphor/phosphor.js"></script>
+ <script id="js-phosphor" data-turbo-permanent src="{{ url('') }}/assets/vendor/phosphor/phosphor.js"></script>
 
  <!-- slick-file -->
- <script src="{{ url('') }}/assets/vendor/slick/slick.min.js"></script>
+ <script id="js-slick" data-turbo-permanent src="{{ url('') }}/assets/vendor/slick/slick.min.js"></script>
 
  <!-- filepond -->
- <script src="{{ url('') }}/assets/vendor/filepond/file-encode.min.js"></script>
- <script src="{{ url('') }}/assets/vendor/filepond/validate-size.min.js"></script>
- <script src="{{ url('') }}/assets/vendor/filepond/validate-type.js"></script>
- <script src="{{ url('') }}/assets/vendor/filepond/exif-orientation.min.js"></script>
- <script src="{{ url('') }}/assets/vendor/filepond/image-preview.min.js"></script>
- <script src="{{ url('') }}/assets/vendor/filepond/filepond.min.js"></script>
+ <script id="js-filepond-encode" data-turbo-permanent src="{{ url('') }}/assets/vendor/filepond/file-encode.min.js"></script>
+ <script id="js-filepond-validate-size" data-turbo-permanent src="{{ url('') }}/assets/vendor/filepond/validate-size.min.js"></script>
+ <script id="js-filepond-validate-type" data-turbo-permanent src="{{ url('') }}/assets/vendor/filepond/validate-type.js"></script>
+ <script id="js-filepond-exif" data-turbo-permanent src="{{ url('') }}/assets/vendor/filepond/exif-orientation.min.js"></script>
+ <script id="js-filepond-preview" data-turbo-permanent src="{{ url('') }}/assets/vendor/filepond/image-preview.min.js"></script>
+ <script id="js-filepond-core" data-turbo-permanent src="{{ url('') }}/assets/vendor/filepond/filepond.min.js"></script>
 
  <!-- Project Dashboard js-->
 
- <!-- App js-->
+ <!-- App js (re-runs every visit, see comment above) -->
  <script src="{{ url('') }}/assets/js/script.js"></script>
 
- <script src="{{ url('') }}/assets/js/datatables.min.js"></script>
- <script src="{{ url('') }}/assets/vendor/datepikar/flatpickr.js"></script>
+ <script id="js-datatables" data-turbo-permanent src="{{ url('') }}/assets/js/datatables.min.js"></script>
+ <script id="js-flatpickr" data-turbo-permanent src="{{ url('') }}/assets/vendor/datepikar/flatpickr.js"></script>
 
- <!--js-->
+ <!-- app-specific flatpickr selector wiring (re-runs every visit, see comment above) -->
  <script src="{{ url('') }}/assets/js/date_picker.js"></script>
 
- <script src="{{ url('') }}/assets/js/sweetalert2.min.js"></script>
- <script src="{{ url('') }}/assets/js/select2.min.js"></script>
- <script src="{{ url('') }}/assets/js/responsive.dataTables.min.js"></script>
- <script src="{{ url('') }}/assets/js/dropify.min.js"></script>
- <script src="{{ url('') }}/assets/js/customFunction.js"></script>
+ <script id="js-sweetalert2" data-turbo-permanent src="{{ url('') }}/assets/js/sweetalert2.min.js"></script>
+ <script id="js-select2" data-turbo-permanent src="{{ url('') }}/assets/js/select2.min.js"></script>
+ <script id="js-responsive-datatables" data-turbo-permanent src="{{ url('') }}/assets/js/responsive.dataTables.min.js"></script>
+ <script id="js-dropify" data-turbo-permanent src="{{ url('') }}/assets/js/dropify.min.js"></script>
+ <script id="js-customfunction" data-turbo-permanent src="{{ url('') }}/assets/js/customFunction.js"></script>
  @if (session('expiredAlert'))
      <script>
          $(document).ready(function() {

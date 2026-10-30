@@ -195,7 +195,7 @@
             });
         }
 
-        $(document).on('click', '.slot-btn:not(.disabled)', function() {
+        $('main').on('click', '.slot-btn:not(.disabled)', function() {
             $('.slot-btn').removeClass('btn-primary').addClass('btn-outline-primary');
             $(this).removeClass('btn-outline-primary').addClass('btn-primary');
             selectedSlot = $(this).data('jam');

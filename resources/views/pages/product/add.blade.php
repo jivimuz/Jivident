@@ -293,7 +293,7 @@
                             showConfirmButton: false
                         }).then(() => {
                             // Redirect ke halaman list produk atau reset form
-                            window.location.href = "{{ url('product') }}";
+                            Turbo.visit("{{ url('product') }}");
                             // $('#form-produk-farmasi')[0].reset();
                             // $('#margin-percentage').text('0%').removeClass(
                             //     'text-danger').addClass('text-success');

@@ -99,7 +99,7 @@
 $('#responsive-tabs .nav-tabs').tabdrop();
 
 // Tambahkan event handler eksplisit untuk dropdown
-$(document).on('click', '.dropdown-toggle', function(e) {
+$('main').on('click', '.dropdown-toggle', function(e) {
     e.preventDefault();
     $(this).parent().find('.dropdown-menu').toggle();
 });

@@ -150,7 +150,7 @@
 
 @section('script')
     <script>
-        let table;
+        var table; // var, not let: Turbo re-runs this script on every visit to this page
 
         $(document).ready(function() {
             $.ajaxSetup({
@@ -199,7 +199,7 @@
             });
         });
 
-        const loadData = () => {
+        var loadData = () => {
             let filterData = $('#form-filter').serialize();
 
             table = $('#supplier-table').DataTable({
@@ -259,14 +259,14 @@
             });
         };
 
-        const addData = () => {
+        var addData = () => {
             $('#form-supplier')[0].reset();
             $('#supplier_id').val('');
             $('#modalSupplierLabel').text('Tambah Supplier Baru');
             $('#modal-supplier').modal('show');
         };
 
-        const editData = (id) => {
+        var editData = (id) => {
             $('#form-supplier')[0].reset();
             $.ajax({
                 url: `{{ url('supplier/show') }}/${id}`,
@@ -290,7 +290,7 @@
             });
         };
 
-        const hapus = (id) => {
+        var hapus = (id) => {
             Swal.fire({
                 title: 'Apakah Anda Yakin?',
                 text: "Data supplier ini akan dihapus!",

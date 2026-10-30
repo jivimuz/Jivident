@@ -251,7 +251,7 @@
         }
 
         function mulaiPeriksaIgd(id) {
-            window.location.href = "{{ url('pemeriksaan/pasien') }}/" + btoa(btoa(id));
+            Turbo.visit("{{ url('pemeriksaan/pasien') }}/" + btoa(btoa(id)));
         }
 
         function loadQueue() {

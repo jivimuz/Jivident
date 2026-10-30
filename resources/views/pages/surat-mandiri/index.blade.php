@@ -296,7 +296,7 @@
 
 @section('script')
     <script>
-        const jenisConfig = {
+        var jenisConfig = { // var, not const: Turbo re-runs this script on every visit to this page
             sehat: {
                 title: 'Surat Keterangan Sehat',
                 btnClass: 'btn-success'

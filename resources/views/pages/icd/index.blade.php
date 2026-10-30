@@ -168,7 +168,8 @@
 @section('script')
     <script>
         // ===== URL constants (Laravel) =====
-        const URLS = {
+        // var, not const: Turbo re-runs this script on every visit to this page
+        var URLS = {
             dataICDIX: @json(url('icd/dataICDIX')),
             dataICDX: @json(url('icd/dataICDX')),
             addICDIX: @json(url('icd/addICDIX')),
@@ -191,8 +192,8 @@
             showICDX();
         });
 
-        const cari = () => showICDIX();
-        const cari2 = () => showICDX();
+        var cari = () => showICDIX();
+        var cari2 = () => showICDX();
 
         function tutup() {
             $('#thisModal').modal('hide');
@@ -229,9 +230,9 @@
             });
         }
 
-        let rowSelected = "";
+        var rowSelected = "";
 
-        const showICDIX = () => {
+        var showICDIX = () => {
             const filterData = $('#cari').serialize();
             let no = 1;
 
@@ -288,7 +289,7 @@
             });
         };
 
-        const showICDX = () => {
+        var showICDX = () => {
             const filterData = $('#cari2').serialize();
             let no = 1;
 
@@ -412,7 +413,7 @@
             });
         }
 
-        const deleteICD = (tipe, id) => {
+        var deleteICD = (tipe, id) => {
             Swal.fire({
                 title: 'Apakah anda yakin?',
                 text: "untuk menghapus data tersebut!",
@@ -448,7 +449,7 @@
         };
 
         // Submit form create/update dari modal (delegated karena form di-load via AJAX)
-        $(document).on('submit', '#formICD', function(e) {
+        $('main').on('submit', '#formICD', function(e) {
             e.preventDefault();
 
             const $form = $(this);

@@ -409,7 +409,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
 
                                     <li>
                                         <a class="mb-0 btn btn-light-danger btn-sm justify-content-center "
-                                            href="{{ url('/logout') }}" role="button">
+                                            href="{{ url('/logout') }}" role="button" data-turbo="false">
                                             <i class="ph-duotone  ph-sign-out pe-1 f-s-20"></i> Log Out
                                         </a>
                                     </li>

@@ -159,7 +159,7 @@
             });
         });
 
-        $(document).on('click', '#productResults .item', function() {
+        $('main').on('click', '#productResults .item', function() {
             var id = $(this).data('id');
             if (!id) return;
             var existing = cart.find(c => c.product_id === id);

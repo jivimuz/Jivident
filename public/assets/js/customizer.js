@@ -1,3 +1,10 @@
+// Re-runs on every Turbo visit (needs to reapply the saved theme to each fresh
+// page), so clear this file's own previously-bound document handlers first —
+// document is never replaced by Turbo, unlike the rest of the page — and use
+// `var` instead of `const`/`let` below since those would throw "already declared"
+// the second time this file executes.
+$(document).off(".customizerJs");
+
 $(function () {
     //  **------Load customizer**
     $.get(
@@ -16,7 +23,7 @@ $(function () {
     }, 1000);
 });
 
-$(document).on("click", ".sidebar-option > li", function () {
+$(document).on("click.customizerJs", ".sidebar-option > li", function () {
     let sidebarClassName = $(this).attr("class");
     $("nav")
         .removeClass("horizontal-sidebar vertical-sidebar dark-sidebar")
@@ -25,7 +32,7 @@ $(document).on("click", ".sidebar-option > li", function () {
     setUpHorizontalHeader();
 });
 
-$(document).on("click", ".layout-option > li", function () {
+$(document).on("click.customizerJs", ".layout-option > li", function () {
     let layoutClassName = $(this).attr("class");
     $("body").attr("class", layoutClassName);
     $("html").attr("dir", layoutClassName);
@@ -35,7 +42,7 @@ $(document).on("click", ".layout-option > li", function () {
     setLocalStorageItem("layout-option", layoutClassName);
 });
 
-$(document).on("click", ".color-hint > li", function () {
+$(document).on("click.customizerJs", ".color-hint > li", function () {
     let colorClassName = $(this).attr("class");
     let colorOption = getLocalStorageItem("color-option", "default");
     $(".app-wrapper").removeClass(colorOption).addClass(colorClassName);
@@ -66,20 +73,20 @@ $(document).on("click", ".color-hint > li", function () {
     window.location.reload();
 });
 
-$(document).on("click", ".text-size > li", function () {
+$(document).on("click.customizerJs", ".text-size > li", function () {
     let fontClassName = $(this).attr("class");
     $("body").attr("text", fontClassName);
     setLocalStorageItem("text-option", fontClassName);
 });
 
 /*Handle click for Sidebar option, layout option and Text size*/
-$(document).on("click", ".offcanvas-body > ul > li", function () {
+$(document).on("click.customizerJs", ".offcanvas-body > ul > li", function () {
     $(this).parent().find("li").removeClass("selected");
     $(this).addClass("selected");
 });
 
 /* Theme name prepend to localstorage key*/
-const themeName = "La-Theme";
+var themeName = "La-Theme";
 
 /* Set item in local store */
 function getLocalStorageItem(key, defaultValue = null) {

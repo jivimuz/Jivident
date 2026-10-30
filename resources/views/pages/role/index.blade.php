@@ -38,7 +38,7 @@
 
 @section('script')
     <script>
-        let noD = 1;
+        var noD = 1; // var, not let: Turbo re-runs this script on every visit to this page
         var table;
 
         $(document).ready(function() {

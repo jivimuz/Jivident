@@ -1,12 +1,20 @@
 
 
 // >>-- 01 Horizontal Nav Js --<<
-let navBar = $(".main-nav");
-let size = "150px";
-let leftsideLimit = -100;
-let navbarSize;
-let containerWidth;
-let maxNavbarLimit;
+// `var` (not `let`/`const`) because Turbo Drive re-runs this whole file on every
+// in-app navigation (it has to, to rebind to the fresh nav/sidebar DOM each time) —
+// `let`/`const` at top level would throw "already declared" on the second run.
+var navBar = $(".main-nav");
+var size = "150px";
+var leftsideLimit = -100;
+var navbarSize;
+var containerWidth;
+var maxNavbarLimit;
+
+// Clear delegated handlers this file registered on a previous Turbo visit before
+// re-registering them below, so they don't stack up (document itself is never
+// replaced by Turbo, unlike the rest of the page).
+$(document).off(".appJs");
 
 function setUpHorizontalHeader() {
   navbarSize = navBar.width();
@@ -23,7 +31,7 @@ function setUpHorizontalHeader() {
   $(".horizontal-sidebar .show").removeClass("show");
 }
 
-$(document).on('click', '.menu-previous', function (e) {
+$(document).on('click.appJs', '.menu-previous', function (e) {
   let layoutOption = getLocalStorageItem("layout-option","ltr");
   let attribute = layoutOption == 'ltr' ? 'marginLeft' : 'marginRight';
   let currentPosition = parseInt(navBar.css(attribute));
@@ -37,7 +45,7 @@ $(document).on('click', '.menu-previous', function (e) {
   }
 })
 
-$(document).on('click', '.menu-next', function (e) {
+$(document).on('click.appJs', '.menu-next', function (e) {
   let layoutOption = getLocalStorageItem("layout-option","ltr");
   let attribute = layoutOption == 'ltr' ? 'marginLeft' : 'marginRight';
   let currentPosition = parseInt(navBar.css(attribute));
@@ -64,7 +72,7 @@ $(function () {
 $(function () {
   var text = $(".selected i").attr('class')
   $(".flag i").prop('class', text);
-  $(document).on('click', '.lang', function () {
+  $(document).on('click.appJs', '.lang', function () {
     $(".lang").removeClass("selected");
     $(this).addClass("selected");
     text = $(".selected i").attr('class')
@@ -90,7 +98,7 @@ function copyvalue() {
 
 
 // >>-- 04 Sidebar toggle js --<<
-$(document).on('click', '.header-toggle', function () {
+$(document).on('click.appJs', '.header-toggle', function () {
   $("nav").toggleClass("semi-nav");
 });
 $(".toggle-semi-nav").on("click", function () {
@@ -146,13 +154,21 @@ $(function () {
 })
 
 // >>-- 07 Loader JS --<<
-$('.loader-wrapper').fadeOut('slow', function () {
-  $(this).remove();
-});
+// Only animate the boot splash on the very first real page load. On later Turbo
+// visits a fresh .loader-wrapper is part of every page's body (it's in main.blade.php),
+// so without this guard it would fade in/out on every single in-app navigation.
+if (!window.__appHasBooted) {
+  window.__appHasBooted = true;
+  $('.loader-wrapper').fadeOut('slow', function () {
+    $(this).remove();
+  });
+} else {
+  $('.loader-wrapper').remove();
+}
 
 
 // >>-- 08 tap on top --<<
-let calcScrollValue = () => {
+var calcScrollValue = () => {
   let scrollProgress = document.getElementsByClassName("go-top");
   let progressValue = document.getElementsByClassName("progress-value");
   let pos = document.documentElement.scrollTop;
@@ -181,7 +197,7 @@ window.onscroll = calcScrollValue;
 $(function () {
   var text = $(".selected img").attr('src')
   $(".flag img").prop('src', text);
-  $(document).on('click', '.lang', function () {
+  $(document).on('click.appJs', '.lang', function () {
     $(".lang").removeClass("selected");
     $(this).addClass("selected");
     text = $(".selected img").attr('src')
@@ -191,7 +207,7 @@ $(function () {
 $(function () {
   var text = $(".selected i").attr('class')
   $(".flag i").prop('class', text);
-  $(document).on('click', '.lang', function () {
+  $(document).on('click.appJs', '.lang', function () {
     $(".lang").removeClass("selected");
     $(this).addClass("selected");
     text = $(".selected i").attr('class')
@@ -240,7 +256,7 @@ window.onload = function () {
 
 // >>-- 12 Close on click js --<<
 
-$(document).on('click', '.close-btn', function () {
+$(document).on('click.appJs', '.close-btn', function () {
   $(this).parent().parent().remove();
   let targetItem = $(this).closest(".head-box");
   let targetParent = targetItem.parent();
@@ -256,7 +272,7 @@ $(document).on('click', '.close-btn', function () {
 });
 
  // >>-- 13 Searchbar js --<<
-$(document).on('keyup', '.search-filter', function (e) {
+$(document).on('keyup.appJs', '.search-filter', function (e) {
   var search = $(this).val().toLowerCase();
   $('.search-list').each(function () {
     $(this).find('.search-list-content h6').each(function (ele) {

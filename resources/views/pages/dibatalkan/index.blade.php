@@ -117,7 +117,7 @@
 @section('script')
     <script>
         var mainTable; // [UBAH] Definisikan di luar agar bisa diakses
-        let isLoading = false;
+        var isLoading = false; // var, not let: Turbo re-runs this script on every visit to this page
 
         $(document).ready(function() {
             // [UBAH] Panggil getList() dan simpan instance tabelnya
