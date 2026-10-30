@@ -3,34 +3,32 @@
 use App\Http\Controllers\Website\ActivityLogController;
 use App\Http\Controllers\Website\AntrianController;
 use App\Http\Controllers\Website\AppointmentController;
-use App\Http\Controllers\Website\HomeController;
-use App\Http\Controllers\Website\ModuleController;
-use App\Http\Controllers\Website\UserListController;
 use App\Http\Controllers\Website\AuthController;
 use App\Http\Controllers\Website\BillingController;
+use App\Http\Controllers\Website\CutiController;
 use App\Http\Controllers\Website\DibatalkanController;
 use App\Http\Controllers\Website\DiperiksaController;
-use App\Http\Controllers\Website\profileController;
-use App\Http\Controllers\Website\SettingController;
 use App\Http\Controllers\Website\EmployeesController;
-use App\Http\Controllers\Website\CutiController;
+use App\Http\Controllers\Website\HomeController;
 use App\Http\Controllers\Website\ICDController;
 use App\Http\Controllers\Website\IgdController;
 use App\Http\Controllers\Website\JadwalDokterController;
 use App\Http\Controllers\Website\JadwalKerjaController;
 use App\Http\Controllers\Website\KlienController;
 use App\Http\Controllers\Website\LabController;
+use App\Http\Controllers\Website\ModuleController;
 use App\Http\Controllers\Website\MonitorController;
 use App\Http\Controllers\Website\OdontogramController;
 use App\Http\Controllers\Website\PatientController;
-use App\Http\Controllers\Website\PayrollController;
 use App\Http\Controllers\Website\PaymentsController;
+use App\Http\Controllers\Website\PayrollController;
 use App\Http\Controllers\Website\PemeriksaanController;
 use App\Http\Controllers\Website\PortalController;
 use App\Http\Controllers\Website\PosController;
 use App\Http\Controllers\Website\PrintController;
 use App\Http\Controllers\Website\ProductCategoriesController;
 use App\Http\Controllers\Website\ProductController;
+use App\Http\Controllers\Website\profileController;
 use App\Http\Controllers\Website\RadiologiController;
 use App\Http\Controllers\Website\RawatInapController;
 use App\Http\Controllers\Website\ReceiveOrderController;
@@ -40,10 +38,12 @@ use App\Http\Controllers\Website\ReportKlinisController;
 use App\Http\Controllers\Website\RoleController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
+use App\Http\Controllers\Website\SettingController;
 use App\Http\Controllers\Website\SupplierController;
+use App\Http\Controllers\Website\SuratMandiriController;
 use App\Http\Controllers\Website\TindakanController;
 use App\Http\Controllers\Website\TransactionController;
-use App\Models\RuangPraktek;
+use App\Http\Controllers\Website\UserListController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -63,7 +63,6 @@ Route::prefix('monitor')->group(function () {
     Route::get('antrian', [MonitorController::class, 'antrian']);
     Route::get('currentAntrian', [MonitorController::class, 'currentAntrian']);
 });
-
 
 Route::get('_ops/config-cache', function () {
 
@@ -87,7 +86,7 @@ Route::get('_ops/storage-link', function () {
     abort_unless(request('key') === env('TOOLS_KEY'), 403);
 
     $target = storage_path('app/public');
-    $link   = public_path('storage');
+    $link = public_path('storage');
 
     if (file_exists($link)) {
         return response()->json(['ok' => true, 'message' => 'public/storage already exists']);
@@ -96,7 +95,7 @@ Route::get('_ops/storage-link', function () {
     // beberapa hosting disable symlink()
     $ok = symlink($target, $link);
 
-    if (!$ok) {
+    if (! $ok) {
         return response()->json([
             'ok' => false,
             'message' => 'symlink() gagal (mungkin diblok hosting). Buat manual lewat file manager/ssh.',
@@ -108,7 +107,7 @@ Route::get('_ops/storage-link', function () {
     return response()->json(['ok' => true, 'message' => 'symlink created', 'link' => $link, 'target' => $target]);
 })->middleware('throttle:5,10');
 
-//Group By Auth
+// Group By Auth
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::post('menu', [HomeController::class, 'menu']);
@@ -119,7 +118,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('signature/save', [profileController::class, 'saveSignature']);
         Route::post('signature/delete', [profileController::class, 'deleteSignature']);
     });
-
 
     Route::middleware(['checkAccess:MTA'])->prefix('access')->group(function () {
         Route::get('/', [ModuleController::class, 'index']);
@@ -316,8 +314,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('deletePayment', [PaymentsController::class, 'deletePayment']);
     });
 
-
-
     Route::middleware(['checkAccess:PA'])->prefix('patient')->group(function () {
         Route::get('/', [PatientController::class, 'index']);
         Route::post('getList', [PatientController::class, 'getList']);
@@ -453,13 +449,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('print/{no_transaction}/{mode}', [TransactionController::class, 'printInvoice']);
     });
 
-
     Route::middleware(['checkAccess:BL'])->prefix('billing')->group(function () {
         Route::get('/', [BillingController::class, 'index']);
         Route::post('getList', [BillingController::class, 'getList']);
         Route::get('detail/{id}', [BillingController::class, 'billingDetail']);
         Route::post('getTagihanList', [BillingController::class, 'getTagihanList']);
         Route::post('process-paid', [BillingController::class, 'processPaid']);
+    });
+
+    Route::middleware(['checkAccess:SRT'])->prefix('surat-mandiri')->group(function () {
+        Route::get('/', [SuratMandiriController::class, 'index']);
+        Route::post('getList', [SuratMandiriController::class, 'getList']);
+        Route::post('store', [SuratMandiriController::class, 'store']);
     });
 
     Route::middleware(['checkAccess:ICD'])->prefix('icd')->group(function () {
@@ -552,6 +553,7 @@ Route::prefix('print')->group(function () {
     Route::middleware(['checkAccess:DPP'])->get('print-surat-rujukan-pasien/{id}', [PrintController::class, 'printSuratRujukanPasien']);
     Route::middleware(['checkAccess:DPP'])->get('print-consent/{id}', [PrintController::class, 'printConsent']);
     Route::middleware(['checkAccess:RAD'])->get('print-radiologi/{id}', [PrintController::class, 'printRadiologi']);
+    Route::middleware(['checkAccess:SRT'])->get('print-surat-mandiri/{id}', [PrintController::class, 'printSuratMandiri']);
 });
 
 // Portal pasien self-service — tanpa akun m_users, identitas dicek manual lewat

@@ -7,10 +7,11 @@ use App\Models\DaftarPasien;
 use App\Models\InformedConsent;
 use App\Models\RadiologiPasien;
 use App\Models\ResepPasien;
-use App\Models\ResepPasienRacikan;
 use App\Models\Setting;
+use App\Models\SuratMandiri;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PrintController extends Controller
@@ -36,11 +37,10 @@ class PrintController extends Controller
 
         $daftarPasienId = base64_decode(base64_decode($id), true);
 
-
-        if (!$daftarPasienId || !is_numeric($daftarPasienId)) {
+        if (! $daftarPasienId || ! is_numeric($daftarPasienId)) {
             return response()->json([
                 'success' => false,
-                'message' => 'ID tidak valid'
+                'message' => 'ID tidak valid',
             ], 422);
         }
         // 1. Ambil data Header Resep
@@ -55,7 +55,7 @@ class PrintController extends Controller
         if ($resepRows->isEmpty()) {
             return response()->json([
                 'success' => true,
-                'data' => []
+                'data' => [],
             ], 200);
         }
 
@@ -76,35 +76,34 @@ class PrintController extends Controller
         $data = $resepRows->map(function ($row) use ($detailRows) {
             $ingredients = collect($detailRows[$row->id] ?? [])->map(function ($d) {
                 return [
-                    'id'   => (int) $d->id_product,
+                    'id' => (int) $d->id_product,
                     'name' => $d->name,
-                    'qty'  => (float) $d->qty,
+                    'qty' => (float) $d->qty,
                 ];
             })->values();
 
             return [
-                'id'            => $row->id,
-                'type'          => $row->type, // non-racik / racik
-                'r_num'         => (int) $row->r_num,
-                'obat_id'       => $row->obat_id,
-                'nama_racikan'  => $row->nama_racikan,
-                'bentuk'        => $row->bentuk,
-                'obat_name'     => $row->obat_name,
-                'qty'           => (float) $row->qty,
-                'qty_buat'      => (float) $row->qty_buat,
-                'harga_satuan'  => (float) $row->harga_satuan,
-                'satuan'        => $row->unit, // db=unit -> frontend=satuan
+                'id' => $row->id,
+                'type' => $row->type, // non-racik / racik
+                'r_num' => (int) $row->r_num,
+                'obat_id' => $row->obat_id,
+                'nama_racikan' => $row->nama_racikan,
+                'bentuk' => $row->bentuk,
+                'obat_name' => $row->obat_name,
+                'qty' => (float) $row->qty,
+                'qty_buat' => (float) $row->qty_buat,
+                'harga_satuan' => (float) $row->harga_satuan,
+                'satuan' => $row->unit, // db=unit -> frontend=satuan
                 'penggunaan_id' => $row->penggunaan_id,
-                'signa'         => $row->signa,
-                'subtotal'      => (float) $row->subtotal,
-                'jasa_racik'    => (float) $row->jasa_racik,
-                'ingredients'   => $row->type === 'racik' ? $ingredients : [],
+                'signa' => $row->signa,
+                'subtotal' => (float) $row->subtotal,
+                'jasa_racik' => (float) $row->jasa_racik,
+                'ingredients' => $row->type === 'racik' ? $ingredients : [],
             ];
         })->values();
 
         $company_name = Setting::whereLike('parameter', 'company_name')->first();
         $company_address = Setting::whereLike('parameter', 'company_address')->first();
-
 
         return $this->viewOrPdf(
             'print.resep.eresep',
@@ -156,7 +155,7 @@ class PrintController extends Controller
         $company_city = Setting::whereLike('parameter', 'company_city')->first();
         $lama_istirahat = $request->lama_hari;
         $tglmulai = Carbon::parse($request->tgl_mulai ?? now())->translatedFormat('d F Y');
-        $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int)$lama_istirahat ?? 2)->translatedFormat('d F Y');
+        $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int) $lama_istirahat ?? 2)->translatedFormat('d F Y');
 
         return $this->viewOrPdf(
             'print.suratpasien.surat_sakit',
@@ -210,7 +209,7 @@ class PrintController extends Controller
         $company_city = Setting::whereLike('parameter', 'company_city')->first();
         $lama_istirahat = $request->lama_hari;
         $tglmulai = Carbon::parse($request->tgl_mulai ?? now())->translatedFormat('d F Y');
-        $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int)$lama_istirahat ?? 2)->translatedFormat('d F Y');
+        $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int) $lama_istirahat ?? 2)->translatedFormat('d F Y');
 
         return $this->viewOrPdf(
             'print.suratpasien.surat_sehat',
@@ -264,7 +263,7 @@ class PrintController extends Controller
         $company_city = Setting::whereLike('parameter', 'company_city')->first();
         $lama_istirahat = $request->lama_hari;
         $tglmulai = Carbon::parse($request->tgl_mulai ?? now())->translatedFormat('d F Y');
-        $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int)$lama_istirahat ?? 2)->translatedFormat('d F Y');
+        $tglselesai = Carbon::parse($request->tgl_mulai ?? now())->addDays((int) $lama_istirahat ?? 2)->translatedFormat('d F Y');
 
         return $this->viewOrPdf(
             'print.suratpasien.surat_rujukan',
@@ -315,6 +314,28 @@ class PrintController extends Controller
             'print.suratpasien.radiologi',
             compact('id', 'radiologi', 'company_name', 'company_address', 'company_city'),
             "laporan-radiologi-{$id}.pdf"
+        );
+    }
+
+    public function printSuratMandiri($id)
+    {
+        $surat = SuratMandiri::with(['dokter', 'payment'])
+            ->where('id', base64_decode(base64_decode($id)))
+            ->where('klienfk', Auth::user()->klienfk ?? 1)
+            ->first();
+
+        if (! $surat) {
+            abort(404);
+        }
+
+        $company_name = Setting::whereLike('parameter', 'company_name')->first();
+        $company_address = Setting::whereLike('parameter', 'company_address')->first();
+        $company_city = Setting::whereLike('parameter', 'company_city')->first();
+
+        return $this->viewOrPdf(
+            'print.suratpasien.surat_mandiri',
+            compact('id', 'surat', 'company_name', 'company_address', 'company_city'),
+            "surat-mandiri-{$id}.pdf"
         );
     }
 }
