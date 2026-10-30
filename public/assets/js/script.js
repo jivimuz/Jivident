@@ -281,15 +281,32 @@ $(document).on('click.appJs', '.close-btn', function () {
  // >>-- 13 Searchbar js --<<
 $(document).on('keyup.appJs', '.search-filter', function (e) {
   var search = $(this).val().toLowerCase();
+  // Escaped separately from `search` (used for the plain .includes() match
+  // above) since a regex special character typed into the box — "(", ".",
+  // "+", etc. — would otherwise throw inside `new RegExp(...)` below.
+  var searchPattern = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   $('.search-list').each(function () {
     $(this).find('.search-list-content h6').each(function (ele) {
-      var content = $(this).text().toLowerCase();
+      // Keep the original (properly-cased) text in a data attribute instead
+      // of rebuilding the highlight from the already-lowercased text below —
+      // otherwise every item's name gets permanently lowercased in the DOM
+      // ("Pasien" -> "pasien") the moment someone types a search character.
+      var original = $(this).data('original-text');
+      if (original === undefined) {
+        original = $(this).text();
+        $(this).data('original-text', original);
+      }
+      var content = original.toLowerCase();
       if (content.includes(search)) {
         $(this).closest(".search-list-item").show();
-        var highlightedText = content.replace(new RegExp(search, 'gi'), function (match) {
-            return '<span class="highlight-searchtext">' + match + '</span>';
-        });
-        $(this).html(highlightedText);
+        if (search === '') {
+          $(this).text(original);
+        } else {
+          var highlightedText = original.replace(new RegExp(searchPattern, 'gi'), function (match) {
+              return '<span class="highlight-searchtext">' + match + '</span>';
+          });
+          $(this).html(highlightedText);
+        }
       } else {
         $(this).closest(".search-list-item").hide();
       }

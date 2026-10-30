@@ -1,11 +1,24 @@
 <?php
+use App\Models\Module;
 use App\Models\Setting;
+
 // ys note: tidak semua user adalah employee
 $LoginName = auth()->user()->load('employee')->employee->fullname;
 
 $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/assets/logo.png');
 // $app_name = Setting::where('parameter', 'app_name')->first()->value ?: 'AppName';
 // $company_name = Setting::where('parameter', 'company_name')->first()->value ?: 'Company Name';
+
+// Header searchbar: every menu/module the logged-in user can actually open
+// (both standalone modules and submenu items — grouping doesn't matter here,
+// unlike navbar.blade.php, since this is a flat jump-to-menu search), scoped
+// the same way navbar.blade.php scopes the sidebar itself.
+$searchAccessList = explode(',', auth()->user()->access);
+$searchModules = Module::where('isactive', true)
+    ->whereIn('id', $searchAccessList)
+    ->where('route', '!=', '#')
+    ->orderBy('name')
+    ->get(['name', 'icon', 'route']);
 ?>
 <!-- Header Section starts -->
 <header class="header-main">
@@ -229,71 +242,30 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                                         </ul>
                                     </div>
                                 </div>
-                                <p class="mb-0 text-secondary f-s-15 mt-2">Recently Searched Data:</p>
+                                <p class="mb-0 text-secondary f-s-15 mt-2">Menu & Modul:</p>
                             </div>
                             <div class="offcanvas-body app-scroll p-0">
                                 <div>
                                     <ul class="search-list">
-                                        <li class="search-list-item">
-                                            <div
-                                                class="h-35 w-35 d-flex-center b-r-15 overflow-hidden bg-light-primary search-list-avtar">
-                                                <i class="ph-duotone  ph-gear f-s-20"></i>
-                                            </div>
-                                            <div class="search-list-content">
-                                                <a href="api.html" target="_blank">
-                                                    <h6 class="mb-0 text-dark">Setting</h6>
-                                                </a>
-                                                <p class="f-s-13 mb-0 text-secondary">#RA789</p>
-                                            </div>
-                                        </li>
-                                        <li class="search-list-item">
-                                            <div
-                                                class="h-35 w-35 d-flex-center b-r-15 overflow-hidden bg-light-warning search-list-avtar">
-                                                <i class="ph-duotone  ph-projector-screen-chart f-s-20"></i>
-                                            </div>
-                                            <div class="search-list-content">
-                                                <a href="privacy_policy.html" target="_blank">
-                                                    <h6 class="mb-0 text-dark">Pasien</h6>
-                                                </a>
-                                                <p class="f-s-13 mb-0 text-secondary">#RY810</p>
-                                            </div>
-                                        </li>
-                                        <li class="search-list-item">
-                                            <div
-                                                class="h-35 w-35 d-flex-center b-r-15 overflow-hidden bg-light-danger search-list-avtar">
-                                                <i class="ph-duotone  ph-shield-check f-s-20"></i>
-                                            </div>
-                                            <div class="search-list-content">
-                                                <a href="terms_condition.html" target="_blank">
-                                                    <h6 class="mb-0 text-dark">Tindakan</h6>
-                                                </a>
-                                                <p class="f-s-13 mb-0 text-secondary">#ATR56</p>
-                                            </div>
-                                        </li>
-                                        <li class="search-list-item">
-                                            <div
-                                                class="h-35 w-35 d-flex-center b-r-15 overflow-hidden bg-light-info search-list-avtar">
-                                                <i class="ph-duotone  ph-app-window f-s-20"></i>
-                                            </div>
-                                            <div class="search-list-content">
-                                                <a href="sign_in.html" target="_blank">
-                                                    <h6 class="mb-0 text-dark">Billing</h6>
-                                                </a>
-                                                <p class="f-s-13 mb-0 text-secondary">#YE615</p>
-                                            </div>
-                                        </li>
-                                        <li class="search-list-item">
-                                            <div
-                                                class="h-35 w-35 d-flex-center b-r-15 overflow-hidden bg-light-dark search-list-avtar">
-                                                <i class="ph-duotone  ph-table f-s-20"></i>
-                                            </div>
-                                            <div class="search-list-content">
-                                                <a href="data_table.html" target="_blank">
-                                                    <h6 class="mb-0 text-dark">Laporan</h6>
-                                                </a>
-                                                <p class="f-s-13 mb-0 text-secondary">#YE615</p>
-                                            </div>
-                                        </li>
+                                        @forelse ($searchModules as $m)
+                                            <li class="search-list-item">
+                                                <div
+                                                    class="h-35 w-35 d-flex-center b-r-15 overflow-hidden bg-light-primary search-list-avtar">
+                                                    <i class="{{ $m->icon }} f-s-20"></i>
+                                                </div>
+                                                <div class="search-list-content">
+                                                    <a href="{{ url($m->route) }}">
+                                                        <h6 class="mb-0 text-dark">{{ $m->name }}</h6>
+                                                    </a>
+                                                </div>
+                                            </li>
+                                        @empty
+                                            <li class="search-list-item">
+                                                <div class="search-list-content">
+                                                    <h6 class="mb-0 text-secondary">Tidak ada menu yang bisa diakses</h6>
+                                                </div>
+                                            </li>
+                                        @endforelse
                                     </ul>
                                 </div>
                             </div>

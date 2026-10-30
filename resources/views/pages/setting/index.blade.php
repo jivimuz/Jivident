@@ -83,7 +83,7 @@
                             a += `<input type="${c.type}" class="form-control" id='val-${c.id}' name="val[]" value="${c.value}" hidden>`
                             a += `</form>`
                         } else {
-                            a += `<span id='lab-${c.id}'>${c.value}</span>`
+                            a += `<span id='lab-${c.id}'>${c.type == "number" ? Number(c.value || 0).toLocaleString('id-ID') : c.value}</span>`
                             a += `<input type="${c.type}" class="form-control" id='val-${c.id}' value="${c.value}" hidden>`
                         }
                         return a
