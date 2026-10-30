@@ -7,6 +7,7 @@ namespace App\Helpers;
 use App\Models\Appointment;
 use App\Models\JadwalDokter;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
@@ -60,6 +61,29 @@ final class AppointmentHelper
         }
 
         return $slots;
+    }
+
+    /**
+     * Resolves which doctor(s) are on duty in a room at a given moment —
+     * the reverse of getAvailableSlots(): given a room, who's scheduled
+     * there right now, derived from JadwalDokter's day-of-week + time-of-day
+     * window. Used by walk-in registration, which (unlike booking) doesn't
+     * already know which doctor the patient is there to see — a room can
+     * have several doctors sharing it across different shifts.
+     *
+     * @return Collection<int, JadwalDokter>
+     */
+    public function getDokterOnDuty(int $ruangPraktekId, string $tanggalWaktu)
+    {
+        $moment = Carbon::parse($tanggalWaktu);
+
+        return JadwalDokter::with('dokter.employee')
+            ->where('fk_ruangpraktek', $ruangPraktekId)
+            ->where('hari', $moment->dayOfWeek)
+            ->where('is_active', true)
+            ->where('jam_mulai', '<=', $moment->format('H:i:s'))
+            ->where('jam_selesai', '>', $moment->format('H:i:s'))
+            ->get();
     }
 
     public function book(array $data): Appointment

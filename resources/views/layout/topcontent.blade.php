@@ -28,17 +28,23 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                             <path
                                 d="M11.9051 20H6.11304C3.69102 20 2 18.3299 2 15.9391V9.06091C2 6.66904 3.69102 5 6.11304 5H11.9051C14.3271 5 16.0181 6.66904 16.0181 9.06091V15.9391C16.0181 18.3299 14.3271 20 11.9051 20Z"
                                 fill="currentColor"></path>
-                        </svg> Menu Cepat
+                        </svg> Menu Lain
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="{{ url('monitor/antrian') }}" target="_blank">
+                            <a class="dropdown-item" target="_blank" href="{{ url('monitor/antrian') }}"
+                                target="_blank">
                                 <i class="iconoir-tv pe-1"></i> Monitor Antrian
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" href="{{ url('pos') }}">
                                 <i class="iconoir-cart pe-1"></i> Kasir Apotek (POS)
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" target="_blank" href="{{ url('portal') }}">
+                                <i class="iconoir-user pe-1"></i> Portal Pasien (Self-Service)
                             </a>
                         </li>
                     </ul>

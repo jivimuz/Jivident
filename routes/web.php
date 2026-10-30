@@ -256,7 +256,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [RuangPraktekController::class, 'index']);
         Route::post('addRoom', [RuangPraktekController::class, 'addRoom']);
         Route::post('getRooms', [RuangPraktekController::class, 'getRooms']);
-        Route::post('getDokterList', [RuangPraktekController::class, 'getDokterList']);
         Route::post('updateRoom', [RuangPraktekController::class, 'updateRoom']);
         Route::post('deleteRoom', [RuangPraktekController::class, 'deleteRoom']);
     });
@@ -324,6 +323,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('updateData', [PatientController::class, 'updateData']);
         Route::get('register-patient/{id}', [PatientController::class, 'registerPatient']);
         Route::post('register-patient/{id}', [PatientController::class, 'processPatient']);
+        Route::post('resolve-dokter', [PatientController::class, 'resolveDokter']);
     });
 
     Route::middleware(['checkAccess:LAB'])->prefix('lab')->group(function () {

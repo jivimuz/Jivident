@@ -95,10 +95,6 @@ select[readonly] {
     width: 100% !important;
 }
 
-.hover-bg:hover{
-    background-color: wheat;
-}
-
 .horizontal-sidebar{
     height: 110px !important;
 }
@@ -279,4 +275,140 @@ label {
     border-radius: 8px;
     font-size: 12px;
     color: #92400e;
+}
+
+/* ============================================================
+   Sidebar navbar (navbar.blade.php) — icon-tile redesign.
+   Overrides the base theme's inline-row ".main-nav" styles for
+   this app's actual stacked icon/label tile markup. Uses the
+   theme's own --primary/--dark CSS vars so it still follows
+   whichever accent color and light/dark mode the customizer has
+   set, instead of hardcoding colors.
+
+   Every rule here is !important: the bundled theme's generic
+   "nav .app-nav .main-nav > li:not(.menu-title) > a i" (etc.)
+   selectors have MORE type selectors than ours, which wins the
+   specificity tie-break even though we target a more specific
+   class — without !important, the theme's row-layout margins,
+   font-size:0 text-hiding trick, and expanded-state background
+   silently win instead and the tile layout breaks.
+   ============================================================ */
+nav .app-nav .main-nav > li.nav-tile {
+    padding: 0 0.6rem !important;
+    margin-bottom: 0.2rem;
+}
+
+nav .app-nav .main-nav .nav-tile-link {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    border-radius: 12px !important;
+    padding: 0.6rem 0.4rem !important;
+    text-align: center !important;
+    transition: var(--app-transition);
+}
+
+nav .app-nav .main-nav .nav-tile-link:hover {
+    background: rgba(var(--primary), 0.08) !important;
+}
+
+nav .app-nav .main-nav .nav-tile-link.active,
+nav .app-nav .main-nav .nav-tile-link[aria-expanded="true"] {
+    background: rgba(var(--primary), 0.12) !important;
+}
+
+nav .app-nav .main-nav .nav-tile-icon {
+    display: block !important;
+    width: auto !important;
+    margin: 0 0 0.3rem !important;
+    font-size: 1.5rem !important;
+    color: rgba(var(--dark), 0.45) !important;
+    transition: var(--app-transition);
+}
+
+nav .app-nav .main-nav .nav-tile-label {
+    display: inline-block !important;
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    color: rgba(var(--dark), 0.75) !important;
+    line-height: 1.3 !important;
+    text-transform: capitalize;
+    transition: var(--app-transition);
+}
+
+nav .app-nav .main-nav .nav-tile-link:hover .nav-tile-icon,
+nav .app-nav .main-nav .nav-tile-link:hover .nav-tile-label,
+nav .app-nav .main-nav .nav-tile-link.active .nav-tile-icon,
+nav .app-nav .main-nav .nav-tile-link.active .nav-tile-label,
+nav .app-nav .main-nav .nav-tile-link[aria-expanded="true"] .nav-tile-icon,
+nav .app-nav .main-nav .nav-tile-link[aria-expanded="true"] .nav-tile-label {
+    color: rgba(var(--primary-dark), 1) !important;
+}
+
+nav .app-nav .main-nav .nav-tile-link.active .nav-tile-label,
+nav .app-nav .main-nav .nav-tile-link[aria-expanded="true"] .nav-tile-label {
+    font-weight: 600 !important;
+}
+
+/* Explicit caret instead of the base theme's absolutely-positioned ::after,
+   which was placed for the inline icon+text row layout and would float at a
+   fixed right offset over this stacked tile. */
+nav .app-nav .main-nav > li:not(.menu-title) > a.nav-tile-link::after {
+    content: none !important;
+}
+
+nav .app-nav .main-nav .nav-caret {
+    display: inline-block !important;
+    font-size: 0.65rem !important;
+    margin-left: 3px;
+    color: rgba(var(--dark), 0.35);
+    transition: transform 0.25s ease, color var(--app-transition);
+}
+
+nav .app-nav .main-nav .nav-tile-link[aria-expanded="true"] .nav-caret {
+    transform: rotate(180deg);
+    color: rgba(var(--primary), 1) !important;
+}
+
+/* Submenu rows: swap the underline hover for a tinted-pill hover, matching
+   the tile style above. */
+nav .app-nav .main-nav > li.nav-tile ul li a {
+    border-radius: 8px;
+    transition: var(--app-transition);
+}
+
+nav .app-nav .main-nav > li.nav-tile ul li a:hover {
+    background: rgba(var(--primary), 0.07);
+    color: rgba(var(--primary-dark), 1);
+}
+
+/* Mini (semi-nav) rail: icon only. Hiding the label/caret ourselves via
+   display, rather than leaning on the theme's "parent font-size:0" trick
+   — that trick only hides TEXT INHERITED from the parent, and our label
+   sets its own explicit font-size, so it would stay visible otherwise. */
+.app-wrapper .semi-nav .app-nav .main-nav .nav-tile-icon {
+    font-size: 1.3rem !important;
+    margin: 0 !important;
+}
+
+.app-wrapper .semi-nav .app-nav .main-nav .nav-tile-label,
+.app-wrapper .semi-nav .app-nav .main-nav .nav-caret {
+    display: none !important;
+}
+
+/* Hovering a minimized rail temporarily widens it back out (existing theme
+   behavior) — restore the label/caret for that peek. */
+.app-wrapper .semi-nav:hover .app-nav .main-nav .nav-tile-icon {
+    font-size: 1.5rem !important;
+    margin: 0 0 0.3rem !important;
+}
+
+.app-wrapper .semi-nav:hover .app-nav .main-nav .nav-tile-label {
+    display: inline-block !important;
+}
+
+.app-wrapper .semi-nav:hover .app-nav .main-nav .nav-caret {
+    display: inline-block !important;
 }

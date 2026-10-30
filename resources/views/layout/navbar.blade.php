@@ -39,40 +39,36 @@ $currentRouteName = Request::getPathInfo();
     <div class="app-nav mt-4 " id="app-simple-bar">
         <ul class="main-nav p-0 mt-2">
             @foreach ($menu as $b)
-                <?php if(count($b['child']) >= 1){?>
-                <li class="">
-                    <a aria-expanded="false" class="Text-center hover-bg border-b mt-1" data-bs-toggle="collapse"
-                        href="#group-{{ $b['group_id'] }}">
-                        <div class="w-full text-center">
-                            <i class="{{ $b['icon'] }}"
-                                style="font-size: 32px; color: #{{ rand(100000, 999999) }} !important"></i>
-                            <br>
-                            <span>{{ $b['name'] }}</span>
-                            {{-- <span class="badge text-primary-dark bg-primary-300  badge-notification ms-2">4</span> --}}
-                        </div>
-                    </a>
-                    <ul class="collapse" id="group-{{ $b['group_id'] }}">
-                        @foreach ($b['child'] as $c)
-                            <li><a href="{{ $c['route'] }}"
-                                    class="{{ $c['route'] == $currentRouteName && 'active' }} hover-border-b">{{ $c['name'] }}</a>
-                            </li>
-                        @endForeach
-                    </ul>
-                </li>
-                <?php }else{?>
-                <li class="no-sub ">
-                    <a class="Text-center  hover-bg border-b mt-1 {{ $b['route'] == $currentRouteName && 'active' }}"
-                        href="{{ $b['route'] }}">
-                        <div class="w-full text-center">
-                            <i class="{{ $b['icon'] }}"
-                                style="font-size: 32px; color: #{{ rand(100000, 999999) }} !important">
-                            </i>
-                            <br>
-                            <span>{{ $b['name'] }}</span>
-                        </div>
-                    </a>
-                </li>
-                <?php }?>
+                <?php
+                $hasChildren = count($b['child']) >= 1;
+                $childActive = $hasChildren && collect($b['child'])->contains(fn($c) => $c['route'] == $currentRouteName);
+                ?>
+                @if ($hasChildren)
+                    <li class="nav-tile">
+                        <a aria-expanded="{{ $childActive ? 'true' : 'false' }}"
+                            class="nav-tile-link {{ $childActive ? 'active' : '' }}" data-bs-toggle="collapse"
+                            href="#group-{{ $b['group_id'] }}">
+                            <i class="{{ $b['icon'] }} nav-tile-icon"></i>
+                            <span class="nav-tile-label">{{ $b['name'] }}</span>
+                            <i class="ti ti-chevron-down nav-caret"></i>
+                        </a>
+                        <ul class="collapse {{ $childActive ? 'show' : '' }}" id="group-{{ $b['group_id'] }}">
+                            @foreach ($b['child'] as $c)
+                                <li><a href="{{ $c['route'] }}"
+                                        class="{{ $c['route'] == $currentRouteName ? 'active' : '' }}">{{ $c['name'] }}</a>
+                                </li>
+                            @endForeach
+                        </ul>
+                    </li>
+                @else
+                    <li class="no-sub nav-tile">
+                        <a class="nav-tile-link {{ $b['route'] == $currentRouteName ? 'active' : '' }}"
+                            href="{{ $b['route'] }}">
+                            <i class="{{ $b['icon'] }} nav-tile-icon"></i>
+                            <span class="nav-tile-label">{{ $b['name'] }}</span>
+                        </a>
+                    </li>
+                @endif
             @endForeach
         </ul>
         <!-- Sidebar Menu End -->

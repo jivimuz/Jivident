@@ -12,12 +12,15 @@ use App\Models\Kebangsaan;
 use App\Models\Kelurahan;
 use App\Models\MarialStatus;
 use App\Models\Negara;
+use App\Helpers\AppointmentHelper;
+use App\Models\JadwalDokter;
 use App\Models\Patient;
 use App\Models\Pekerjaan;
 use App\Models\Religion;
 use App\Models\RuangPraktek;
 use App\Models\Setting;
 use App\Models\Study;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -453,9 +456,11 @@ class PatientController extends Controller
         }
         $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
 
-        $ruangan = RuangPraktek::select(['m_ruangpraktek.*', 'm_users.id as dokterid', 'm_users.display_name as dokter'])
-            ->join('m_users', 'm_ruangpraktek.fk_dokter', 'm_users.id')
-            ->where('m_ruangpraktek.klienfk', Auth::user()->klienfk ?? 1)->get();
+        // Rooms are no longer listed by their (legacy, single) assigned doctor —
+        // a room can be shared by several doctors across different JadwalDokter
+        // shifts, resolved per room+time via resolveDokter() once the form has
+        // both a room and a registration date/time picked.
+        $ruangan = RuangPraktek::where('klienfk', Auth::user()->klienfk ?? 1)->get();
 
         $riwayat = DiagnosaPasien::select('m_icdx.name')->where('tipe_diagnosa', 'X')
             ->join('m_icdx', 't_diagnosapasien.fk_diagnosa', 'm_icdx.id')
@@ -477,12 +482,27 @@ class PatientController extends Controller
             ], 404);
         }
 
-        $ruangan = RuangPraktek::select(['fk_dokter', 'code'])
+        $ruangan = RuangPraktek::select(['code'])
             ->where('klienfk', $klienfk)->where('id', $request->ruanganfk)->first();
-        if (!$ruangan || !$ruangan->fk_dokter) {
+        if (!$ruangan) {
             return response()->json([
-                'error' => 'Tidak ada dokter di ruangan terpilih ',
-                'message' => 'Tidak ada dokter di ruangan terpilih '
+                'error' => 'Ruangan tidak ditemukan',
+                'message' => 'Ruangan tidak ditemukan'
+            ], 400);
+        }
+
+        // Doctor is picked explicitly (auto-resolved or manually chosen via
+        // resolveDokter()) rather than read off a single fixed fk_dokter on
+        // the room, since a room can be shared by several doctors. Still
+        // validated server-side rather than trusted blindly from the client.
+        $dokter = User::where('id', $request->dokterfk)
+            ->where('klienfk', $klienfk)
+            ->whereHas('employee', fn ($q) => $q->where('is_pemeriksapasien', 1))
+            ->first();
+        if (!$dokter) {
+            return response()->json([
+                'error' => 'Dokter tidak valid',
+                'message' => 'Dokter tidak valid'
             ], 400);
         }
         $cek = DaftarPasien::select('id')->where('pasienfk', $pasienId)->whereDate('tglregistrasi', Carbon::parse($request->tglregistrasi)->format('Y-m-d'))->first();
@@ -502,7 +522,7 @@ class PatientController extends Controller
         $insert = DaftarPasien::insertGetId([
             'klienfk' => $klienfk,
             'noregistrasi' => 'RGX' . $time->format('Ymd') .  '-' . $time->format('Hi') . substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'), 0, 4),
-            'dokterfk' => $ruangan->fk_dokter,
+            'dokterfk' => $dokter->id,
             'pegawaifk' => Auth::user()->id ?? null,
             'ruanganfk' => $request->ruanganfk,
             'pasienfk' => $pasienId,
@@ -521,5 +541,67 @@ class PatientController extends Controller
             'error' => 'Data gagal ditambahkan ',
             'message' => 'Data gagal ditambahkan '
         ], 400);
+    }
+
+    /**
+     * Resolves which doctor(s) are on duty in a room at the chosen
+     * registration date/time, so the registration form can auto-fill the
+     * doctor when exactly one matches and otherwise let staff pick from a
+     * shortlist, instead of a room only ever resolving to one fixed doctor.
+     */
+    public function resolveDokter(Request $request)
+    {
+        $klienfk = Auth::user()->klienfk ?? 1;
+
+        $request->validate([
+            'ruanganfk' => 'required|integer',
+            'tglregistrasi' => 'required|date',
+        ]);
+
+        $room = RuangPraktek::where('klienfk', $klienfk)->find($request->ruanganfk);
+        if (!$room) {
+            return response()->json([
+                'error' => 'Ruangan tidak ditemukan',
+                'message' => 'Ruangan tidak ditemukan'
+            ], 404);
+        }
+
+        $toOption = fn ($dokter) => [
+            'id' => $dokter->id,
+            'name' => $dokter->employee->fullname ?? $dokter->display_name,
+        ];
+
+        $onDuty = (new AppointmentHelper())->getDokterOnDuty((int) $request->ruanganfk, $request->tglregistrasi);
+
+        if ($onDuty->count() === 1) {
+            $dokter = $onDuty->first()->dokter;
+            return response()->json([
+                'message' => 'success',
+                'auto' => true,
+                'dokter' => $toOption($dokter),
+                'candidates' => [$toOption($dokter)],
+            ]);
+        }
+
+        // Zero matches (nobody scheduled right now) or several overlapping
+        // matches (a scheduling clash) — fall back to every doctor this room
+        // has a shift in at all, so staff can still pick sensibly instead of
+        // choosing from the entire clinic's doctor list.
+        $candidates = JadwalDokter::with('dokter.employee')
+            ->where('fk_ruangpraktek', $request->ruanganfk)
+            ->where('is_active', true)
+            ->get()
+            ->pluck('dokter')
+            ->filter()
+            ->unique('id')
+            ->map($toOption)
+            ->values();
+
+        return response()->json([
+            'message' => 'success',
+            'auto' => false,
+            'dokter' => null,
+            'candidates' => $candidates,
+        ]);
     }
 }

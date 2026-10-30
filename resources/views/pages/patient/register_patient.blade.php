@@ -124,18 +124,16 @@
                                     <select name="ruanganfk" id="ruanganfk" class="form-select" required>
                                         <option value="" selected hidden>~ Pilih satu</option>
                                         @foreach ($ruangan as $i)
-                                            <option value="{{ $i->id }}" doktername="{{ $i->dokter }}"
-                                                dokterid="{{ $i->dokterid }}">
-                                                {{ $i->name . ' || ' . $i->dokter }}
-                                            </option>
+                                            <option value="{{ $i->id }}">{{ $i->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                {{-- <div class="col-md-4">
+                                <div class="col-md-4">
                                     <label>Dokter:*</label>
-                                    <select name="dokterid" id="dokterid" class="form-select" required>
+                                    <select name="dokterfk" id="dokterfk" class="form-select" required>
+                                        <option value="" selected hidden>~ Pilih ruangan & tanggal dulu</option>
                                     </select>
-                                </div> --}}
+                                </div>
                                 <div class="col-md-4">
                                     <label>Jenis Pembayaran:*</label>
                                     <select name="jenispembayaran" id="jenispembayaran" class="form-select" required>
@@ -168,6 +166,62 @@
     <script>
         $(document).ready(function() {
             let isSubmitting = false;
+
+            // A room can be shared by several doctors across different shifts,
+            // so the doctor is resolved from the room's schedule (JadwalDokter)
+            // whenever the room or registration date/time changes, instead of
+            // being read off a single fixed doctor on the room.
+            function resolveDokter() {
+                var ruanganfk = $('#ruanganfk').val();
+                var tglregistrasi = $('#tglregistrasi').val();
+                var $dokter = $('#dokterfk');
+
+                if (!ruanganfk || !tglregistrasi) {
+                    $dokter.html('<option value="" selected hidden>~ Pilih ruangan & tanggal dulu</option>');
+                    return;
+                }
+
+                $dokter.prop('disabled', true).html('<option value="">Memuat...</option>');
+
+                $.ajax({
+                    url: "{{ url('patient/resolve-dokter') }}",
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    data: {
+                        ruanganfk: ruanganfk,
+                        tglregistrasi: tglregistrasi
+                    },
+                    success: function(res) {
+                        $dokter.prop('disabled', false).empty();
+
+                        if (!res.candidates || res.candidates.length === 0) {
+                            $dokter.append(
+                                '<option value="" selected hidden>Belum ada dokter terjadwal di ruangan ini</option>'
+                            );
+                            return;
+                        }
+
+                        $dokter.append('<option value="" hidden>~ Pilih dokter</option>');
+                        res.candidates.forEach(function(d) {
+                            $dokter.append($('<option>', {
+                                value: d.id,
+                                text: d.name
+                            }));
+                        });
+                        if (res.auto && res.dokter) {
+                            $dokter.val(res.dokter.id);
+                        }
+                    },
+                    error: function() {
+                        $dokter.prop('disabled', false).html(
+                            '<option value="" selected hidden>Gagal memuat dokter</option>');
+                    }
+                });
+            }
+
+            $('#ruanganfk, #tglregistrasi').on('change', resolveDokter);
 
             $('#formPasien').on('submit', function(e) {
                 e.preventDefault();

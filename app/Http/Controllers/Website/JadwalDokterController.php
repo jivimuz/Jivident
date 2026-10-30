@@ -38,7 +38,12 @@ class JadwalDokterController extends Controller
 
     public function getRuangPraktekByDokter($dokterId)
     {
-        $data = RuangPraktek::where('fk_dokter', $dokterId)->where('klienfk', Auth::user()->klienfk ?? 1)->get(['id', 'name']);
+        // Not scoped by m_ruangpraktek.fk_dokter: that column is the legacy
+        // single-doctor-per-room assignment, which would hide a room from
+        // every doctor except the one already "owning" it. A room can now
+        // be shared by several doctors across different JadwalDokter shifts,
+        // so any active room in the branch is a valid pick for any doctor.
+        $data = RuangPraktek::where('klienfk', Auth::user()->klienfk ?? 1)->get(['id', 'name']);
 
         return response()->json(['message' => 'success', 'data' => $data], 200);
     }
@@ -79,6 +84,13 @@ class JadwalDokterController extends Controller
     {
         $validated = $this->validateRequest($request);
 
+        if ($conflict = $this->findRoomConflict($validated)) {
+            return response()->json([
+                'error' => "Ruangan ini sudah dipakai {$conflict} pada jam tersebut.",
+                'message' => "Ruangan ini sudah dipakai {$conflict} pada jam tersebut.",
+            ], 400);
+        }
+
         JadwalDokter::create(array_merge($validated, [
             'klienfk' => Auth::user()->klienfk ?? 1,
         ]));
@@ -90,9 +102,37 @@ class JadwalDokterController extends Controller
     {
         $validated = $this->validateRequest($request);
 
+        if ($conflict = $this->findRoomConflict($validated, (int) $id)) {
+            return response()->json([
+                'error' => "Ruangan ini sudah dipakai {$conflict} pada jam tersebut.",
+                'message' => "Ruangan ini sudah dipakai {$conflict} pada jam tersebut.",
+            ], 400);
+        }
+
         JadwalDokter::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id)->update($validated);
 
         return response()->json(['message' => 'success'], 200);
+    }
+
+    /**
+     * A room can be shared by several doctors, but not at the literal same
+     * day+time — guards against a data-entry mistake double-booking the
+     * physical room itself. Returns the conflicting doctor's name, or null.
+     */
+    private function findRoomConflict(array $validated, ?int $ignoreId = null): ?string
+    {
+        $conflict = JadwalDokter::with('dokter.employee')
+            ->where('klienfk', Auth::user()->klienfk ?? 1)
+            ->where('fk_ruangpraktek', $validated['fk_ruangpraktek'])
+            ->where('hari', $validated['hari'])
+            ->where('fk_dokter', '!=', $validated['fk_dokter'])
+            ->where('is_active', true)
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->where('jam_mulai', '<', $validated['jam_selesai'])
+            ->where('jam_selesai', '>', $validated['jam_mulai'])
+            ->first();
+
+        return $conflict?->dokter?->employee?->fullname ?? ($conflict ? 'dokter lain' : null);
     }
 
     public function destroy($id)

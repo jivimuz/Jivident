@@ -50,42 +50,7 @@
     <script>
         $(document).ready(function() {
             getRooms()
-            reDropdown()
         });
-
-        function reDropdown() {
-            $('.select2').each(function() {
-                let id = this.dokterid ?? null;
-                $(this).select2({
-                    ajax: {
-                        url: "{{ url('ruang-praktek/getDokterList') }}",
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        delay: 250,
-                        dataType: 'json',
-                        data: function(params) {
-                            return {
-                                params: params.term,
-                                currentDr: id
-                            };
-                        },
-                        processResults: function(response) {
-                            let option = response.data.map(d => ({
-                                id: d.id,
-                                text: d.nik + ' | ' + d.fullname
-                            }));
-                            return {
-                                results: option
-                            };
-                        }
-                    },
-                    placeholder: "Input NIK or Name for search",
-                    width: '100%'
-                });
-            });
-        }
 
         function editRoom(id) {
             $('#btnr-' + id).addClass('hideThis');
@@ -147,7 +112,6 @@
                                     <div id="showedRoom-${item.id}">
                                         <!-- Isi card -->
                                         <h5 class="mb-1 text-white" id="sNamaRuangan-${item.id}">${item.name}</h5>
-                                        <h6 class="mb-1 text-secondary" id="sNamaDokter-${item.id}">${item.dokter ?? '[Kosong]'}</h6>
                                         <span class="badge bg-info mt-2">Kode Tiket: <span id="sCode-${item.id}">${item.code}</span></span>
                                     </div>
                                     <div id="editRoom-${item.id}" class="hideThis">
@@ -155,7 +119,6 @@
                                         <div class="mx-2">
                                             <input class="form-control rounded-pill text-center" id="nm-ruangan-${item.id}"
                                                 maxlength="25" placeholder="~ Nama Ruangan" value="${item.name}" />
-                                            <select class="form-control select2" id="dr-ruangan-${item.id}" dokterid="${item.dokterid}"></select>
                                             <input class="form-control rounded-pill text-center" id="cd-ruangan-${item.id}" value="${item.code}"
                                                 maxlength="3" placeholder="~ Kode Antrian {1 - 3 digit}" />
                                         </div>
@@ -174,8 +137,6 @@
                                 </a>
                             </div>`
                     $('#listRuangan').html(a)
-                    reDropdown()
-
                 },
                 error: function(xhr, status, error) {
                     Toast.fire({
@@ -249,7 +210,6 @@
                         data: {
                             roomsid: id,
                             roomsname: $('#nm-ruangan-' + id).val(),
-                            roomsdr: $('#dr-ruangan-' + id).val(),
                             roomscd: $('#cd-ruangan-' + id).val(),
                         },
                         success: function(data) {

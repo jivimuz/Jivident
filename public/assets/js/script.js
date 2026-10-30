@@ -98,11 +98,15 @@ function copyvalue() {
 
 
 // >>-- 04 Sidebar toggle js --<<
+// Persisted so the mini/expanded choice survives a reload instead of resetting
+// to expanded every time (default is minimized for first-time visitors).
 $(document).on('click.appJs', '.header-toggle', function () {
-  $("nav").toggleClass("semi-nav");
+  var isMini = $("nav").toggleClass("semi-nav").hasClass("semi-nav");
+  setLocalStorageItem('sidebar-mini', isMini ? '1' : '0');
 });
 $(".toggle-semi-nav").on("click", function () {
   $("nav").removeClass("semi-nav");
+  setLocalStorageItem('sidebar-mini', '0');
 });
 
 
@@ -115,12 +119,15 @@ function resize() {
   var $window = $(window),
     $nav = $('nav');
 
-  $nav.removeClass('semi-nav');
   if ($window.width() < 768) {
-    // $nav.removeClass('semi-nav');
-
+    $nav.removeClass('semi-nav');
   } else if ($window.width() < 1199) {
     $nav.addClass('semi-nav');
+  } else {
+    // Desktop width: restore whatever mini/expanded state was last saved,
+    // defaulting to minimized rather than always resetting to expanded.
+    var isMini = getLocalStorageItem('sidebar-mini', '1') === '1';
+    $nav.toggleClass('semi-nav', isMini);
   }
 }
 
