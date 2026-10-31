@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\Odontogram;
+use App\Models\OdontogramDiagnosis;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,6 +44,24 @@ class OdontogramController extends Controller
             return 'Pilih type terlebih dahulu';
         }
         return view('pages/pemeriksaan/content/odontogram-field/' . $field, compact('id', 'odontotype', 'status'));
+    }
+
+    /**
+     * Diagnosis/kondisi-gigi options for the odontogram pickers — sourced
+     * from the master table (`m_odontogram_diagnosis`) instead of the old
+     * hardcoded lists in adult.js/child.js/2dglobal.js. `kategori` picks
+     * which picker is asking: '3d' for the Diagnostic Panel dropdown on the
+     * 3D models, '2d' for the kondisi-gigi buttons on the 2D Global chart.
+     */
+    public function diagnosisList(Request $request)
+    {
+        $data = OdontogramDiagnosis::where('klienfk', Auth::user()->klienfk ?? 1)
+            ->where('kategori', $request->kategori === '2d' ? '2d' : '3d')
+            ->orderBy('urutan')
+            ->orderBy('id')
+            ->get(['id', 'nama', 'warna', 'simbol', 'is_reset']);
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
     }
 
     public function saveOdonto(Request $request, $id)

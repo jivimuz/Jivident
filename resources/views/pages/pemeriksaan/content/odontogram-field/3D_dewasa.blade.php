@@ -76,8 +76,29 @@
 <script src="{{ url('') }}/assets/js/3dmodel/adult.js"></script>
 <script>
     $(document).ready(function() {
-        getDataOdonto()
+        getDiagnosisList()
     })
+
+    function getDiagnosisList() {
+        $.ajax({
+            url: "<?= url('pemeriksaan/pasien/' . $id) ?>/odontogram/diagnosisList",
+            type: 'POST',
+            data: {
+                kategori: '3d',
+            },
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                window._jivident.setDiagnosisList(response.data || []);
+                getDataOdonto();
+            },
+            error: function() {
+                window._jivident.setDiagnosisList([]);
+                getDataOdonto();
+            },
+        });
+    }
     $('#save-data').on('click', function() {
         $.ajax({
             url: "<?= url('pemeriksaan/pasien/' . $id) ?>/odontogram/save",

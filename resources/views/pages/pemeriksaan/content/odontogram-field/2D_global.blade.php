@@ -2499,10 +2499,32 @@
     </script>
 @endif
 <script>
+    var kondisiGigiList = [];
+
     $(document).ready(function() {
-        getDataOdonto()
+        getDiagnosisList()
     });
 
+    function getDiagnosisList() {
+        $.ajax({
+            url: "<?= url('pemeriksaan/pasien/' . $id) ?>/odontogram/diagnosisList",
+            type: "POST",
+            data: {
+                kategori: "2d",
+            },
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+            },
+            success: function(response) {
+                kondisiGigiList = response.data || [];
+                getDataOdonto();
+            },
+            error: function() {
+                kondisiGigiList = [];
+                getDataOdonto();
+            },
+        });
+    }
 
     function getDataOdonto() {
         $.ajax({
@@ -2519,7 +2541,7 @@
                 if (response.data && response.data.mappeddata) {
                     data = JSON.parse(response.data.mappeddata);
                 }
-                load2DGlobal(data);
+                load2DGlobal(data, kondisiGigiList);
             },
             error: function(xhr) {
                 Swal.close();

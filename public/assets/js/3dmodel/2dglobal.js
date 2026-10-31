@@ -1,45 +1,23 @@
 var selectedData = [];
 
-function load2DGlobal(curData = []) {
+// configList datang dari master table (m_odontogram_diagnosis, kategori=2d)
+// lewat fetch di 2D_global.blade.php — tidak lagi hardcoded di sini. Setiap
+// baris master dipetakan ke bentuk yang dipakai fungsi di bawah ini:
+// {id, clear, nama, color, text}.
+function mapDiagnosisRowToConfig(row) {
+    return {
+        id: row.id,
+        clear: row.is_reset ? "1" : "0",
+        nama: row.nama,
+        color: row.warna,
+        text: row.simbol || "",
+    };
+}
+
+function load2DGlobal(curData = [], configList = []) {
     let dataJson = {
         Default_dent: [],
-        config: [
-            { clear: "1", nama: "Bersih", color: "white", text: "" },
-            { clear: "0", nama: "Belum Erupsi", color: "white", text: "UE" },
-            { clear: "0", nama: "Erupsi Sebagian", color: "white", text: "PE" },
-            {
-                clear: "0",
-                nama: "Anomali Bentuk",
-                color: "white",
-                text: "&nbsp;A",
-            },
-            { clear: "0", nama: "Sisa Akar", color: "white", text: "&nbsp;√" },
-            {
-                clear: "0",
-                nama: "Gigi Hilang",
-                color: "white",
-                text: "&nbsp;X",
-            },
-            { clear: "0", nama: "Jembatan", color: "white", text: "__" },
-            {
-                clear: "0",
-                nama: "Gigi Tiruan Lepas",
-                color: "white",
-                text: "--",
-            },
-            { clear: "0", nama: "Non Vital", color: "white", text: "&nbsp;/" },
-            { clear: "0", nama: "Karies", color: "grey", text: "" },
-            { clear: "0", nama: "Tambalan Logam", color: "pink", text: "" },
-            {
-                clear: "0",
-                nama: "Tambalan Non Logam",
-                color: "cadetblue",
-                text: "",
-            },
-            { clear: "0", nama: "Mahkota Logam", color: "darkgreen", text: "" },
-            { clear: "0", nama: "Mahkota Non Logam", color: "cyan", text: "" },
-            { clear: "0", nama: "Indikasi Cabut", color: "black", text: "" },
-        ],
+        config: configList.map(mapDiagnosisRowToConfig),
     };
 
     // Jalankan load
@@ -106,6 +84,7 @@ function load2DGlobal(curData = []) {
                     selectedData.push({
                         idGigi,
                         bagian: selectedIdnya,
+                        id: cfg.id,
                         warna: cfg.color,
                         label: cfg.nama,
                         simbol: cfg.text,
@@ -147,7 +126,9 @@ function load2DGlobal(curData = []) {
                 }).appendTo(btn);
                 btn.css(
                     "background-color",
-                    obj.config[i].color === "white"
+                    ["white", "#ffffff"].includes(
+                        String(obj.config[i].color).toLowerCase(),
+                    )
                         ? "#f8f9fa"
                         : obj.config[i].color,
                 );
@@ -196,6 +177,7 @@ function load2DGlobal(curData = []) {
             selectedData.push({
                 idGigi: idGigi,
                 bagian: item.bagian,
+                id: item.id,
                 warna: item.warna,
                 label: item.label,
                 simbol: item.simbol,

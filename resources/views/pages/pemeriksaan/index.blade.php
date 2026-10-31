@@ -118,14 +118,15 @@
                                         class="fa fa-file-signature fa-fw"></i>Persetujuan</button>
                             </li>
                             <li class="nav-item">
+                                <button class="nav-link" id="soape" aria-selected="false"><i
+                                        class="fa fa-clipboard fa-fw"></i>SOAPE</button>
+                            </li>
+                            <li class="nav-item">
                                 <button class="nav-link" id="odontogram" aria-selected="false"><i
                                         class="fa fa-tooth pe-1 ps-1"></i>Odontogram</button>
                             </li>
 
-                            <li class="nav-item">
-                                <button class="nav-link" id="soape" aria-selected="false"><i
-                                        class="fa fa-clipboard fa-fw"></i>SOAPE</button>
-                            </li>
+
 
                             <li class="nav-item">
                                 <button class="nav-link" id="tindakan" aria-selected="false"><i

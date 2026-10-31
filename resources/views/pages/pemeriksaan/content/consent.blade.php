@@ -85,7 +85,7 @@
     // Teks di sini HARUS sama persis dengan PemeriksaanController::CONSENT_TEXT_GENERAL
     // dan template tindakan di PemeriksaanController::saveConsent — ini preview sebelum
     // tanda tangan, teks yang benar-benar disimpan dibuat ulang di server.
-    const CONSENT_TEXT_GENERAL =
+    var CONSENT_TEXT_GENERAL =
         'Saya yang bertanda tangan di bawah ini menyatakan telah menerima penjelasan mengenai prosedur pelayanan kesehatan gigi di klinik ini, termasuk pemeriksaan, tindakan, dan pengobatan yang mungkin diperlukan. Saya menyetujui untuk menerima pelayanan tersebut dan memahami bahwa saya dapat bertanya atau menolak tindakan tertentu kapan saja.';
 
     function consentTindakanText(nama) {

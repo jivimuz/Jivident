@@ -62,14 +62,65 @@
         "lingua_02_-_Default_0": "(Tongue) Lingua",
     };
 
-    const DIAGNOSIS_COLOR_MAP = {
-        Karies: 0x3b82f6,
-        Calculus: 0xbfb467,
-        Fraktur: 0x59909c,
-        Abfraksi: 0x9c4f6f,
-        Gingivitis: 0x9c784f,
-        Pulpitis: 0x9c504f,
-    };
+    // Diagnosis list sekarang datang dari master table (m_odontogram_diagnosis,
+    // kategori=3d) lewat window._jivident.setDiagnosisList(), bukan hardcoded
+    // di sini lagi. pt.type menyimpan id diagnosis (bukan nama) untuk data
+    // baru; findDiagnosis() tetap bisa mencocokkan lewat nama supaya
+    // odontogram lama (disimpan sebelum perubahan ini) tidak kehilangan
+    // warna/labelnya.
+    let DIAGNOSIS_LIST = [];
+
+    function hexStringToInt(hex) {
+        if (typeof hex !== "string") return MARKER_HEX;
+        const parsed = parseInt(hex.replace("#", ""), 16);
+        return isNaN(parsed) ? MARKER_HEX : parsed;
+    }
+
+    function findDiagnosis(typeValue) {
+        if (typeValue === undefined || typeValue === null || typeValue === "")
+            return null;
+        let found = DIAGNOSIS_LIST.find(
+            (d) => String(d.id) === String(typeValue)
+        );
+        if (!found) {
+            found = DIAGNOSIS_LIST.find(
+                (d) =>
+                    String(d.nama).toLowerCase() ===
+                    String(typeValue).toLowerCase()
+            );
+        }
+        return found || null;
+    }
+
+    function colorForDiagnosis(typeValue) {
+        const found = findDiagnosis(typeValue);
+        return found ? hexStringToInt(found.warna) : MARKER_HEX;
+    }
+
+    function nameForDiagnosis(typeValue) {
+        const found = findDiagnosis(typeValue);
+        return found ? found.nama : typeValue || "";
+    }
+
+    function diagnosisOptionsHtml(selectedValue) {
+        if (!DIAGNOSIS_LIST.length) {
+            return '<option value="">Belum ada master diagnosis</option>';
+        }
+        let html = `<option value="" ${
+            !selectedValue ? "selected" : ""
+        }>Pilih (Opsional)</option>`;
+        DIAGNOSIS_LIST.forEach((d) => {
+            const isSelected =
+                String(d.id) === String(selectedValue) ||
+                (selectedValue &&
+                    String(d.nama).toLowerCase() ===
+                        String(selectedValue).toLowerCase());
+            html += `<option value="${d.id}" ${
+                isSelected ? "selected" : ""
+            }>${d.nama}</option>`;
+        });
+        return html;
+    }
 
     function showToast(message, type = "success") {
         const toast = document.getElementById("toast");
@@ -219,7 +270,7 @@
         pt.type = select.value;
 
         // warna berdasarkan diagnosis (fallback ke MARKER_HEX kalau undefined)
-        const color = DIAGNOSIS_COLOR_MAP[pt.type] || MARKER_HEX;
+        const color = colorForDiagnosis(pt.type);
 
         // 1) update marker color (jika ada)
         const marker = scene.getObjectByName("Marker-" + id);
@@ -255,7 +306,7 @@
             console.warn("Parent group not found for toothId", pt.toothId);
         }
 
-        showToast(`Diagnosis updated to ${pt.type}`, "success");
+        showToast(`Diagnosis updated to ${nameForDiagnosis(pt.type)}`, "success");
     });
 
     // Update UI list
@@ -291,7 +342,7 @@
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold small text-secondary">Diagnosis:</label>
                                         <input disabled value="${
-                                            pt.type
+                                            nameForDiagnosis(pt.type)
                                         }" class="form-control" >
                                     </div>
                                     <p class="text-muted small mb-2">Koordinat: (${
@@ -339,39 +390,7 @@
                                         <select class="form-select form-select-sm diagnosis-select" id="pt-${
                                             pt.id
                                         }">
-                                        <option value="" ${
-                                            !pt.type ? "selected" : ""
-                                        }>Pilih (Opsional)</option>
-                                        <option value="Karies" ${
-                                            pt.type === "Karies"
-                                                ? "selected"
-                                                : ""
-                                        }>Karies</option>
-                                        <option value="Calculus" ${
-                                            pt.type === "Calculus"
-                                                ? "selected"
-                                                : ""
-                                        }>Calculus</option>
-                                        <option value="Fraktur" ${
-                                            pt.type === "Fraktur"
-                                                ? "selected"
-                                                : ""
-                                        }>Fraktur</option>
-                                        <option value="Abfraksi" ${
-                                            pt.type === "Abfraksi"
-                                                ? "selected"
-                                                : ""
-                                        }>Abfraksi</option>
-                                        <option value="Gingivitis" ${
-                                            pt.type === "Gingivitis"
-                                                ? "selected"
-                                                : ""
-                                        }>Gingivitis</option>
-                                        <option value="Pulpitis" ${
-                                            pt.type === "Pulpitis"
-                                                ? "selected"
-                                                : ""
-                                        }>Pulpitis</option>
+                                        ${diagnosisOptionsHtml(pt.type)}
                                         </select>
                                     </div>
                                     <p class="text-muted small mb-2">Koordinat: (${
@@ -425,7 +444,7 @@
                 : Array.from(toothMeshes);
 
             data.forEach((item) => {
-                const color = DIAGNOSIS_COLOR_MAP[item.type] || MARKER_HEX;
+                const color = colorForDiagnosis(item.type);
 
                 // Buat marker di posisi 3D
                 const geom = new THREE.SphereGeometry(0.05, 8, 8);
@@ -640,7 +659,7 @@
                 y = 20;
             }
             doc.setFontSize(12);
-            doc.text(`${pt.toothId} (${pt.type})`, margin, y);
+            doc.text(`${pt.toothId} (${nameForDiagnosis(pt.type)})`, margin, y);
             y += 6;
             doc.setFontSize(10);
             doc.text(`Coords: (${pt.x}, ${pt.y}, ${pt.z})`, margin + 2, y);
@@ -697,5 +716,9 @@
         getMapped: () => mappedPoints,
         loadMarker,
         isFinished,
+        setDiagnosisList: (list) => {
+            DIAGNOSIS_LIST = Array.isArray(list) ? list : [];
+            if (mappedPoints.length) renderPointsList();
+        },
     };
 })();

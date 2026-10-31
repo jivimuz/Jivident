@@ -19,6 +19,7 @@ use App\Http\Controllers\Website\LabController;
 use App\Http\Controllers\Website\ModuleController;
 use App\Http\Controllers\Website\MonitorController;
 use App\Http\Controllers\Website\OdontogramController;
+use App\Http\Controllers\Website\OdontogramDiagnosisController;
 use App\Http\Controllers\Website\PasienRawatInapController;
 use App\Http\Controllers\Website\PatientController;
 use App\Http\Controllers\Website\PaymentsController;
@@ -311,6 +312,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getDokterList', [TindakanController::class, 'getDokterList']);
     });
 
+    Route::middleware(['checkAccess:MOD'])->prefix('odontogram-diagnosis')->group(function () {
+        Route::get('/', [OdontogramDiagnosisController::class, 'index']);
+        Route::post('getList', [OdontogramDiagnosisController::class, 'getList']);
+        Route::post('showDiagnosis', [OdontogramDiagnosisController::class, 'showDiagnosis']);
+        Route::post('saveDiagnosis', [OdontogramDiagnosisController::class, 'saveDiagnosis']);
+        Route::post('deleteDiagnosis', [OdontogramDiagnosisController::class, 'deleteDiagnosis']);
+    });
+
     Route::middleware(['checkAccess:MTP'])->prefix('payments')->group(function () {
         Route::get('/', [PaymentsController::class, 'index']);
         Route::post('getList', [PaymentsController::class, 'getList']);
@@ -442,6 +451,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('field', [OdontogramController::class, 'field']);
                 Route::post('save', [OdontogramController::class, 'saveOdonto']);
                 Route::post('loadOdonto', [OdontogramController::class, 'loadOdonto']);
+                Route::post('diagnosisList', [OdontogramController::class, 'diagnosisList']);
             });
         });
     });
