@@ -109,8 +109,12 @@ Route::get('_ops/storage-link', function () {
 
 // Group By Auth
 Route::get('i', [HomeController::class, 'landingPage'])->name('landingPage');
+// Not inside the auth group: HomeController::index() decides for itself
+// whether to show the dashboard or send a guest to the landing page instead,
+// so a plain "/" visit from someone with no session lands on the landing
+// page rather than Laravel's default guest redirect to /login.
+Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::middleware(['auth'])->group(function () {
-    Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::post('menu', [HomeController::class, 'menu']);
 
     Route::prefix('profile')->group(function () {

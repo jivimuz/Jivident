@@ -22,6 +22,15 @@ class HomeDashboardTest extends TestCase
         ]);
     }
 
+    public function test_guest_visiting_root_is_sent_to_the_landing_page_not_login(): void
+    {
+        $this->activateLicense();
+
+        $response = $this->get('/');
+
+        $response->assertRedirect(route('landingPage'));
+    }
+
     public function test_dashboard_shows_real_counts_for_logged_in_user(): void
     {
         $this->activateLicense();

@@ -15,6 +15,14 @@ class HomeController extends Controller
 {
     public function index()
     {
+        // "/" is reachable without a session (it's not behind the auth
+        // middleware group, see routes/web.php) so a guest lands on the
+        // landing page instead of Laravel's default guest redirect to
+        // /login — only a logged-in user actually gets the dashboard below.
+        if (! Auth::check()) {
+            return redirect()->route('landingPage');
+        }
+
         $klienfk = Auth::user()->klienfk;
 
         $patientsToday = DaftarPasien::where('klienfk', $klienfk)
@@ -29,7 +37,7 @@ class HomeController extends Controller
 
         $productIds = Product::where('klienfk', $klienfk)->pluck('id');
         $balances = app(ProductQtyHelper::class)->getBalancesByProducts($productIds->toArray());
-        $outOfStockCount = count(array_filter($balances, fn($qty) => $qty <= 0));
+        $outOfStockCount = count(array_filter($balances, fn ($qty) => $qty <= 0));
 
         return view('menu', [
             'patientsToday' => $patientsToday,

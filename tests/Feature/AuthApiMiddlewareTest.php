@@ -51,9 +51,10 @@ class AuthApiMiddlewareTest extends TestCase
 
         $response = $this->get('/');
 
-        // Gate bypassed -> falls through to the normal `auth` middleware,
-        // which redirects an unauthenticated request to login, not license.
-        $response->assertRedirect(route('login'));
+        // Gate bypassed -> "/" is reachable without a session (it's outside
+        // the `auth` middleware group), so HomeController::index() sends a
+        // guest to the landing page itself rather than straight to login.
+        $response->assertRedirect(route('landingPage'));
     }
 
     public function test_does_not_call_remote_endpoint_when_last_checked_recently(): void
@@ -69,7 +70,7 @@ class AuthApiMiddlewareTest extends TestCase
         $response = $this->get('/');
 
         Http::assertNothingSent();
-        $response->assertRedirect(route('login'));
+        $response->assertRedirect(route('landingPage'));
     }
 
     public function test_calls_remote_endpoint_when_never_checked_before(): void
@@ -87,7 +88,7 @@ class AuthApiMiddlewareTest extends TestCase
         $response = $this->get('/');
 
         Http::assertSentCount(1);
-        $response->assertRedirect(route('login'));
+        $response->assertRedirect(route('landingPage'));
     }
 
     public function test_redirects_to_license_when_valid_until_has_expired(): void
