@@ -29,7 +29,7 @@ class HomeController extends Controller
 
         $productIds = Product::where('klienfk', $klienfk)->pluck('id');
         $balances = app(ProductQtyHelper::class)->getBalancesByProducts($productIds->toArray());
-        $outOfStockCount = count(array_filter($balances, fn ($qty) => $qty <= 0));
+        $outOfStockCount = count(array_filter($balances, fn($qty) => $qty <= 0));
 
         return view('menu', [
             'patientsToday' => $patientsToday,
@@ -38,6 +38,11 @@ class HomeController extends Controller
             'revenueChartLabels' => $revenueChart->pluck('label'),
             'revenueChartValues' => $revenueChart->pluck('total'),
         ]);
+    }
+
+    public function landingPage()
+    {
+        return view('landing');
     }
 
     private function signedRevenueQuery(int $klienfk)

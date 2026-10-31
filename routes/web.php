@@ -95,7 +95,7 @@ Route::get('_ops/storage-link', function () {
     // beberapa hosting disable symlink()
     $ok = symlink($target, $link);
 
-    if (! $ok) {
+    if (!$ok) {
         return response()->json([
             'ok' => false,
             'message' => 'symlink() gagal (mungkin diblok hosting). Buat manual lewat file manager/ssh.',
@@ -108,6 +108,7 @@ Route::get('_ops/storage-link', function () {
 })->middleware('throttle:5,10');
 
 // Group By Auth
+Route::get('i', [HomeController::class, 'landingPage'])->name('landingPage');
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::post('menu', [HomeController::class, 'menu']);

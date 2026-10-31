@@ -5,11 +5,11 @@
 Aplikasi manajemen klinik berbasis web (Laravel 12), mencakup pendaftaran pasien, rekam medis, billing, farmasi/POS, payroll, booking dokter, hingga layanan rumah sakit dasar (IGD/Lab/Radiologi/Rawat Inap) dan portal pasien mandiri.
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=FR2ZpC3pr58" target="_blank">
-    <img src="https://img.youtube.com/vi/FR2ZpC3pr58/hqdefault.jpg" alt="Video Demo Jivident" width="560">
+  <a href="https://www.youtube.com/watch?v=cBc9dCsd9mc" target="_blank">
+    <img src="https://img.youtube.com/vi/cBc9dCsd9mc/hqdefault.jpg" alt="Video Demo Jivident" width="560">
   </a>
   <br>
-  <a href="https://www.youtube.com/watch?v=FR2ZpC3pr58" target="_blank"><strong>▶️ Tonton Video Demo</strong></a>
+  <a href="https://www.youtube.com/watch?v=cBc9dCsd9mc" target="_blank"><strong>▶️ Tonton Video Demo</strong></a>
 </p>
 
 > ## 🔓 Gratis, Tanpa Lisensi — Mode Self-Hosted
