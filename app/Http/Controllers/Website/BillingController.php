@@ -194,7 +194,7 @@ class BillingController extends Controller
         DB::beginTransaction();
         try {
             $transaction = new TransactionHelper();
-            $daftarPasien = DaftarPasien::select('noregistrasi', 'status')
+            $daftarPasien = DaftarPasien::select('noregistrasi', 'status', 'statuspembayaran')
                 ->where('id', $validated['fk_daftarpasien'])
                 ->where('klienfk', Auth::user()->klienfk ?? 1)
                 ->first();
@@ -203,8 +203,15 @@ class BillingController extends Controller
                 throw new InvalidArgumentException("Daftar Pasien tidak ditemukan");
             }
 
-            if (($daftarPasien->status ?? null) == 'Selesai') { // atau payment_status, pilih salah satu
-                throw new InvalidArgumentException("Tidak bisa transaksi karena sudah diselesaikan: BC");
+            // `status == 'Selesai'` dulunya dipakai sebagai proxy "sudah
+            // lunas" (pemeriksaan hanya bisa jadi Selesai setelah lunas).
+            // Sekarang status Selesai menandai pemeriksaan selesai secara
+            // klinis saja, independen dari pembayaran (lihat
+            // PemeriksaanController::updateStatus()) — jadi guard ini cek
+            // statuspembayaran langsung, supaya kasir tetap bisa mencatat
+            // pembayaran atas kunjungan yang sudah selesai tapi belum lunas.
+            if (($daftarPasien->statuspembayaran ?? null) == 'Lunas') {
+                throw new InvalidArgumentException("Tidak bisa transaksi karena tagihan ini sudah lunas");
             }
             Log::channel('user_actions')->info("User " . Auth::id() . " melakukan transaksi pembayaran {$daftarPasien->noregistrasi}");
             // Gunakan DB Transaction agar jika terjadi error di tengah jalan, data akan di-rollback

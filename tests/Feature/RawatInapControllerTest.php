@@ -6,6 +6,7 @@ use App\Models\DaftarPasien;
 use App\Models\Kamar;
 use App\Models\Module;
 use App\Models\Patient;
+use App\Models\RuanganInap;
 use App\Models\Serial;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -163,5 +164,60 @@ class RawatInapControllerTest extends TestCase
 
         $response->assertStatus(400);
         $this->assertDatabaseHas('m_kamar', ['id' => $kamar->id, 'deleted_at' => null]);
+    }
+
+    public function test_can_create_a_room_with_several_beds_via_http(): void
+    {
+        $user = $this->authorizedUser();
+
+        $response = $this->actingAs($user)->post('/rawat-inap/saveRuangan', [
+            'nama' => 'Ruang Mawar', 'kelas' => 'Kelas 1', 'tarif_per_hari' => 150000, 'jumlah_ranjang' => 3,
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('m_ruangan_inap', ['nama' => 'Ruang Mawar', 'klienfk' => $user->klienfk]);
+        $this->assertDatabaseCount('m_kamar', 3);
+    }
+
+    public function test_get_ruangan_list_reports_occupant_for_a_terisi_bed(): void
+    {
+        $user = $this->authorizedUser();
+        $daftar = $this->makeDaftarPasien($user);
+        $this->actingAs($user)->post('/rawat-inap/saveRuangan', [
+            'nama' => 'Ruang Anggrek', 'tarif_per_hari' => 100000, 'jumlah_ranjang' => 1,
+        ]);
+        $bed = Kamar::where('nama', 'Ruang Anggrek - Ranjang 1')->first();
+
+        $this->actingAs($user)->post('/rawat-inap/admit', [
+            'fk_daftarpasien' => $daftar->id,
+            'fk_kamar' => $bed->id,
+        ]);
+
+        $response = $this->actingAs($user)->post('/rawat-inap/getRuanganList');
+
+        $response->assertOk();
+        $beds = collect($response->json('data'))->firstWhere('nama', 'Ruang Anggrek')['beds'];
+        $this->assertSame('terisi', $beds[0]['status']);
+        $this->assertSame('Pasien RWI Controller', $beds[0]['pasien_nama']);
+    }
+
+    public function test_cannot_delete_a_room_with_an_occupied_bed_via_http(): void
+    {
+        $user = $this->authorizedUser();
+        $daftar = $this->makeDaftarPasien($user);
+        $this->actingAs($user)->post('/rawat-inap/saveRuangan', [
+            'nama' => 'Ruang Dahlia', 'tarif_per_hari' => 100000, 'jumlah_ranjang' => 1,
+        ]);
+        $ruanganId = RuanganInap::where('nama', 'Ruang Dahlia')->first()->id;
+        $bed = Kamar::where('nama', 'Ruang Dahlia - Ranjang 1')->first();
+        $this->actingAs($user)->post('/rawat-inap/admit', [
+            'fk_daftarpasien' => $daftar->id,
+            'fk_kamar' => $bed->id,
+        ]);
+
+        $response = $this->actingAs($user)->post("/rawat-inap/deleteRuangan/{$ruanganId}");
+
+        $response->assertStatus(400);
+        $this->assertDatabaseHas('m_ruangan_inap', ['id' => $ruanganId, 'deleted_at' => null]);
     }
 }

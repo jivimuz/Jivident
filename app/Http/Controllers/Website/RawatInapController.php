@@ -68,6 +68,57 @@ class RawatInapController extends Controller
     }
 
     /**
+     * Rooms with their beds nested underneath, each bed carrying the active
+     * admission's patient name/entry date when occupied — powers the bed
+     * grid visualization (room management card and the admission picker)
+     * without a separate request per bed. Shared with PemeriksaanController's
+     * Rawat Inap tab (same picker, used there for room transfers).
+     */
+    public function getRuanganList()
+    {
+        $data = app(RawatInapHelper::class)->getRuanganListData(Auth::user()->klienfk ?? 1);
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
+    }
+
+    public function saveRuangan(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'nullable|integer',
+            'nama' => 'required|string|max:255',
+            'lantai' => 'nullable|string|max:100',
+            'kelas' => 'nullable|string|max:100',
+            'tarif_per_hari' => 'required|numeric|min:0',
+            'jumlah_ranjang' => 'required|integer|min:1|max:50',
+        ]);
+
+        try {
+            $klienfk = Auth::user()->klienfk ?? 1;
+            $helper = app(RawatInapHelper::class);
+            $data = array_merge($validated, ['klienfk' => $klienfk]);
+
+            $ruangan = ! empty($validated['id'])
+                ? $helper->updateRuangan((int) $validated['id'], $data)
+                : $helper->createRuangan($data);
+
+            return response()->json(['message' => 'success', 'data' => $ruangan], 200);
+        } catch (Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function deleteRuangan($id)
+    {
+        try {
+            app(RawatInapHelper::class)->deleteRuangan((int) $id, Auth::user()->klienfk ?? 1);
+
+            return response()->json(['message' => 'success'], 200);
+        } catch (Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    /**
      * Pencarian kunjungan (DaftarPasien) yang bisa diadmisi — belum punya
      * admisi rawat inap yang masih aktif, dan bukan kunjungan yang sudah
      * selesai/dibatalkan.
@@ -192,6 +243,23 @@ class RawatInapController extends Controller
         }
 
         $data = RawatInapCatatan::where('fk_rawatinap', $id)->orderByDesc('waktu')->get();
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
+    }
+
+    /**
+     * Room-transfer history for an admission — same log PemeriksaanController's
+     * Rawat Inap tab writes to when staff move a patient to a different bed.
+     * Surfaced here too so it's visible from the main admission list, not
+     * only from inside Pemeriksaan.
+     */
+    public function getPindahLog($id)
+    {
+        if (! $this->admissionBelongsToCurrentKlien($id)) {
+            return response()->json(['error' => 'Admisi tidak ditemukan'], 404);
+        }
+
+        $data = app(RawatInapHelper::class)->getPindahLog((int) $id);
 
         return response()->json(['message' => 'success', 'data' => $data], 200);
     }

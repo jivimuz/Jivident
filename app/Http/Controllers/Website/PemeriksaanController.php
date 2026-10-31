@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\RawatInapHelper;
+use App\Helpers\BillingStatusHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\DiagnosaPasien;
@@ -13,11 +15,13 @@ use App\Models\RadiologiPasien;
 use App\Models\Patient;
 use App\Models\PenggunaanProduct;
 use App\Models\Product;
+use App\Models\RawatInap;
 use App\Models\ResepPasien;
 use App\Models\Setting;
 use App\Models\Tindakan;
 use App\Models\TindakanPasien;
 use App\Models\SOAPE;
+use App\Models\User;
 use App\Models\VitalSign;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -65,7 +69,14 @@ class PemeriksaanController extends Controller
             ->leftJoin('m_ruangpraktek', 'm_ruangpraktek.id', '=', 't_daftarpasien.ruanganfk')
             ->where('t_daftarpasien.id', base64_decode(base64_decode($id)))->first();
         if ($data) {
-            return view('pages/pemeriksaan/index', compact('data', 'id'));
+            $admission = RawatInap::with(['kamar.ruangan'])
+                ->where('fk_daftarpasien', $data->id)
+                ->where('klienfk', Auth::user()->klienfk ?? 1)
+                ->where('status', 'dirawat')
+                ->latest('tgl_masuk')
+                ->first();
+
+            return view('pages/pemeriksaan/index', compact('data', 'id', 'admission'));
         }
         return redirect()->back();
     }
@@ -311,6 +322,7 @@ class PemeriksaanController extends Controller
             }
 
             DB::commit(); // sukses → commit
+            app(BillingStatusHelper::class)->refresh($daftarpasienId);
 
             return response()->json(['message' => 'success'], 200);
         } catch (\Throwable $e) {
@@ -340,40 +352,16 @@ class PemeriksaanController extends Controller
             }
 
             if ((int)$request->f == 1) {
-                $pasien->status = 'Payment';
                 $daftarPasienID = ($daftarPasienID === '' || $daftarPasienID === 0) ? null : $daftarPasienID;
 
-                $totalPaid = (float) DB::table('t_transactions')
-                    ->where('daftarpasien_id', $daftarPasienID)
-                    ->selectRaw("COALESCE(SUM(CASE
-                        WHEN transaction_type='in' THEN amount
-                        WHEN transaction_type='out' THEN -amount
-                        ELSE 0 END),0) as total_paid")->whereNull('deleted_at')
-                    ->value('total_paid');
-
-                $tagihanTindakan = (float) DB::table('t_tindakanpasien')
-                    ->where('fk_daftarpasien', $daftarPasienID)
-                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")->whereNull('deleted_at')
-                    ->value('total_amount');
-                $tagihanDiagnosa = (float) DB::table('t_diagnosapasien')
-                    ->where('fk_daftarpasien', $daftarPasienID)
-                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")->whereNull('deleted_at')
-                    ->value('total_amount');
-
-                $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
-
-                $price = (float)($tagihanTindakan ?? 0) + (float)($tagihanDiagnosa ?? 0) + (float) ($registrasi ? $registrasi->value : 50000);
-
-                $newStatus = $this->resolvePaymentStatus($totalPaid, $price,  $pasien->statuspembayaran);
-
-                // Update status kalau berubah
-                if (($pasien->statuspembayaran ?? null) !== $newStatus) {
-
-                    $pasien->statuspembayaran = $newStatus;
-                }
-                if ($newStatus == 'Verifikasi' || $newStatus == 'Lunas') {
-                    $pasien->status = 'Selesai';
-                }
+                // "Selesai" menandai pemeriksaannya sudah ditutup secara
+                // klinis — TIDAK berarti sudah lunas. Status pembayaran
+                // sendiri tetap dihitung & disimpan terpisah di atas
+                // (statuspembayaran), dan itu yang dipakai Billing untuk
+                // menentukan tagihan belum bayar, bukan field `status` ini.
+                // Lihat BillingController::processPaid(), yang mengecek
+                // statuspembayaran, bukan status, sebelum menerima pembayaran.
+                $pasien->status = 'Selesai';
             } else {
                 $pasien->status = 'Di Periksa';
                 $pasien->tgldiperiksa = Carbon::now();
@@ -381,8 +369,31 @@ class PemeriksaanController extends Controller
 
             $pasien->save();
 
+            $admisiDipulangkan = false;
+
+            if ((int) $request->f === 1) {
+                // Menyelesaikan pemeriksaan untuk pasien yang sedang rawat
+                // inap otomatis memulangkannya juga — staf tidak perlu lagi
+                // membuka /rawat-inap terpisah hanya untuk menutup admisi
+                // yang secara klinis sudah beres. Ringkasan pulang dibiarkan
+                // kosong di sini; kalau staf butuh mengisinya, itu tetap bisa
+                // dilakukan lewat tab Rawat Inap/`/rawat-inap` sebelum
+                // menekan Selesaikan.
+                $admisiAktif = RawatInap::where('fk_daftarpasien', $daftarPasienID)
+                    ->where('klienfk', Auth::user()->klienfk ?? 1)
+                    ->where('status', 'dirawat')
+                    ->first();
+                if ($admisiAktif) {
+                    app(RawatInapHelper::class)->discharge($admisiAktif->id);
+                    $admisiDipulangkan = true;
+                }
+
+                app(BillingStatusHelper::class)->refresh($daftarPasienID);
+            }
+
             return response()->json([
-                'message' => 'Status berhasil diperbarui'
+                'message' => 'Status berhasil diperbarui',
+                'admisi_dipulangkan' => $admisiDipulangkan,
             ], 200);
         } catch (\Throwable $e) {
             return response()->json([
@@ -697,6 +708,7 @@ class PemeriksaanController extends Controller
             }
 
             DB::commit();
+            app(BillingStatusHelper::class)->refresh($daftarpasienId);
 
             return response()->json([
                 'success' => true,
@@ -817,6 +829,7 @@ class PemeriksaanController extends Controller
             }
 
             DB::commit();
+            app(BillingStatusHelper::class)->refresh($daftarpasienId);
 
             return response()->json([
                 'message' => 'success',
@@ -968,6 +981,7 @@ class PemeriksaanController extends Controller
                 'fk_dokter_minta' => Auth::id(),
                 'tgl_diminta' => now(),
             ]);
+            app(BillingStatusHelper::class)->refresh($daftarpasienId);
 
             return response()->json(['message' => 'success', 'data' => $order], 200);
         } catch (InvalidArgumentException $e) {
@@ -1013,10 +1027,121 @@ class PemeriksaanController extends Controller
                 'fk_dokter_pengirim' => Auth::id(),
                 'tgl_diminta' => now(),
             ]);
+            app(BillingStatusHelper::class)->refresh($daftarpasienId);
 
             return response()->json(['message' => 'success', 'data' => $order], 200);
         } catch (InvalidArgumentException $e) {
             return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
         }
+    }
+
+    /**
+     * Rawat Inap tab — shows the current/last admission for this visit (if
+     * any) plus its room-transfer history. The actual admit/discharge flow
+     * stays on the dedicated /rawat-inap page; this tab only lets staff move
+     * an already-admitted patient to a different bed mid-stay (e.g. 3 days
+     * in a regular room, then moved to VIP 2 days before discharge) — kept
+     * here rather than on /rawat-inap because that's where staff already
+     * are while rounding on a specific patient.
+     */
+    public function rawatInap($id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klienfk = Auth::user()->klienfk ?? 1;
+
+        $admission = RawatInap::with(['kamar.ruangan'])
+            ->where('fk_daftarpasien', $daftarpasienId)
+            ->where('klienfk', $klienfk)
+            ->orderByDesc('tgl_masuk')
+            ->first();
+
+        $pindahLog = $admission ? app(RawatInapHelper::class)->getPindahLog($admission->id) : collect();
+
+        return view('pages/pemeriksaan/content/rawat_inap', compact('id', 'admission', 'pindahLog'));
+    }
+
+    /**
+     * Room list for the transfer picker — same bed-grid data the dedicated
+     * /rawat-inap page uses, just reachable under this tab's own route so it
+     * stays covered by this group's `checkAccess:DPP` + `verifyDaftarPasienBranch`
+     * instead of requiring the separate `RWI` module.
+     */
+    public function rawatInapRuanganList()
+    {
+        $data = app(RawatInapHelper::class)->getRuanganListData(Auth::user()->klienfk ?? 1);
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
+    }
+
+    public function pindahRuanganRawatInap(Request $request, $id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klienfk = Auth::user()->klienfk ?? 1;
+
+        try {
+            $admission = RawatInap::where('fk_daftarpasien', $daftarpasienId)
+                ->where('klienfk', $klienfk)
+                ->where('status', 'dirawat')
+                ->first();
+
+            if (! $admission) {
+                return response()->json(['error' => 'Tidak ada admisi rawat inap yang aktif untuk kunjungan ini'], 400);
+            }
+
+            app(RawatInapHelper::class)->pindahRuangan($admission->id, [
+                'klienfk' => $klienfk,
+                'fk_kamar_tujuan' => $request->fk_kamar_tujuan,
+                'catatan' => $request->catatan,
+                'fk_userhandler' => Auth::id(),
+            ]);
+
+            return response()->json(['message' => 'success'], 200);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    /**
+     * Admits this visit to rawat inap straight from the Pemeriksaan page —
+     * the patient is already being examined here, so admission happens
+     * where staff already are instead of re-finding the same visit on the
+     * separate /rawat-inap page. `RawatInapHelper::admit()` already rejects
+     * it if this visit has an active admission, so no extra guard needed
+     * here.
+     */
+    public function admitRawatInap(Request $request, $id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+
+        try {
+            $admission = app(RawatInapHelper::class)->admit([
+                'klienfk' => Auth::user()->klienfk ?? 1,
+                'fk_daftarpasien' => $daftarpasienId,
+                'fk_kamar' => $request->fk_kamar,
+                'fk_dokter_penanggungjawab' => $request->fk_dokter_penanggungjawab,
+                'catatan_masuk' => $request->catatan_masuk,
+                'fk_userhandler' => Auth::id(),
+            ]);
+
+            return response()->json(['message' => 'success', 'data' => $admission], 200);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function rawatInapDokterList(Request $request)
+    {
+        $q = $request->params;
+
+        $data = User::select(['m_employee.id', 'm_employee.fullname'])
+            ->join('m_employee', 'm_employee.id', 'm_users.fk_employee')
+            ->where('m_employee.is_pemeriksapasien', 1)
+            ->when($q, function ($query) use ($q) {
+                $query->where('m_employee.fullname', 'like', "%{$q}%");
+            })
+            ->limit(20)
+            ->get();
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
     }
 }

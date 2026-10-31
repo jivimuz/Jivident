@@ -18,7 +18,7 @@
                         <i class="iconoir-fast-arrow-left" style="font-size:20px;"></i>
                     </a> --}}
                     <span class="text-primary fw-bold text-center flex-grow-1" style="font-size:24px;">
-                        Daftar Pasien Sudah Diperiksa
+                        Daftar Pasien Rawat Jalan
                     </span>
                     <div style="width:45px;"></div> <!-- spacer biar teks tetap di tengah -->
                 </div>

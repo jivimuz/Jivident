@@ -108,7 +108,7 @@ class TransactionHelperTest extends TestCase
         ]);
     }
 
-    public function test_full_payment_marks_verifikasi_and_completes_visit(): void
+    public function test_full_payment_marks_verifikasi_without_touching_visit_status(): void
     {
         $daftarPasien = $this->makeDaftarPasien();
 
@@ -132,8 +132,11 @@ class TransactionHelperTest extends TestCase
 
         $daftarPasien->refresh();
 
+        // Status pembayaran dan status kunjungan independen — lunas tidak
+        // otomatis menandai kunjungan "Selesai" (itu cuma terjadi lewat
+        // PemeriksaanController::updateStatus() saat pemeriksaan ditutup).
         $this->assertSame('Verifikasi', $daftarPasien->statuspembayaran);
-        $this->assertSame('Selesai', $daftarPasien->status);
+        $this->assertSame('Dalam Antrian', $daftarPasien->status);
         $this->assertDatabaseHas('t_billingtransactions', [
             'daftarpasien_id' => $daftarPasien->id,
             'amount' => 100000,

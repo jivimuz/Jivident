@@ -13,4 +13,9 @@ class Kamar extends Model
     protected $table = 'm_kamar';
 
     protected $guarded = ['id'];
+
+    public function ruangan()
+    {
+        return $this->belongsTo(RuanganInap::class, 'fk_ruangan');
+    }
 }

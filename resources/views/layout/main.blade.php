@@ -40,9 +40,8 @@
         @include('layout/footer')
     </div>
 
+    @yield('script')
 
 </body>
-
-@yield('script')
 
 </html>

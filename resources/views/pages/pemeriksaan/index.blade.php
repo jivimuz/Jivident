@@ -1,6 +1,31 @@
 @extends('layout/main')
 
 @section('style')
+    <style>
+        .clinical-note {
+            background-color: rgba(var(--primary), .08) !important;
+            border-color: rgba(var(--primary), .28) !important;
+            color: rgba(var(--primary-dark), 1);
+        }
+
+        .clinical-note:focus {
+            background-color: rgba(var(--primary), .12) !important;
+            border-color: rgba(var(--primary), .75) !important;
+            box-shadow: 0 0 0 .2rem rgba(var(--primary), .15);
+        }
+
+        .service-info-table th {
+            color: rgba(var(--secondary-dark), 1);
+            font-weight: 500;
+            width: 45%;
+        }
+
+        .service-info-table td,
+        .service-info-table th {
+            padding: .35rem 0;
+            vertical-align: top;
+        }
+    </style>
 @endsection
 
 
@@ -55,7 +80,7 @@
                                         <path
                                             d="M11.3194 14.3209C11.1261 14.3219 10.9328 14.2523 10.7838 14.1091L8.86695 12.2656C8.57097 11.9793 8.56795 11.5145 8.86091 11.2262C9.15387 10.9369 9.63207 10.934 9.92906 11.2193L11.3083 12.5451L14.6758 9.22479C14.9698 8.93552 15.448 8.93258 15.744 9.21793C16.041 9.50426 16.044 9.97004 15.751 10.2574L11.8519 14.1022C11.7049 14.2474 11.5127 14.3199 11.3194 14.3209Z"
                                             fill="currentColor"></path>
-                                    </svg> Selesaikan Pemeriksaan
+                                    </svg> Selesaikan
                                 </a>
                             </div>
                         @elseif ($data->status != 'Dalam Antrian' && $data->status != 'Di Periksa')
@@ -117,6 +142,10 @@
                                         class="fa fa-x-ray fa-fw"></i>Radiologi</button>
                             </li>
                             <li class="nav-item">
+                                <button class="nav-link" id="rawatinap" aria-selected="false"><i
+                                        class="iconoir-bed fa-fw"></i>Rawat Inap</button>
+                            </li>
+                            <li class="nav-item">
                                 <button class="nav-link" id="resep" aria-selected="false"><i
                                         class="fa fa-flask fa-fw"></i>Resep Obat</button>
                             </li>
@@ -141,7 +170,7 @@
                                         <img alt="" class="img-fluid "
                                             src="{{ url('/assets/images/avtar/' . ($data->jeniskelamin == 'Perempuan' ? '1.png' : '6.png')) }}">
                                     </div>
-                                    <div>
+                                    <div class="mb-2">
                                         <h6 class="mb-0">
                                             {{ strlen($data->nama) > 20 ? substr($data->nama, 0, 20) . '...' : $data->nama }}
                                         </h6>
@@ -183,12 +212,50 @@
                                 </div>
                             </div>
 
+                            <div class="pt-3 border-b pb-2">
+                                <h6 class="fw-medium mb-2">Informasi Layanan</h6>
+                                <table class="table table-sm table-borderless service-info-table mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th>Jenis Layanan</th>
+                                            <td>
+                                                @if ($admission)
+                                                    <span class="badge bg-primary">Rawat Inap</span>
+                                                @else
+                                                    <span class="badge bg-secondary">Rawat Jalan</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @if ($admission)
+                                            <tr>
+                                                <th>Ruangan</th>
+                                                <td>{{ $admission->kamar?->ruangan?->nama ?? '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Ranjang</th>
+                                                <td>{{ $admission->kamar?->nomor_ranjang ?? ($admission->kamar?->nama ?? '-') }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Masuk Rawat Inap</th>
+                                                <td>{{ $admission->tgl_masuk?->translatedFormat('d M Y, H:i') ?? '-' }}
+                                                </td>
+                                            </tr>
+                                        @else
+                                            <tr>
+                                                <th>Ruang Pemeriksaan</th>
+                                                <td>{{ $data->ruangan ?? '-' }}</td>
+                                            </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
 
                             <form action="<?= url('pemeriksaan/pasien/' . $id . '/updateKeluhan/' . $data->idp) ?>"
                                 class="form-group" id="form-keluhan">
                                 <label class="fw-medium">Keluhan</label>
                                 <div class="input-group mb-3">
-                                    <textarea name="keluhan" class="form-control bg-warning" placeholder="-" id="keluhan" readonly><?= $data->keluhan ?></textarea>
+                                    <textarea name="keluhan" class="form-control clinical-note" placeholder="-" id="keluhan" readonly><?= $data->keluhan ?></textarea>
                                     @if ($data->status == 'Di Periksa')
                                         <div class="input-group-text bg-white">
                                             <div id="div-keluhan-1">
@@ -209,7 +276,7 @@
                                 action="<?= url('pemeriksaan/pasien/' . $id . '/updateAlergi/' . $data->idp) ?>">
                                 <label class="fw-medium">Alergi</label>
                                 <div class="input-group mb-3">
-                                    <textarea name="alergi" class="form-control bg-warning" placeholder="-" id="alergi" readonly><?= $data->alergi ?></textarea>
+                                    <textarea name="alergi" class="form-control clinical-note" placeholder="-" id="alergi" readonly><?= $data->alergi ?></textarea>
                                     @if ($data->status == 'Di Periksa')
                                         <div class="input-group-text bg-white">
                                             <div id="div-alergi-1">
@@ -531,7 +598,9 @@
                             // Jika sukses, tidak perlu enable tombol karena halaman akan reload
                             Toast.fire({
                                 icon: 'success',
-                                title: 'Pemeriksaan diselesaikan 🎉.. '
+                                title: res.admisi_dipulangkan ?
+                                    'Pemeriksaan diselesaikan & pasien rawat inap dipulangkan 🎉' :
+                                    'Pemeriksaan diselesaikan 🎉.. '
                             });
                             location.reload();
                             // history.back()

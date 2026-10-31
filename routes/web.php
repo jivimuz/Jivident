@@ -19,6 +19,7 @@ use App\Http\Controllers\Website\LabController;
 use App\Http\Controllers\Website\ModuleController;
 use App\Http\Controllers\Website\MonitorController;
 use App\Http\Controllers\Website\OdontogramController;
+use App\Http\Controllers\Website\PasienRawatInapController;
 use App\Http\Controllers\Website\PatientController;
 use App\Http\Controllers\Website\PaymentsController;
 use App\Http\Controllers\Website\PayrollController;
@@ -356,6 +357,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('saveKamar', [RawatInapController::class, 'saveKamar']);
         Route::post('deleteKamar/{id}', [RawatInapController::class, 'deleteKamar']);
         Route::post('getAvailableKamar', [RawatInapController::class, 'getAvailableKamar']);
+        Route::post('getRuanganList', [RawatInapController::class, 'getRuanganList']);
+        Route::post('saveRuangan', [RawatInapController::class, 'saveRuangan']);
+        Route::post('deleteRuangan/{id}', [RawatInapController::class, 'deleteRuangan']);
         Route::post('getDaftarPasienOptions', [RawatInapController::class, 'getDaftarPasienOptions']);
         Route::post('getDokterList', [RawatInapController::class, 'getDokterList']);
         Route::post('getAdmissionList', [RawatInapController::class, 'getAdmissionList']);
@@ -363,6 +367,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getBilling/{id}', [RawatInapController::class, 'getBilling']);
         Route::post('discharge/{id}', [RawatInapController::class, 'discharge']);
         Route::post('getCatatanList/{id}', [RawatInapController::class, 'getCatatanList']);
+        Route::post('getPindahLog/{id}', [RawatInapController::class, 'getPindahLog']);
         Route::post('saveCatatan/{id}', [RawatInapController::class, 'saveCatatan']);
     });
 
@@ -379,6 +384,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [RuangTungguController::class, 'index']);
         Route::post('getList', [RuangTungguController::class, 'getList']);
         Route::post('batalkan-pasien', [RuangTungguController::class, 'batalkanPasien']);
+    });
+    Route::middleware(['checkAccess:DPR'])->prefix('pasien-rawat-inap')->group(function () {
+        Route::get('/', [PasienRawatInapController::class, 'index']);
+        Route::post('getList', [PasienRawatInapController::class, 'getList']);
     });
     Route::middleware(['checkAccess:DPP'])->prefix('pemeriksaan')->group(function () {
 
@@ -421,6 +430,12 @@ Route::middleware(['auth'])->group(function () {
 
             Route::post('radiologi', [PemeriksaanController::class, 'radiologi']);
             Route::post('radiologi/save', [PemeriksaanController::class, 'saveRadiologi']);
+
+            Route::post('rawatinap', [PemeriksaanController::class, 'rawatInap']);
+            Route::post('rawatinap/ruanganList', [PemeriksaanController::class, 'rawatInapRuanganList']);
+            Route::post('rawatinap/pindah', [PemeriksaanController::class, 'pindahRuanganRawatInap']);
+            Route::post('rawatinap/admit', [PemeriksaanController::class, 'admitRawatInap']);
+            Route::post('rawatinap/dokterList', [PemeriksaanController::class, 'rawatInapDokterList']);
 
             Route::prefix('odontogram')->group(function () {
                 Route::post('/', [OdontogramController::class, 'index']);

@@ -112,43 +112,7 @@ final class TransactionHelper
                     'created_at' =>  Carbon::now(),
                 ]);
 
-                // Hitung total paid signed (in = +, out = -)
-                // NOTE: kalau transaksi  kamu ada yang bukan pembayaran tapi tetap punya pasien_id,
-                // sebaiknya filter typecode tertentu di sini.
-                $table = $transaction->getTable();
-
-                $totalPaid = (float) DB::table($table)
-                    ->where('daftarpasien_id', $daftarPasienID)
-                    ->selectRaw("COALESCE(SUM(CASE
-                        WHEN transaction_type='in' THEN amount
-                        WHEN transaction_type='out' THEN -amount
-                        ELSE 0 END),0) as total_paid")
-                    ->value('total_paid');
-
-                $tagihanTindakan = (float) DB::table('t_tindakanpasien')
-                    ->where('fk_daftarpasien', $daftarPasienID)
-                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
-                    ->value('total_amount');;
-
-                $tagihanDiagnosa = (float) DB::table('t_diagnosapasien')
-                    ->where('fk_daftarpasien', $daftarPasienID)
-                    ->selectRaw("COALESCE(SUM(amount),0) as total_amount")
-                    ->value('total_amount');
-
-                $registrasi =  Setting::where('parameter', 'patient_registration_price')->first();
-
-                $price = (float)($tagihanTindakan ?? 0) + (float)($tagihanDiagnosa ?? 0) + (float) ($registrasi ? $registrasi->value : 50000);
-
-                $newStatus = $this->resolvePaymentStatus($totalPaid, $price);
-
-                // Update status kalau berubah
-                if (($daftarPasien->statuspembayaran ?? null) !== $newStatus) {
-                    if ($newStatus == 'Verifikasi') {
-                        $daftarPasien->status = 'Selesai';
-                    }
-                    $daftarPasien->statuspembayaran = $newStatus;
-                    $daftarPasien->save();
-                }
+                app(BillingStatusHelper::class)->refresh($daftarPasienID);
             }
 
             return $transaction;
