@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\RawatInapHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\Setting;
@@ -77,5 +78,29 @@ class MonitorController extends Controller
                 ];
             }),
         ]);
+    }
+
+    /**
+     * Public room-occupancy board ("Monitor Ruangan") — same no-login,
+     * ?klienfk=-scoped pattern as antrian() above, for a TV/screen at a
+     * nurse station or corridor showing who's in which bed right now.
+     * Deliberately shows patient name + No. RM per occupied bed (app
+     * owner's explicit choice, not a safer anonymized default) rather than
+     * hiding it behind a click like the staff-only /rawat-inap grid does.
+     */
+    public function ruangan(Request $request)
+    {
+        $klienfk = $request->input('klienfk', 1);
+
+        return view('public/monitor-ruangan', compact('klienfk'));
+    }
+
+    public function roomData(Request $request)
+    {
+        $klienfk = (int) $request->input('klienfk', 1);
+
+        $data = app(RawatInapHelper::class)->getRuanganListData($klienfk);
+
+        return response()->json(['status' => 'ok', 'data' => $data]);
     }
 }

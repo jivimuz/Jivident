@@ -314,7 +314,7 @@ final class RawatInapHelper
      * Rawat Inap tab (the bed-grid picker used for admission AND transfers
      * is the exact same data, just rendered in two different places).
      *
-     * @return array<int, array{id: int, nama: string, kelas: ?string, lantai: ?string, tarif_per_hari: float, beds: array<int, array{id: int, nomor_ranjang: ?int, status: string, pasien_nama: ?string, tgl_masuk: mixed}>}>
+     * @return array<int, array{id: int, nama: string, kelas: ?string, lantai: ?string, tarif_per_hari: float, beds: array<int, array{id: int, nomor_ranjang: ?int, status: string, pasien_nama: ?string, pasien_norm: ?string, tgl_masuk: mixed}>}>
      */
     public function getRuanganListData(int $klienfk): array
     {
@@ -323,7 +323,7 @@ final class RawatInapHelper
             ->orderBy('nama')
             ->get();
 
-        $activeAdmissions = RawatInap::select(['t_rawatinap.fk_kamar', 'm_pasien.nama as pasien_nama', 't_rawatinap.tgl_masuk'])
+        $activeAdmissions = RawatInap::select(['t_rawatinap.fk_kamar', 'm_pasien.nama as pasien_nama', 'm_pasien.norm as pasien_norm', 't_rawatinap.tgl_masuk'])
             ->join('m_pasien', 'm_pasien.id', 't_rawatinap.fk_pasien')
             ->where('t_rawatinap.klienfk', $klienfk)
             ->where('t_rawatinap.status', 'dirawat')
@@ -344,6 +344,7 @@ final class RawatInapHelper
                     'nomor_ranjang' => $bed->nomor_ranjang,
                     'status' => $bed->status,
                     'pasien_nama' => $admission->pasien_nama ?? null,
+                    'pasien_norm' => $admission->pasien_norm ?? null,
                     'tgl_masuk' => $admission->tgl_masuk ?? null,
                 ];
             }),

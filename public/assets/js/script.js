@@ -140,8 +140,12 @@ window.addEventListener("resize", () => {
 
 
 // >>-- 06 Sidebar scroll js --<<
+// Guarded: pages on layout/fullscreen (no navbar) don't have #app-simple-bar
+// at all, and SimpleBar's constructor throws on a null element.
 var myElement = document.getElementById('app-simple-bar');
-new SimpleBar(myElement, { autoHide: true });
+if (myElement) {
+  new SimpleBar(myElement, { autoHide: true });
+}
 
 // Sidebar active class js
 $(function () {
@@ -240,19 +244,24 @@ function myFunction() {
 
 // >>-- 11 Dark mode js --<<
 
-document.querySelector(".header-dark").addEventListener("click", () => {
-  document.querySelector(".sun-logo").classList.toggle("sun");
-  document.querySelector(".moon-logo").classList.toggle("moon");
-  if ($('body').hasClass("dark")) {
-    document.body.classList.remove("dark")
-    document.body.classList.add("light")
-    setLocalStorageItem('theme-mode', 'light')
-  } else {
-    document.body.classList.remove("light")
-    document.body.classList.add("dark")
-    setLocalStorageItem('theme-mode', 'dark')
-  }
-})
+// Guarded: .header-dark (the toggle button) lives in topcontent.blade.php,
+// not present on layout/fullscreen pages.
+var headerDarkEl = document.querySelector(".header-dark");
+if (headerDarkEl) {
+  headerDarkEl.addEventListener("click", () => {
+    document.querySelector(".sun-logo").classList.toggle("sun");
+    document.querySelector(".moon-logo").classList.toggle("moon");
+    if ($('body').hasClass("dark")) {
+      document.body.classList.remove("dark")
+      document.body.classList.add("light")
+      setLocalStorageItem('theme-mode', 'light')
+    } else {
+      document.body.classList.remove("light")
+      document.body.classList.add("dark")
+      setLocalStorageItem('theme-mode', 'dark')
+    }
+  })
+}
 function appendHtml() {
   var div = document.getElementsByClassName('app-wrapper');
   div.innerHTML += '<p>This is some HTML code</p>';

@@ -64,6 +64,8 @@ Route::get('/test', function () {
 Route::prefix('monitor')->group(function () {
     Route::get('antrian', [MonitorController::class, 'antrian']);
     Route::get('currentAntrian', [MonitorController::class, 'currentAntrian']);
+    Route::get('ruangan', [MonitorController::class, 'ruangan']);
+    Route::get('roomData', [MonitorController::class, 'roomData']);
 });
 
 Route::get('_ops/config-cache', function () {

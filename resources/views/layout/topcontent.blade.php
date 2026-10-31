@@ -51,6 +51,12 @@ $searchModules = Module::where('isactive', true)
                             </a>
                         </li>
                         <li>
+                            <a class="dropdown-item" target="_blank" href="{{ url('monitor/ruangan') }}"
+                                target="_blank">
+                                <i class="iconoir-bed pe-1"></i> Monitor Ruangan
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item" href="{{ url('pos') }}">
                                 <i class="iconoir-cart pe-1"></i> Kasir Apotek (POS)
                             </a>
@@ -262,7 +268,8 @@ $searchModules = Module::where('isactive', true)
                                         @empty
                                             <li class="search-list-item">
                                                 <div class="search-list-content">
-                                                    <h6 class="mb-0 text-secondary">Tidak ada menu yang bisa diakses</h6>
+                                                    <h6 class="mb-0 text-secondary">Tidak ada menu yang bisa diakses
+                                                    </h6>
                                                 </div>
                                             </li>
                                         @endforelse
