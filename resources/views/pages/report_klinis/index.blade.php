@@ -125,7 +125,10 @@
             return 'Rp ' + Number(v).toLocaleString('id-ID');
         }
 
-        var chartTrendKunjungan;
+        // `= null`, not a bare declaration — see report/index.blade.php for
+        // why a bare `var chartX;` doesn't reset a stale chart instance on
+        // Turbo revisit (it's a no-op after the first run).
+        var chartTrendKunjungan = null;
 
         function loadTrendKunjungan() {
             $.ajax({

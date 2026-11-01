@@ -48,6 +48,16 @@
 @section('content')
     <div class="content-inner mt-5 py-0">
         <div class="row">
+            {{--
+                Pendaftaran pasien IGD lewat kartu di sini dihilangkan — supaya
+                satu alur, IGD sekarang didaftarkan lewat form pendaftaran
+                pasien yang sama dengan pasien UMUM (register_patient.blade.php),
+                tinggal pilih "Jenis Kunjungan: IGD" di form itu untuk
+                memunculkan pemilih triase. Endpoint IgdController::store()/
+                getPatientList()/getRuanganList() dan route-nya tetap ada
+                (masih dites langsung oleh tests/Feature/IgdControllerTest.php),
+                cuma sudah tidak dipakai dari UI manapun.
+
             <div class="col-md-4 mb-3">
                 <div class="card">
                     <div class="card-header">
@@ -81,12 +91,14 @@
                     </div>
                 </div>
             </div>
+            --}}
 
-            <div class="col-md-8 mb-3">
+            <div class="col-md-12 mb-3">
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Antrian IGD — Diurutkan per Triase</h4>
-                        <small class="text-muted">Merah &gt; Kuning &gt; Hijau &gt; Hitam, bukan urut waktu daftar.</small>
+                        <small class="text-muted">Merah &gt; Kuning &gt; Hijau &gt; Hitam, bukan urut waktu daftar.
+                            Pasien baru didaftarkan lewat menu Pendaftaran Pasien (pilih Jenis Kunjungan: IGD).</small>
                     </div>
                     <div class="card-body">
                         <table class="table table-sm" id="igdQueueTable">
@@ -111,7 +123,6 @@
 
 @section('script')
     <script>
-        var selectedTriase = null;
         var triaseBadgeColor = {
             Merah: '#dc3545',
             Kuning: '#ffc107',
@@ -119,100 +130,9 @@
             Hitam: '#212529'
         };
 
-        $('#igdPasien').select2({
-            ajax: {
-                url: "{{ url('igd/getPatientList') }}",
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                delay: 250,
-                data: function(params) {
-                    return {
-                        params: params.term
-                    };
-                },
-                processResults: function(res) {
-                    return {
-                        results: res.data.map(p => ({
-                            id: p.id,
-                            text: p.norm + ' | ' + p.nama
-                        }))
-                    };
-                }
-            },
-            placeholder: 'Cari nama/No. RM pasien'
-        });
-
-        $('#igdRuangan').select2({
-            ajax: {
-                url: "{{ url('igd/getRuanganList') }}",
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                delay: 250,
-                data: function(params) {
-                    return {
-                        params: params.term
-                    };
-                },
-                processResults: function(res) {
-                    return {
-                        results: res.data.map(r => ({
-                            id: r.id,
-                            text: r.name + ' (' + r.dokter + ')'
-                        }))
-                    };
-                }
-            },
-            placeholder: 'Cari ruangan jaga'
-        });
-
-        $('.triase-btn').on('click', function() {
-            $('.triase-btn').removeClass('selected');
-            $(this).addClass('selected');
-            selectedTriase = $(this).data('triase');
-        });
-
-        $('#igdSubmitBtn').on('click', function() {
-            if (!$('#igdPasien').val() || !$('#igdRuangan').val() || !selectedTriase) {
-                return Toast.fire({
-                    icon: 'warning',
-                    title: 'Pilih pasien, ruangan, dan triase dulu'
-                });
-            }
-            $.ajax({
-                url: "{{ url('igd/store') }}",
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                data: {
-                    pasienfk: $('#igdPasien').val(),
-                    ruanganfk: $('#igdRuangan').val(),
-                    triase: selectedTriase,
-                    keluhan: $('#igdKeluhan').val(),
-                },
-                success: function() {
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Pasien terdaftar di antrian IGD'
-                    });
-                    $('#igdPasien,#igdRuangan').val(null).trigger('change');
-                    $('#igdKeluhan').val('');
-                    $('.triase-btn').removeClass('selected');
-                    selectedTriase = null;
-                    loadQueue();
-                },
-                error: function(xhr) {
-                    Toast.fire({
-                        icon: 'error',
-                        title: JSON.parse(xhr.responseText).error ?? 'Gagal mendaftarkan'
-                    });
-                }
-            });
-        });
+        // Pendaftaran pasien IGD lewat kartu di halaman ini dihilangkan (lihat
+        // komentar Blade di atas) — select2/submit-handler untuk kartu itu
+        // ikut dihapus di sini.
 
         function ubahTriase(id, current) {
             Swal.fire({

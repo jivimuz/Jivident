@@ -153,7 +153,7 @@
             }
         });
 
-        let table = $('#main-table').DataTable({
+        var table = $('#main-table').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ url('product/getList') }}",
@@ -300,7 +300,7 @@
         });
 
 
-        let isSubmitting = false;
+        var isSubmitting = false;
 
         $('#btnCategory').click(() => {
             $('#modalCategory').modal('show');

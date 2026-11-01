@@ -1,6 +1,38 @@
 @extends('layout/main')
 @section('style')
     <style>
+        .triase-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            color: #fff;
+            text-align: center;
+        }
+
+        .triase-btn.selected {
+            border-color: #000;
+        }
+
+        .triase-merah {
+            background: #dc3545;
+        }
+
+        .triase-kuning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .triase-hijau {
+            background: #198754;
+        }
+
+        .triase-hitam {
+            background: #212529;
+        }
     </style>
 @endsection
 
@@ -141,6 +173,24 @@
                                         <option value="BPJS">BPJS</option>
                                     </select>
                                 </div>
+                                <div class="col-md-4">
+                                    <label>Jenis Kunjungan:*</label>
+                                    <select id="jeniskunjungan" class="form-select" required>
+                                        <option value="UMUM">Umum / Rawat Jalan</option>
+                                        <option value="IGD">IGD (Gawat Darurat)</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-12 d-none" id="triaseWrapper">
+                                    <label>Triase:*</label>
+                                    <input type="hidden" name="triase" id="triase">
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="triase-btn triase-merah" data-triase="Merah">MERAH</button>
+                                        <button type="button" class="triase-btn triase-kuning" data-triase="Kuning">KUNING</button>
+                                        <button type="button" class="triase-btn triase-hijau" data-triase="Hijau">HIJAU</button>
+                                        <button type="button" class="triase-btn triase-hitam" data-triase="Hitam">HITAM</button>
+                                    </div>
+                                </div>
 
                                 <div class="col-md-12">
                                     <label>Keterangan / Keluhan:</label>
@@ -223,10 +273,39 @@
 
             $('#ruanganfk, #tglregistrasi').on('change', resolveDokter);
 
+            // Jenis Kunjungan toggles the triase picker — this is what lets
+            // an IGD visit be registered through this one shared form instead
+            // of IGD's own separate registration card (which is now hidden on
+            // /igd, see igd/index.blade.php).
+            $('#jeniskunjungan').on('change', function() {
+                var isIgd = $(this).val() === 'IGD';
+                $('#triaseWrapper').toggleClass('d-none', !isIgd);
+                if (!isIgd) {
+                    $('.triase-btn').removeClass('selected');
+                    $('#triase').val('');
+                }
+            });
+
+            $('.triase-btn').on('click', function() {
+                $('.triase-btn').removeClass('selected');
+                $(this).addClass('selected');
+                $('#triase').val($(this).data('triase'));
+            });
+
             $('#formPasien').on('submit', function(e) {
                 e.preventDefault();
 
                 if (isSubmitting) return; // cegah spam klik
+
+                if ($('#jeniskunjungan').val() === 'IGD' && !$('#triase').val()) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Triase belum dipilih',
+                        text: 'Pilih salah satu tingkat triase untuk pasien IGD'
+                    });
+                    return;
+                }
+
                 isSubmitting = true;
 
                 Swal.fire({

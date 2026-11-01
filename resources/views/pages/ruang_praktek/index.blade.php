@@ -65,7 +65,7 @@
             $('#editRoom-' + id).addClass('hideThis');
             $('#showedRoom-' + id).removeClass('hideThis');
         }
-        const bgnum = Math.floor(Math.random() * 900000) + 100000;
+        var bgnum = Math.floor(Math.random() * 900000) + 100000;
 
         function getRooms() {
 

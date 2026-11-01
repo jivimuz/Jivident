@@ -340,7 +340,7 @@
             });
         }
 
-        let isSubmittingTransaction = false;
+        var isSubmittingTransaction = false;
 
         async function sendTransaction() {
             // anti-spam: block kalau lagi proses

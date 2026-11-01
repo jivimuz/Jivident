@@ -166,4 +166,57 @@ class PatientRegistrationSharedRoomTest extends TestCase
         $response->assertStatus(400);
         $this->assertDatabaseMissing('t_daftarpasien', ['pasienfk' => $pasien->id]);
     }
+
+    /**
+     * IGD visits are now registered through this same shared form instead of
+     * IgdController::store()'s own separate registration card (hidden from
+     * igd/index.blade.php) — "Jenis Kunjungan: IGD" just adds a `triase`
+     * value to the same payload this test already exercises above.
+     */
+    public function test_can_register_a_visit_with_triase_for_igd(): void
+    {
+        $staff = $this->authorizedUser();
+        $dokter = $this->makeDokter('drg. IGD');
+        $ruangan = RuangPraktek::create(['klienfk' => 1, 'name' => 'Ruang IGD', 'code' => 'IGD']);
+        $pasien = Patient::create(['klienfk' => 1, 'norm' => 'RM-'.uniqid(), 'nik' => '4', 'nama' => 'Pasien IGD']);
+
+        $this->actingAs($staff);
+
+        $id = base64_encode(base64_encode((string) $pasien->id));
+        $response = $this->postJson("/patient/register-patient/{$id}", [
+            'ruanganfk' => $ruangan->id,
+            'dokterfk' => $dokter->id,
+            'tglregistrasi' => Carbon::now()->toDateString().' 09:00',
+            'jenispembayaran' => 'UMUM',
+            'triase' => 'Merah',
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('t_daftarpasien', [
+            'pasienfk' => $pasien->id,
+            'triase' => 'Merah',
+        ]);
+    }
+
+    public function test_registration_rejects_an_invalid_triase_value(): void
+    {
+        $staff = $this->authorizedUser();
+        $dokter = $this->makeDokter('drg. IGD');
+        $ruangan = RuangPraktek::create(['klienfk' => 1, 'name' => 'Ruang IGD', 'code' => 'IGD']);
+        $pasien = Patient::create(['klienfk' => 1, 'norm' => 'RM-'.uniqid(), 'nik' => '5', 'nama' => 'Pasien IGD']);
+
+        $this->actingAs($staff);
+
+        $id = base64_encode(base64_encode((string) $pasien->id));
+        $response = $this->postJson("/patient/register-patient/{$id}", [
+            'ruanganfk' => $ruangan->id,
+            'dokterfk' => $dokter->id,
+            'tglregistrasi' => Carbon::now()->toDateString().' 09:00',
+            'jenispembayaran' => 'UMUM',
+            'triase' => 'Biru',
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseMissing('t_daftarpasien', ['pasienfk' => $pasien->id]);
+    }
 }

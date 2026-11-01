@@ -98,7 +98,17 @@
             return 'Rp ' + Number(v).toLocaleString('id-ID');
         }
 
-        var chartOmset, chartGender, chartUsia;
+        // Explicit `= null` (not a bare declaration) so this line actually
+        // resets the value every time this script re-runs on a Turbo
+        // revisit to this page — a bare `var chartOmset;` only hoists the
+        // binding and has no effect on a second run, leaving these pointed
+        // at chart instances from the *previous* visit whose DOM elements
+        // Turbo already replaced; calling .updateSeries()/.render() on that
+        // stale instance throws, since ApexCharts still holds the old,
+        // now-detached element internally.
+        var chartOmset = null,
+            chartGender = null,
+            chartUsia = null;
 
         function loadOmsetBulanan() {
             $.ajax({

@@ -41,6 +41,7 @@ use App\Http\Controllers\Website\RoleController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
 use App\Http\Controllers\Website\SettingController;
+use App\Http\Controllers\Website\StockOpnameController;
 use App\Http\Controllers\Website\SupplierController;
 use App\Http\Controllers\Website\SuratMandiriController;
 use App\Http\Controllers\Website\TindakanController;
@@ -559,6 +560,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('show/{id}', [SupplierController::class, 'show']);
         Route::post('update/{id}', [SupplierController::class, 'update']);
         Route::post('delete/{id}', [SupplierController::class, 'destroy']);
+    });
+
+    Route::middleware(['checkAccess:SO'])->prefix('stock-opname')->group(function () {
+        Route::get('/', [StockOpnameController::class, 'index']);
+        Route::post('getList', [StockOpnameController::class, 'getList']);
+        Route::post('adjust', [StockOpnameController::class, 'adjust']);
+        Route::post('getHistory', [StockOpnameController::class, 'getHistory']);
     });
 
     Route::middleware(['checkAccess:RO'])->prefix('receive_order')->group(function () {

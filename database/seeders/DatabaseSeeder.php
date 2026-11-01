@@ -36,5 +36,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SatuanProductSeeder::class);
         $this->call(ProductCategoriesSeeder::class);
         $this->call(UnitProductSeeder::class);
+
+        $this->call(MasterDataSeeder::class);
     }
 }

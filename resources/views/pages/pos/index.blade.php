@@ -570,7 +570,14 @@ $icon = str_contains($lower, 'cash') || str_contains($lower, 'tunai')
 @section('script')
     <script>
         var cart = [];
-        var salesTable;
+        // `= null`, not a bare declaration — on a Turbo revisit to this
+        // page, Turbo replaces the modal's #salesTable element with a fresh
+        // one, but a bare `var salesTable;` re-run is a no-op and leaves
+        // this pointed at the *previous* visit's DataTables instance
+        // (bound to the now-destroyed element); the `shown.bs.modal`
+        // handler below then calls `.ajax.reload()`/`.columns.adjust()` on
+        // that stale instance instead of re-initializing, and throws.
+        var salesTable = null;
         var currentTotalNet = 0;
 
         // formatRupiah() itself comes from the shared, data-turbo-permanent

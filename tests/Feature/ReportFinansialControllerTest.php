@@ -17,12 +17,19 @@ use App\Models\Supplier;
 use App\Models\TindakanPasien;
 use App\Models\Transactions;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ReportFinansialControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
 
     private function authorizedUser(): User
     {
@@ -220,6 +227,15 @@ class ReportFinansialControllerTest extends TestCase
 
     public function test_kartu_stok_carries_saldo_awal_and_running_balance(): void
     {
+        // Pinned, not real `now()`: this test builds its fixture dates from
+        // `now()->startOfMonth()->addDays(1)` and expects that to land
+        // *inside* the `[startOfMonth, today]` query range — which collapses
+        // to zero width and pushes that date into the future the moment
+        // "today" itself is the 1st of a month, intermittently failing with
+        // no fixture-code change at all. Pin to a safe mid-month date so the
+        // assertions don't depend on which day it happens to be run.
+        Carbon::setTestNow('2026-06-15');
+
         $user = $this->authorizedUser();
 
         $product = Product::create([

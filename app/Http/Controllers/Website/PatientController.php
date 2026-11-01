@@ -512,6 +512,17 @@ class PatientController extends Controller
                 'message' => 'Pasien sudah mendaftar hari ini'
             ], 400);
         }
+        // Triase is optional — only set when the form's "Jenis Kunjungan" is
+        // IGD. Validated against the same enum IgdController uses, now that
+        // IGD visits are registered through this one shared flow instead of
+        // IgdController::store()'s own separate form (see the "IGD" note in
+        // CLAUDE.md's Hospital-style services section).
+        if ($request->filled('triase')) {
+            $request->validate([
+                'triase' => [Rule::in(['Merah', 'Kuning', 'Hijau', 'Hitam'])],
+            ]);
+        }
+
         $cekstatus = DaftarPasien::select('id')->where('pasienfk', $pasienId)->first();
         $cekAntrian = DaftarPasien::where('ruanganfk', $request->ruanganfk)
             ->whereDate('tglregistrasi', Carbon::parse($request->tglregistrasi)->format('Y-m-d'))
@@ -530,6 +541,7 @@ class PatientController extends Controller
             'tglregistrasi' => Carbon::parse($request->tglregistrasi),
             'statuspasien' => $cekstatus ? 'LAMA' : 'BARU',
             'keluhan' => $request->keluhan,
+            'triase' => $request->filled('triase') ? $request->triase : null,
             'noantrian' => ($ruangan->code ?? 'A') . '-' . sprintf('%003s', ($cekAntrian + 1)),
             'biaya_registrasi' => $registrasi->value ?? 0,
 

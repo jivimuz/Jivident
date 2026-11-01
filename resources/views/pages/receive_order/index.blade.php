@@ -102,7 +102,7 @@
         });
 
 
-        const formatDate = (dateString) => {
+        var formatDate = (dateString) => {
             if (!dateString) return '-';
             const options = {
                 year: 'numeric',
@@ -112,7 +112,7 @@
             return new Date(dateString).toLocaleDateString('id-ID', options);
         };
 
-        const loadData = () => {
+        var loadData = () => {
             let filterData = $('#form-filter').serialize();
             let no = 1;
 
@@ -194,7 +194,7 @@
             });
         };
 
-        const approveRO = (idRO) => {
+        var approveRO = (idRO) => {
 
             Swal.fire({
                 title: 'Apakah Anda Yakin?',
@@ -236,7 +236,7 @@
             });
         };
 
-        const hapusRO = (idRO) => {
+        var hapusRO = (idRO) => {
 
             Swal.fire({
                 title: 'Apakah Anda Yakin?',
