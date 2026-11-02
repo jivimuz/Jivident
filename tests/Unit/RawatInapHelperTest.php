@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Helpers\RawatInapHelper;
+use App\Models\BiayaTambahan;
 use App\Models\DaftarPasien;
 use App\Models\DiagnosaPasien;
 use App\Models\Kamar;
@@ -305,6 +306,9 @@ class RawatInapHelperTest extends TestCase
             'klienfk' => 1, 'pasien_id' => $daftar->pasienfk, 'daftarpasien_id' => $daftar->id, 'type' => 'non-racik',
             'r_num' => 1, 'obat_name' => 'Paracetamol', 'qty' => 10, 'penggunaan_id' => 1, 'subtotal' => 15000,
         ]);
+        BiayaTambahan::create([
+            'klienfk' => 1, 'daftarpasien_id' => $daftar->id, 'nama' => 'Biaya Operasi', 'jumlah' => 25000,
+        ]);
         Transactions::create([
             'klienfk' => 1, 'no_transaction' => 'TRX-RWI-1', 'daftarpasien_id' => $daftar->id,
             'transaction_type' => 'in', 'typecode' => 'BIL', 'amount' => 75000,
@@ -317,9 +321,10 @@ class RawatInapHelperTest extends TestCase
         $this->assertEquals(40000, $billing['biaya_lab']);
         $this->assertEquals(60000, $billing['biaya_radiologi']);
         $this->assertEquals(15000, $billing['biaya_resep']);
-        $this->assertEquals(195000, $billing['total_tagihan']); // 0 kamar + 50k+30k+40k+60k+15k
+        $this->assertEquals(25000, $billing['biaya_lain']);
+        $this->assertEquals(220000, $billing['total_tagihan']); // 0 kamar + 50k+30k+40k+60k+15k+25k
         $this->assertEquals(75000, $billing['total_paid']);
-        $this->assertEquals(120000, $billing['sisa']);
+        $this->assertEquals(145000, $billing['sisa']);
     }
 
     public function test_create_ruangan_generates_one_bed_row_per_jumlah_ranjang(): void

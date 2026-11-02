@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\BiayaTambahan;
 use App\Models\DaftarPasien;
 use App\Models\LabPasien;
 use App\Models\Module;
 use App\Models\Patient;
 use App\Models\RadiologiPasien;
+use App\Models\ResepPasien;
 use App\Models\Serial;
 use App\Models\TindakanPasien;
+use App\Models\Transactions;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -89,6 +92,60 @@ class BillingControllerTest extends TestCase
     }
 
     /**
+     * Regresi: t_reseppasien.subtotal tidak pernah ikut tagihan pasien sama
+     * sekali sebelumnya (FK-nya `daftarpasien_id`, bukan `fk_daftarpasien`
+     * seperti tindakan/diagnosa/lab/radiologi, jadi mudah terlewat).
+     */
+    public function test_get_tagihan_list_includes_resep_charges(): void
+    {
+        $user = $this->authorizedUser();
+        $patient = Patient::create(['klienfk' => $user->klienfk, 'norm' => 'RM092', 'nik' => '4042', 'nama' => 'Pasien Resep']);
+        $daftar = DaftarPasien::create([
+            'klienfk' => $user->klienfk, 'noregistrasi' => 'REG-BIL3', 'ruanganfk' => 1, 'pasienfk' => $patient->id,
+            'tglregistrasi' => now(), 'statuspasien' => 'LAMA', 'status' => 'Di Periksa', 'noantrian' => 'A3',
+            'statuspembayaran' => 'Belum Verifikasi', 'biaya_registrasi' => 0,
+        ]);
+        ResepPasien::create([
+            'klienfk' => $user->klienfk, 'pasien_id' => $patient->id, 'daftarpasien_id' => $daftar->id,
+            'type' => 'non-racik', 'r_num' => 1, 'obat_name' => 'Paracetamol', 'qty' => 10,
+            'harga_satuan' => 2000, 'unit' => 'Tablet', 'penggunaan_id' => 1, 'subtotal' => 20000,
+        ]);
+
+        $response = $this->actingAs($user)->post('/billing/getTagihanList', [
+            'daftarpasien_id' => $daftar->id,
+        ]);
+
+        $response->assertOk();
+        $this->assertCount(1, $response->json('tagihan_resep'));
+        $this->assertEquals(20000, $response->json('tagihan_resep.0.amount'));
+        $this->assertEquals('Paracetamol', $response->json('tagihan_resep.0.nama'));
+    }
+
+    public function test_get_tagihan_list_includes_biaya_tambahan(): void
+    {
+        $user = $this->authorizedUser();
+        $patient = Patient::create(['klienfk' => $user->klienfk, 'norm' => 'RM093', 'nik' => '4043', 'nama' => 'Pasien Biaya Lain']);
+        $daftar = DaftarPasien::create([
+            'klienfk' => $user->klienfk, 'noregistrasi' => 'REG-BIL4', 'ruanganfk' => 1, 'pasienfk' => $patient->id,
+            'tglregistrasi' => now(), 'statuspasien' => 'LAMA', 'status' => 'Di Periksa', 'noantrian' => 'A4',
+            'statuspembayaran' => 'Belum Verifikasi', 'biaya_registrasi' => 0,
+        ]);
+        BiayaTambahan::create([
+            'klienfk' => $user->klienfk, 'daftarpasien_id' => $daftar->id,
+            'nama' => 'Biaya Operasi', 'jumlah' => 750000,
+        ]);
+
+        $response = $this->actingAs($user)->post('/billing/getTagihanList', [
+            'daftarpasien_id' => $daftar->id,
+        ]);
+
+        $response->assertOk();
+        $this->assertCount(1, $response->json('tagihan_lain'));
+        $this->assertEquals(750000, $response->json('tagihan_lain.0.amount'));
+        $this->assertEquals('Biaya Operasi', $response->json('tagihan_lain.0.nama'));
+    }
+
+    /**
      * Regresi audit keamanan: getTagihanList/billingDetail/processPaid tidak
      * pernah men-scope lookup-nya ke klienfk — staf dari cabang lain bisa
      * lihat rincian tagihan, bahkan mencatat pembayaran atas nama cabang lain.
@@ -143,5 +200,75 @@ class BillingControllerTest extends TestCase
         $response->assertStatus(500);
         $this->assertStringContainsString('Daftar Pasien tidak ditemukan', $response->json('message'));
         $this->assertDatabaseMissing('t_transactions', ['daftarpasien_id' => $daftarCabangLain->id]);
+    }
+
+    /**
+     * "Lunas" tidak pernah bisa dicapai lewat alur mana pun sebelumnya —
+     * markLunas() adalah langkah penutupan manual yang disengaja, terpisah
+     * dari processPaid() (lihat catatan di BillingController::markLunas()).
+     */
+    public function test_mark_lunas_closes_a_fully_paid_visit(): void
+    {
+        $user = $this->authorizedUser();
+        $patient = Patient::create(['klienfk' => $user->klienfk, 'norm' => 'RM094', 'nik' => '4044', 'nama' => 'Pasien Lunas']);
+        $daftar = DaftarPasien::create([
+            'klienfk' => $user->klienfk, 'noregistrasi' => 'REG-LUNAS1', 'ruanganfk' => 1, 'pasienfk' => $patient->id,
+            'tglregistrasi' => now(), 'statuspasien' => 'LAMA', 'status' => 'Selesai', 'noantrian' => 'A5',
+            'statuspembayaran' => 'Verifikasi', 'biaya_registrasi' => 20000,
+        ]);
+        Transactions::create([
+            'klienfk' => $user->klienfk, 'no_transaction' => 'TRX-LUNAS1', 'daftarpasien_id' => $daftar->id,
+            'transaction_type' => 'in', 'typecode' => 'BIL', 'amount' => 20000,
+        ]);
+
+        $encodedId = base64_encode(base64_encode((string) $daftar->id));
+        $response = $this->actingAs($user)->post("/billing/mark-lunas/{$encodedId}");
+
+        $response->assertOk();
+        $this->assertDatabaseHas('t_daftarpasien', ['id' => $daftar->id, 'statuspembayaran' => 'Lunas']);
+    }
+
+    public function test_mark_lunas_rejects_a_visit_that_is_not_fully_paid(): void
+    {
+        $user = $this->authorizedUser();
+        $patient = Patient::create(['klienfk' => $user->klienfk, 'norm' => 'RM095', 'nik' => '4045', 'nama' => 'Pasien Belum Lunas']);
+        $daftar = DaftarPasien::create([
+            'klienfk' => $user->klienfk, 'noregistrasi' => 'REG-LUNAS2', 'ruanganfk' => 1, 'pasienfk' => $patient->id,
+            'tglregistrasi' => now(), 'statuspasien' => 'LAMA', 'status' => 'Selesai', 'noantrian' => 'A6',
+            'statuspembayaran' => 'Belum Verifikasi', 'biaya_registrasi' => 20000,
+        ]);
+
+        $encodedId = base64_encode(base64_encode((string) $daftar->id));
+        $response = $this->actingAs($user)->post("/billing/mark-lunas/{$encodedId}");
+
+        $response->assertStatus(400);
+        $this->assertDatabaseHas('t_daftarpasien', ['id' => $daftar->id, 'statuspembayaran' => 'Belum Verifikasi']);
+    }
+
+    public function test_mark_lunas_rejects_a_visit_already_lunas(): void
+    {
+        $user = $this->authorizedUser();
+        $patient = Patient::create(['klienfk' => $user->klienfk, 'norm' => 'RM096', 'nik' => '4046', 'nama' => 'Pasien Sudah Lunas']);
+        $daftar = DaftarPasien::create([
+            'klienfk' => $user->klienfk, 'noregistrasi' => 'REG-LUNAS3', 'ruanganfk' => 1, 'pasienfk' => $patient->id,
+            'tglregistrasi' => now(), 'statuspasien' => 'LAMA', 'status' => 'Selesai', 'noantrian' => 'A7',
+            'statuspembayaran' => 'Lunas', 'biaya_registrasi' => 20000,
+        ]);
+
+        $encodedId = base64_encode(base64_encode((string) $daftar->id));
+        $response = $this->actingAs($user)->post("/billing/mark-lunas/{$encodedId}");
+
+        $response->assertStatus(400);
+    }
+
+    public function test_mark_lunas_rejects_a_visit_from_another_branch(): void
+    {
+        $user = $this->authorizedUser();
+        $daftarCabangLain = $this->makeDaftarPasienInBranch(2, 'REG-LUNAS4');
+        $encodedId = base64_encode(base64_encode((string) $daftarCabangLain->id));
+
+        $response = $this->actingAs($user)->post("/billing/mark-lunas/{$encodedId}");
+
+        $response->assertStatus(404);
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Appointment;
+use App\Models\BiayaTambahan;
 use App\Models\DaftarPasien;
 use App\Models\Employee;
 use App\Models\JadwalDokter;
@@ -202,6 +203,46 @@ class PortalControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Rp 175.000');
+    }
+
+    /**
+     * Regresi: t_reseppasien.subtotal tidak pernah ikut tagihan portal
+     * pasien sama sekali sebelumnya — FK-nya `daftarpasien_id`, bukan
+     * `fk_daftarpasien` seperti tabel tagihan lain di query ini.
+     */
+    public function test_tagihan_includes_resep_charges(): void
+    {
+        $this->activateLicense();
+        $patient = $this->makePatient();
+        $daftar = $this->makeDaftarPasien($patient, ['biaya_registrasi' => 0]);
+
+        ResepPasien::create([
+            'klienfk' => 1, 'pasien_id' => $patient->id, 'daftarpasien_id' => $daftar->id,
+            'type' => 'non-racik', 'r_num' => 1, 'obat_name' => 'Paracetamol', 'qty' => 10,
+            'harga_satuan' => 2000, 'unit' => 'Tablet', 'penggunaan_id' => 1, 'subtotal' => 20000,
+        ]);
+
+        $response = $this->withSession(['portal_patient_id' => $patient->id])->get('/portal/tagihan');
+
+        $response->assertOk();
+        $response->assertSee('Rp 20.000');
+    }
+
+    public function test_tagihan_includes_biaya_tambahan(): void
+    {
+        $this->activateLicense();
+        $patient = $this->makePatient();
+        $daftar = $this->makeDaftarPasien($patient, ['biaya_registrasi' => 0]);
+
+        BiayaTambahan::create([
+            'klienfk' => 1, 'daftarpasien_id' => $daftar->id,
+            'nama' => 'Biaya Operasi', 'jumlah' => 750000,
+        ]);
+
+        $response = $this->withSession(['portal_patient_id' => $patient->id])->get('/portal/tagihan');
+
+        $response->assertOk();
+        $response->assertSee('Rp 750.000');
     }
 
     public function test_resep_lists_prescriptions_for_the_patient(): void

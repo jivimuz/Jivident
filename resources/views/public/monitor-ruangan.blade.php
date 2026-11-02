@@ -259,6 +259,37 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
             font-size: 1.1rem;
         }
 
+        /* Ini monitor publik tanpa orang yang berdiri di depannya buat
+           scroll manual — jadi daftar ruangan di-page (bukan cuma discroll)
+           dan halamannya otomatis berganti sendiri tiap beberapa detik. */
+        .monitor-pager {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 1rem;
+            color: #778;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .monitor-pager .dots {
+            display: flex;
+            gap: .5rem;
+        }
+
+        .monitor-pager .dot-page {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #cfd8e3;
+        }
+
+        .monitor-pager .dot-page.active {
+            background: #29A0B6;
+        }
+
         /* ===== Fokus 1 ruangan, penuh 1 layar ===== */
         #roomFocusOverlay {
             display: none;
@@ -368,6 +399,8 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
         <div id="roomGrid" class="room-grid">
             <div class="empty-state">Memuat data ruangan...</div>
         </div>
+
+        <div id="roomPager" class="monitor-pager"></div>
     </div>
 
     <!-- Fokus 1 ruangan penuh 1 layar — dibuka dengan klik kartu ruangan -->
@@ -382,9 +415,12 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
 
     <script>
         const klienfk = {{ (int) $klienfk }};
+        const ROOMS_PER_PAGE = 6; // sama dengan /rawat-inap punya staf
+        const PAGE_CYCLE_MS = 8000;
         let ruanganCache = [];
         let lantaiAktif = null;
         let focusedRoomId = null;
+        let monitorPage = 1;
 
         function updateClock() {
             const now = new Date();
@@ -417,8 +453,25 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
 
         function pilihLantai(lantai) {
             lantaiAktif = lantai;
+            monitorPage = 1;
             renderLantaiFilter();
             renderRoomGrid();
+        }
+
+        // Tidak ada orang yang berdiri di depan monitor TV ini buat klik
+        // next/prev, jadi pager ini cuma indikator halaman (dot) — perpindahan
+        // halamannya sendiri otomatis lewat setInterval di bawah.
+        function renderPager(totalPages) {
+            const el = document.getElementById('roomPager');
+            if (totalPages <= 1) {
+                el.innerHTML = '';
+                return;
+            }
+            let dots = '';
+            for (let p = 1; p <= totalPages; p++) {
+                dots += `<span class="dot-page ${p === monitorPage ? 'active' : ''}"></span>`;
+            }
+            el.innerHTML = `<span>Halaman ${monitorPage} / ${totalPages}</span><span class="dots">${dots}</span>`;
         }
 
         function bedHtml(bed) {
@@ -449,14 +502,29 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
 
             if (!ruanganCache.length) {
                 grid.innerHTML = '<div class="empty-state">Belum ada ruangan rawat inap yang terdaftar.</div>';
+                document.getElementById('roomPager').innerHTML = '';
                 return;
             }
             if (!roomsToShow.length) {
                 grid.innerHTML = '<div class="empty-state">Tidak ada ruangan yang cocok.</div>';
+                document.getElementById('roomPager').innerHTML = '';
                 return;
             }
 
-            grid.innerHTML = roomsToShow.map(r => `
+            // Monitor ini TV publik tanpa orang yang scroll manual — kalau
+            // semua ruangan dirender sekaligus, ruangan yang tidak muat di
+            // layar (lebih dari yang bisa ditampilkan tanpa scroll) efektif
+            // tidak akan pernah terlihat siapa pun. Jadi di-page per 6
+            // ruangan (sama seperti /rawat-inap punya staf) dan halamannya
+            // bergantian otomatis lewat setInterval, bukan discroll.
+            const totalPages = Math.ceil(roomsToShow.length / ROOMS_PER_PAGE);
+            if (monitorPage > totalPages) monitorPage = 1;
+            if (monitorPage < 1) monitorPage = 1;
+            const roomsHalamanIni = roomsToShow.slice((monitorPage - 1) * ROOMS_PER_PAGE, monitorPage * ROOMS_PER_PAGE);
+
+            renderPager(totalPages);
+
+            grid.innerHTML = roomsHalamanIni.map(r => `
                 <div class="room-card" onclick="openRoomFocus(${r.id})">
                     <div class="room-title">
                         <strong>${r.nama}</strong>
@@ -511,7 +579,20 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                 .catch(() => {});
         }
 
-        document.getElementById('roomSearch').addEventListener('input', renderRoomGrid);
+        document.getElementById('roomSearch').addEventListener('input', function() {
+            monitorPage = 1;
+            renderRoomGrid();
+        });
+
+        // Ganti halaman otomatis — monitor ini tidak ada orang yang klik
+        // next/prev, jadi ini satu-satunya cara ruangan di halaman berikutnya
+        // kebagian tampil. Tidak jalan selagi fokus 1 ruangan sedang dibuka,
+        // supaya tidak berpindah di bawah ruangan yang sedang dilihat orang.
+        setInterval(function() {
+            if (focusedRoomId !== null) return;
+            monitorPage++;
+            renderRoomGrid();
+        }, PAGE_CYCLE_MS);
 
         loadRoomData();
         setInterval(loadRoomData, 15000);

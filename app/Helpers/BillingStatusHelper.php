@@ -19,7 +19,12 @@ final class BillingStatusHelper
             + $this->sum('t_tindakanpasien', 'amount', $daftarPasienId)
             + $this->sum('t_diagnosapasien', 'amount', $daftarPasienId)
             + $this->sum('t_labpasien', 'harga_snapshot', $daftarPasienId)
-            + $this->sum('t_radiologipasien', 'harga_snapshot', $daftarPasienId);
+            + $this->sum('t_radiologipasien', 'harga_snapshot', $daftarPasienId)
+            // t_reseppasien.subtotal sudah termasuk jasa_racik — jangan ditambah terpisah.
+            // Kolom FK-nya `daftarpasien_id`, bukan `fk_daftarpasien` seperti tabel lain.
+            + $this->sum('t_reseppasien', 'subtotal', $daftarPasienId, 'daftarpasien_id')
+            // Biaya manual admin (mis. biaya operasi) — kolom FK-nya juga `daftarpasien_id`.
+            + $this->sum('t_biaya_tambahan', 'jumlah', $daftarPasienId, 'daftarpasien_id');
 
         $totalPaid = (float) DB::table('t_transactions')
             ->where('daftarpasien_id', $daftarPasienId)
@@ -35,10 +40,10 @@ final class BillingStatusHelper
         return $status;
     }
 
-    private function sum(string $table, string $column, int $daftarPasienId): float
+    private function sum(string $table, string $column, int $daftarPasienId, string $fkColumn = 'fk_daftarpasien'): float
     {
         return (float) DB::table($table)
-            ->where('fk_daftarpasien', $daftarPasienId)
+            ->where($fkColumn, $daftarPasienId)
             ->whereNull('deleted_at')
             ->sum($column);
     }

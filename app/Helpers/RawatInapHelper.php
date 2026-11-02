@@ -224,13 +224,15 @@ final class RawatInapHelper
             ->where('fk_daftarpasien', $daftarPasien->id)->whereNull('deleted_at')->sum('harga_snapshot');
         $biayaResep = (float) DB::table('t_reseppasien')
             ->where('daftarpasien_id', $daftarPasien->id)->whereNull('deleted_at')->sum('subtotal');
+        $biayaLain = (float) DB::table('t_biaya_tambahan')
+            ->where('daftarpasien_id', $daftarPasien->id)->whereNull('deleted_at')->sum('jumlah');
 
         $totalPaid = (float) DB::table('t_transactions')
             ->where('daftarpasien_id', $daftarPasien->id)->whereNull('deleted_at')
             ->selectRaw("COALESCE(SUM(CASE WHEN transaction_type = 'in' THEN amount WHEN transaction_type = 'out' THEN -amount ELSE 0 END), 0) as total_paid")
             ->value('total_paid');
 
-        $totalTagihan = (float) $daftarPasien->biaya_registrasi + $biayaKamar + $biayaTindakan + $biayaDiagnosa + $biayaLab + $biayaRadiologi + $biayaResep;
+        $totalTagihan = (float) $daftarPasien->biaya_registrasi + $biayaKamar + $biayaTindakan + $biayaDiagnosa + $biayaLab + $biayaRadiologi + $biayaResep + $biayaLain;
 
         return [
             'jumlah_hari' => $jumlahHari,
@@ -242,6 +244,7 @@ final class RawatInapHelper
             'biaya_lab' => $biayaLab,
             'biaya_radiologi' => $biayaRadiologi,
             'biaya_resep' => $biayaResep,
+            'biaya_lain' => $biayaLain,
             'total_tagihan' => $totalTagihan,
             'total_paid' => $totalPaid,
             'sisa' => $totalTagihan - $totalPaid,

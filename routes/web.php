@@ -4,6 +4,7 @@ use App\Http\Controllers\Website\ActivityLogController;
 use App\Http\Controllers\Website\AntrianController;
 use App\Http\Controllers\Website\AppointmentController;
 use App\Http\Controllers\Website\AuthController;
+use App\Http\Controllers\Website\BiayaTambahanController;
 use App\Http\Controllers\Website\BillingController;
 use App\Http\Controllers\Website\CutiController;
 use App\Http\Controllers\Website\DibatalkanController;
@@ -37,7 +38,9 @@ use App\Http\Controllers\Website\ReceiveOrderController;
 use App\Http\Controllers\Website\ReportController;
 use App\Http\Controllers\Website\ReportFinansialController;
 use App\Http\Controllers\Website\ReportKlinisController;
+use App\Http\Controllers\Website\ResepDispensingController;
 use App\Http\Controllers\Website\RoleController;
+use App\Http\Controllers\Website\RuanganOperasiController;
 use App\Http\Controllers\Website\RuangPraktekController;
 use App\Http\Controllers\Website\RuangTungguController;
 use App\Http\Controllers\Website\SettingController;
@@ -67,6 +70,9 @@ Route::prefix('monitor')->group(function () {
     Route::get('currentAntrian', [MonitorController::class, 'currentAntrian']);
     Route::get('ruangan', [MonitorController::class, 'ruangan']);
     Route::get('roomData', [MonitorController::class, 'roomData']);
+    Route::get('operasi', [MonitorController::class, 'operasi']);
+    Route::get('operasiData', [MonitorController::class, 'operasiData']);
+    Route::get('operasiStatus', [MonitorController::class, 'operasiStatus']);
 });
 
 Route::get('_ops/config-cache', function () {
@@ -383,6 +389,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('saveCatatan/{id}', [RawatInapController::class, 'saveCatatan']);
     });
 
+    Route::middleware(['checkAccess:OK'])->prefix('ruangan-operasi')->group(function () {
+        Route::get('/', [RuanganOperasiController::class, 'index']);
+        Route::post('getList', [RuanganOperasiController::class, 'getList']);
+        Route::post('store', [RuanganOperasiController::class, 'store']);
+        Route::post('update/{id}', [RuanganOperasiController::class, 'update']);
+        Route::post('delete/{id}', [RuanganOperasiController::class, 'destroy']);
+    });
+
     Route::middleware(['checkAccess:IGD'])->prefix('igd')->group(function () {
         Route::get('/', [IgdController::class, 'index']);
         Route::post('getPatientList', [IgdController::class, 'getPatientList']);
@@ -449,6 +463,17 @@ Route::middleware(['auth'])->group(function () {
             Route::post('rawatinap/admit', [PemeriksaanController::class, 'admitRawatInap']);
             Route::post('rawatinap/dokterList', [PemeriksaanController::class, 'rawatInapDokterList']);
 
+            Route::post('operasi', [PemeriksaanController::class, 'operasi']);
+            Route::post('operasi/ruanganList', [PemeriksaanController::class, 'operasiRuanganList']);
+            Route::post('operasi/dokterList', [PemeriksaanController::class, 'operasiDokterList']);
+            Route::post('operasi/save', [PemeriksaanController::class, 'saveOperasi']);
+            Route::post('operasi/status/{jadwalId}', [PemeriksaanController::class, 'updateStatusOperasi']);
+            Route::post('operasi/cancel/{jadwalId}', [PemeriksaanController::class, 'cancelOperasi']);
+
+            Route::post('biayatambahan', [PemeriksaanController::class, 'biayaTambahan']);
+            Route::post('biayatambahan/save', [PemeriksaanController::class, 'saveBiayaTambahan']);
+            Route::post('biayatambahan/delete/{biayaId}', [PemeriksaanController::class, 'deleteBiayaTambahan']);
+
             Route::prefix('odontogram')->group(function () {
                 Route::post('/', [OdontogramController::class, 'index']);
                 Route::post('field', [OdontogramController::class, 'field']);
@@ -488,6 +513,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('detail/{id}', [BillingController::class, 'billingDetail']);
         Route::post('getTagihanList', [BillingController::class, 'getTagihanList']);
         Route::post('process-paid', [BillingController::class, 'processPaid']);
+        Route::post('mark-lunas/{id}', [BillingController::class, 'markLunas']);
+    });
+
+    Route::middleware(['checkAccess:BTM'])->prefix('biaya-tambahan')->group(function () {
+        Route::get('/', [BiayaTambahanController::class, 'index']);
+        Route::post('getList', [BiayaTambahanController::class, 'getList']);
+        Route::post('getDaftarPasienList', [BiayaTambahanController::class, 'getDaftarPasienList']);
+        Route::post('store', [BiayaTambahanController::class, 'store']);
+        Route::post('delete/{id}', [BiayaTambahanController::class, 'destroy']);
     });
 
     Route::middleware(['checkAccess:SRT'])->prefix('surat-mandiri')->group(function () {
@@ -567,6 +601,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getList', [StockOpnameController::class, 'getList']);
         Route::post('adjust', [StockOpnameController::class, 'adjust']);
         Route::post('getHistory', [StockOpnameController::class, 'getHistory']);
+    });
+
+    Route::middleware(['checkAccess:VRS'])->prefix('verifikasi-resep')->group(function () {
+        Route::get('/', [ResepDispensingController::class, 'index']);
+        Route::post('getWorklist', [ResepDispensingController::class, 'getWorklist']);
+        Route::post('detail/{daftarpasienId}', [ResepDispensingController::class, 'detail']);
+        Route::post('dispense/{daftarpasienId}', [ResepDispensingController::class, 'dispense']);
     });
 
     Route::middleware(['checkAccess:RO'])->prefix('receive_order')->group(function () {

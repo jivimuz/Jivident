@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\OperasiHelper;
 use App\Helpers\RawatInapHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
@@ -102,5 +103,45 @@ class MonitorController extends Controller
         $data = app(RawatInapHelper::class)->getRuanganListData($klienfk);
 
         return response()->json(['status' => 'ok', 'data' => $data]);
+    }
+
+    /**
+     * Public operating-room schedule board ("Monitor Operasi") — same
+     * no-login, ?klienfk=-scoped pattern as antrian()/ruangan() above.
+     * Deliberately shows patient name directly on the calendar (app owner's
+     * explicit choice for this board, same call already made for Monitor
+     * Ruangan) rather than hiding it behind a click.
+     */
+    public function operasi(Request $request)
+    {
+        $klienfk = $request->input('klienfk', 1);
+
+        return view('public/monitor-operasi', compact('klienfk'));
+    }
+
+    public function operasiData(Request $request)
+    {
+        $klienfk = (int) $request->input('klienfk', 1);
+        $start = $request->input('start') ?: now()->startOfMonth()->toDateString();
+        $end = $request->input('end') ?: now()->endOfMonth()->toDateString();
+
+        $data = app(OperasiHelper::class)->getCalendarEvents($klienfk, $start, $end);
+
+        return response()->json($data, 200);
+    }
+
+    /**
+     * Per-room current/next case + countdown source — separate from
+     * operasiData() above, which is scoped to whatever date range the
+     * calendar widget happens to be showing (could be a different month
+     * entirely). This always reflects "right now", independent of that.
+     */
+    public function operasiStatus(Request $request)
+    {
+        $klienfk = (int) $request->input('klienfk', 1);
+
+        $data = app(OperasiHelper::class)->getRoomStatuses($klienfk);
+
+        return response()->json(['status' => 'ok', 'data' => $data, 'server_time' => now()->toIso8601String()], 200);
     }
 }

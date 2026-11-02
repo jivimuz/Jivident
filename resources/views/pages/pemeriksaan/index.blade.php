@@ -147,6 +147,14 @@
                                         class="iconoir-bed fa-fw"></i>Rawat Inap</button>
                             </li>
                             <li class="nav-item">
+                                <button class="nav-link" id="operasi" aria-selected="false"><i
+                                        class="iconoir-hospital-circle fa-fw"></i>Operasi</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="biayatambahan" aria-selected="false"><i
+                                        class="iconoir-coins fa-fw"></i>Biaya Tambahan</button>
+                            </li>
+                            <li class="nav-item">
                                 <button class="nav-link" id="resep" aria-selected="false"><i
                                         class="fa fa-flask fa-fw"></i>Resep Obat</button>
                             </li>

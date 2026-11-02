@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\BillingStatusHelper;
 use App\Helpers\TransactionHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
@@ -152,7 +153,7 @@ class BillingController extends Controller
         // ke `biaya_pendaftaran` (kolom yang tidak pernah ada), bikin endpoint
         // ini selalu gagal dengan SQL error "Unknown column" di setiap
         // pemanggilan. Ditemukan & diperbaiki saat menambahkan tagihan lab/radiologi.
-        $registrasi =  DaftarPasien::select('biaya_registrasi')->where('id',  $request->daftarpasien_id)->first();
+        $registrasi =  DaftarPasien::select('biaya_registrasi', 'statuspembayaran')->where('id',  $request->daftarpasien_id)->first();
         $tagihanTindakan =  TindakanPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
         $tagihanDiagnosa =  DiagnosaPasien::where('fk_daftarpasien', $request->daftarpasien_id)->get();
         $tagihanLab = DB::table('t_labpasien')
@@ -161,6 +162,16 @@ class BillingController extends Controller
         $tagihanRadiologi = DB::table('t_radiologipasien')
             ->where('fk_daftarpasien', $request->daftarpasien_id)->whereNull('deleted_at')
             ->select('id', 'jenis_nama as nama', 'harga_snapshot as amount')->get();
+        // FK-nya `daftarpasien_id`, bukan `fk_daftarpasien` seperti tabel tagihan lain —
+        // resep baru ikut ditagihkan di sini, sebelumnya subtotal-nya tidak pernah
+        // masuk ke tagihan pasien sama sekali (lihat BillingStatusHelper::refresh()).
+        $tagihanResep = DB::table('t_reseppasien')
+            ->where('daftarpasien_id', $request->daftarpasien_id)->whereNull('deleted_at')
+            ->selectRaw("id, COALESCE(obat_name, nama_racikan) as nama, subtotal as amount")->get();
+        // Biaya manual admin (mis. biaya operasi) — FK-nya juga `daftarpasien_id`.
+        $tagihanLain = DB::table('t_biaya_tambahan')
+            ->where('daftarpasien_id', $request->daftarpasien_id)->whereNull('deleted_at')
+            ->selectRaw("id, nama, jumlah as amount")->get();
         $totalPaid = (float) DB::table('t_transactions')
             ->where('daftarpasien_id', $request->daftarpasien_id)
             ->selectRaw("COALESCE(SUM(CASE
@@ -175,8 +186,11 @@ class BillingController extends Controller
             'tagihan_diagnosa' => $tagihanDiagnosa,
             'tagihan_lab' => $tagihanLab,
             'tagihan_radiologi' => $tagihanRadiologi,
+            'tagihan_resep' => $tagihanResep,
+            'tagihan_lain' => $tagihanLain,
             'registrasi' => $registrasi ? $registrasi->biaya_registrasi : 0,
             'totalPaid' => $totalPaid ?? 0,
+            'statuspembayaran' => $registrasi->statuspembayaran ?? 'Belum Verifikasi',
         ], 200);
     }
 
@@ -263,5 +277,44 @@ class BillingController extends Controller
                 'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Penutupan manual: "Verifikasi" (tagihan sudah terbayar penuh menurut
+     * sistem) vs "Lunas" (sudah dikonfirmasi/ditutup) sengaja dua langkah
+     * terpisah, bukan otomatis begitu totalPaid >= totalTagihan — supaya ada
+     * titik konfirmasi eksplisit sebelum kunjungan dianggap benar-benar
+     * selesai dibukukan, konsisten dengan nama status "Verifikasi" itu
+     * sendiri yang menyiratkan "menunggu diverifikasi", bukan "sudah pasti
+     * selesai". Dihitung ulang dari BillingStatusHelper::refresh() di sini,
+     * bukan percaya begitu saja pada statuspembayaran yang sudah tersimpan —
+     * kalau ada tindakan/resep baru ditambahkan setelah klik terakhir di
+     * halaman ini, status sekarang bisa sudah tidak lagi "Verifikasi".
+     */
+    public function markLunas($id)
+    {
+        $id = base64_decode(base64_decode($id));
+        $daftarPasien = DaftarPasien::where('id', $id)->where('klienfk', Auth::user()->klienfk ?? 1)->first();
+
+        if (!$daftarPasien) {
+            return response()->json(['status' => 'error', 'message' => 'Daftar Pasien tidak ditemukan'], 404);
+        }
+
+        if ($daftarPasien->statuspembayaran === 'Lunas') {
+            return response()->json(['status' => 'error', 'message' => 'Tagihan ini sudah lunas'], 400);
+        }
+
+        $status = app(BillingStatusHelper::class)->refresh($id);
+        if ($status !== 'Verifikasi') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Tagihan belum terbayar penuh, tidak bisa ditandai lunas',
+            ], 400);
+        }
+
+        $daftarPasien->update(['statuspembayaran' => 'Lunas']);
+        Log::channel('user_actions')->info("User " . Auth::id() . " menandai lunas kunjungan {$daftarPasien->noregistrasi}");
+
+        return response()->json(['status' => 'success', 'message' => 'Tagihan ditandai lunas.'], 200);
     }
 }

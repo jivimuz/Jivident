@@ -57,6 +57,12 @@ $searchModules = Module::where('isactive', true)
                             </a>
                         </li>
                         <li>
+                            <a class="dropdown-item" target="_blank" href="{{ url('monitor/operasi') }}"
+                                target="_blank">
+                                <i class="iconoir-hospital-circle pe-1"></i> Monitor Operasi
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item" href="{{ url('pos') }}">
                                 <i class="iconoir-cart pe-1"></i> Kasir Apotek (POS)
                             </a>

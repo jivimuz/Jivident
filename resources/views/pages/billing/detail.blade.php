@@ -160,6 +160,14 @@
                                 id="btn-submit" disabled>
                                 <i class="iconoir-check-circle"></i> Proses Pembayaran
                             </button>
+
+                            <button type="button" class="btn btn-outline-success btn-lg w-100 rounded-pill fw-bold mt-2 d-none"
+                                id="btn-mark-lunas">
+                                <i class="iconoir-badge-check"></i> Tandai Lunas
+                            </button>
+                            <small class="text-muted d-block text-center mt-1 d-none" id="hint-mark-lunas">
+                                Tagihan sudah terbayar penuh — tandai lunas untuk menutup pembayaran kunjungan ini.
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -199,6 +207,7 @@
             // Setup CSRF Token untuk AJAX
 
             let selisih = 0
+            let currentStatusPembayaran = 'Belum Verifikasi';
             const fk_daftarpasien = $('#fk_daftarpasien').val();
 
             // 1. Ambil Data Tagihan via AJAX
@@ -315,6 +324,46 @@
                             });
                         }
 
+                        if (response.tagihan_resep && response.tagihan_resep.length > 0) {
+                            hasAnyItem = true;
+                            response.tagihan_resep.forEach(function(item) {
+                                totalAll += parseFloat(item.amount) || 0;
+                                html += `
+                                <tr>
+                                    <td>RSP</td>
+                                    <td>
+                                        <input type="hidden" name="tagihan_id[]" value="${item.id}">
+                                        ${item.nama ?? '-'}
+                                    </td>
+                                    <td>-</td>
+                                    <td class="text-center">1</td>
+                                    <td class="text-end text-nowrap">${formatRupiah(item.amount)}</td>
+                                    <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
+                                </tr>
+                            `;
+                            });
+                        }
+
+                        if (response.tagihan_lain && response.tagihan_lain.length > 0) {
+                            hasAnyItem = true;
+                            response.tagihan_lain.forEach(function(item) {
+                                totalAll += parseFloat(item.amount) || 0;
+                                html += `
+                                <tr>
+                                    <td>LAIN</td>
+                                    <td>
+                                        <input type="hidden" name="tagihan_id[]" value="${item.id}">
+                                        ${item.nama ?? '-'}
+                                    </td>
+                                    <td>-</td>
+                                    <td class="text-center">1</td>
+                                    <td class="text-end text-nowrap">${formatRupiah(item.amount)}</td>
+                                    <td class="text-end fw-bold text-primary text-nowrap">${formatRupiah(item.amount)}</td>
+                                </tr>
+                            `;
+                            });
+                        }
+
                         // Baris "Tidak ada tagihan" cuma ditampilkan kalau BENAR-BENAR tidak ada
                         // apa pun (termasuk biaya registrasi) — sebelumnya baris ini mengganti
                         // ($html = ...) seluruh html setiap kali tindakan/diagnosa/lab/radiologi
@@ -333,6 +382,7 @@
                             $('#display-total-dibayar').text(formatRupiah(response.totalPaid));
                         }
 
+                        currentStatusPembayaran = response.statuspembayaran || 'Belum Verifikasi';
 
                         $('#billing-list').html(html);
                         // colspan baris "Tidak ada tagihan"/error sebelumnya 5, padahal header
@@ -386,10 +436,22 @@
 
                 // Aturan Tombol Submit:
                 // Disable jika tidak ada tagihan, ATAU bayarnya masih Rp 0.
-                if (totalTagihan <= 0 || totalBayar === 0 || (totalTagihan - totalDibayar) <= 0) {
+                const sudahLunasPenuh = totalTagihan > 0 && (totalTagihan - totalDibayar) <= 0;
+
+                if (totalTagihan <= 0 || totalBayar === 0 || sudahLunasPenuh) {
                     $('#btn-submit').prop('disabled', true);
                 } else {
                     $('#btn-submit').prop('disabled', false);
+                }
+
+                // "Tandai Lunas" cuma relevan kalau tagihan sudah terbayar penuh
+                // menurut sistem (statuspembayaran "Verifikasi") tapi belum
+                // ditutup — kalau masih ada sisa, atau kalau sudah "Lunas", tombol
+                // ini tidak berguna lagi.
+                if (sudahLunasPenuh && currentStatusPembayaran === 'Verifikasi') {
+                    $('#btn-mark-lunas, #hint-mark-lunas').removeClass('d-none');
+                } else {
+                    $('#btn-mark-lunas, #hint-mark-lunas').addClass('d-none');
                 }
             };
 
@@ -585,6 +647,49 @@
                         });
                         btnSubmit.html(originalText).prop('disabled', false);
                     }
+                });
+            });
+
+            $('#btn-mark-lunas').on('click', function() {
+                let btn = $(this);
+
+                Swal.fire({
+                    icon: 'question',
+                    title: 'Tandai lunas?',
+                    text: 'Kunjungan ini akan ditutup sebagai lunas dan tidak akan muncul lagi di daftar tagihan.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Tandai Lunas',
+                    cancelButtonText: 'Batal'
+                }).then(function(result) {
+                    if (!result.isConfirmed) return;
+
+                    btn.prop('disabled', true);
+
+                    $.ajax({
+                        url: `{{ url('billing/mark-lunas') }}/${btoa(btoa(fk_daftarpasien))}`,
+                        type: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        success: function() {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Tagihan ditandai lunas',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                Turbo.visit("{{ url('billing') }}");
+                            });
+                        },
+                        error: function(xhr) {
+                            btn.prop('disabled', false);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: xhr.responseJSON?.message ?? 'Terjadi kesalahan sistem.',
+                            });
+                        }
+                    });
                 });
             });
 

@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Website;
 
 use App\Helpers\RawatInapHelper;
 use App\Helpers\BillingStatusHelper;
+use App\Helpers\OperasiHelper;
 use App\Http\Controllers\Controller;
+use App\Models\BiayaTambahan;
 use App\Models\DaftarPasien;
 use App\Models\DiagnosaPasien;
 use App\Models\InformedConsent;
+use App\Models\JadwalOperasi;
 use App\Models\JenisPemeriksaanLab;
 use App\Models\JenisPemeriksaanRadiologi;
 use App\Models\LabPasien;
@@ -17,6 +20,7 @@ use App\Models\PenggunaanProduct;
 use App\Models\Product;
 use App\Models\RawatInap;
 use App\Models\ResepPasien;
+use App\Models\RuanganOperasi;
 use App\Models\Setting;
 use App\Models\Tindakan;
 use App\Models\TindakanPasien;
@@ -553,27 +557,6 @@ class PemeriksaanController extends Controller
         ], 200);
     }
 
-
-    protected function resolvePaymentStatus(float $totalPaid, float $price, $statbefore = null): string
-    {
-        if ($price <= 0) {
-            return 'Belum Verifikasi';
-        }
-
-        if ($totalPaid <= 0) {
-            return 'Belum Verifikasi';
-        }
-
-        // Toleransi kecil buat decimal rounding
-        if ($totalPaid + 0.000001 < $price) {
-            return 'Verifikasi Sebagian';
-        }
-        if ($statbefore == 'Lunas') {
-            return 'Lunas';
-        }
-        return 'Verifikasi';
-    }
-
     public function saveOrUpdateResep(Request $request, $id)
     {
         $validated = $request->validate([
@@ -630,12 +613,25 @@ class PemeriksaanController extends Controller
             };
 
             // 1) cek data lama aktif
-            $existingResepIds = DB::table('t_reseppasien')
+            $existingResep = DB::table('t_reseppasien')
                 ->where('pasien_id', $pasienId)
                 ->where('daftarpasien_id', $daftarId)
                 ->whereNull('deleted_at')
-                ->pluck('id')
-                ->toArray();
+                ->get(['id', 'is_processed']);
+
+            // Resep yang sudah diverifikasi & diserahkan farmasi (stok sudah
+            // dipotong lewat ResepDispensingController::dispense()) tidak
+            // boleh ikut kena replace-all di bawah — kalau tidak, draft
+            // "Submit" dokter berikutnya akan soft-delete baris yang stoknya
+            // sudah terpotong, membuat riwayat resep tidak lagi cocok dengan
+            // mutasi stok yang sudah terjadi.
+            if ($existingResep->contains('is_processed', true)) {
+                throw new InvalidArgumentException(
+                    'Resep kunjungan ini sudah diverifikasi & diserahkan oleh farmasi, tidak bisa diubah lagi.'
+                );
+            }
+
+            $existingResepIds = $existingResep->pluck('id')->toArray();
 
             $mode = empty($existingResepIds) ? 'create' : 'update';
 
@@ -721,6 +717,14 @@ class PemeriksaanController extends Controller
                     'reseppasien_ids' => $insertedResepIds,
                 ]
             ], $mode === 'create' ? 201 : 200);
+        } catch (InvalidArgumentException $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => $e->getMessage(),
+            ], 400);
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -1143,5 +1147,233 @@ class PemeriksaanController extends Controller
             ->get();
 
         return response()->json(['message' => 'success', 'data' => $data], 200);
+    }
+
+    /**
+     * Operasi dijadwalkan dari sini (bukan dari halaman tersendiri) — dokter
+     * sudah berada di kunjungan ini sambil memeriksa, sama seperti alasan
+     * admisi Rawat Inap juga dipindah ke tab ini. Yang ditampilkan hanya
+     * jadwal operasi TERBARU milik kunjungan ini (kalau ada) — kalender
+     * penuh semua jadwal ada di Monitor Operasi (publik, read-only).
+     */
+    public function operasi($id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klienfk = Auth::user()->klienfk ?? 1;
+
+        $jadwal = JadwalOperasi::with(['ruangan', 'dokter.employee'])
+            ->where('fk_daftarpasien', $daftarpasienId)
+            ->where('klienfk', $klienfk)
+            ->orderByDesc('tanggal')
+            ->orderByDesc('jam_mulai')
+            ->first();
+
+        return view('pages/pemeriksaan/content/operasi', compact('id', 'jadwal'));
+    }
+
+    public function operasiRuanganList()
+    {
+        $data = RuanganOperasi::where('klienfk', Auth::user()->klienfk ?? 1)
+            ->where('status', 'tersedia')
+            ->orderBy('nama')
+            ->get(['id', 'nama']);
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
+    }
+
+    public function operasiDokterList(Request $request)
+    {
+        $q = $request->params;
+
+        $data = User::select(['m_users.id', 'm_employee.fullname'])
+            ->join('m_employee', 'm_employee.id', 'm_users.fk_employee')
+            ->where('m_employee.is_pemeriksapasien', 1)
+            ->when($q, function ($query) use ($q) {
+                $query->where('m_employee.fullname', 'like', "%{$q}%");
+            })
+            ->limit(20)
+            ->get();
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
+    }
+
+    public function saveOperasi(Request $request, $id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klienfk = Auth::user()->klienfk ?? 1;
+
+        $daftarpasien = DaftarPasien::where('id', $daftarpasienId)->where('klienfk', $klienfk)->first();
+        if (! $daftarpasien) {
+            return response()->json(['message' => 'error', 'error' => 'Daftar Pasien tidak ditemukan'], 404);
+        }
+
+        // Satu kunjungan cukup satu jadwal operasi aktif pada satu waktu —
+        // batalkan/selesaikan yang lama dulu kalau memang mau menjadwalkan
+        // ulang, bukan menumpuk beberapa jadwal aktif untuk kunjungan yang sama.
+        $sudahAdaAktif = JadwalOperasi::where('fk_daftarpasien', $daftarpasienId)
+            ->where('klienfk', $klienfk)
+            ->whereIn('status', ['dijadwalkan', 'berlangsung'])
+            ->exists();
+        if ($sudahAdaAktif) {
+            return response()->json([
+                'message' => 'error',
+                'error' => 'Kunjungan ini sudah punya jadwal operasi aktif',
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'fk_ruangan_operasi' => 'required|integer',
+            'fk_dokter' => 'required|integer',
+            'nama_operasi' => 'required|string|max:255',
+            'tanggal' => 'required|date',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
+            'catatan' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $jadwal = app(OperasiHelper::class)->create(array_merge($validated, [
+                'klienfk' => $klienfk,
+                'fk_pasien' => $daftarpasien->pasienfk,
+                'fk_daftarpasien' => $daftarpasienId,
+            ]));
+
+            return response()->json(['message' => 'success', 'data' => $jadwal], 201);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    /**
+     * $jadwalId bukan bagian dari grup route `pemeriksaan/pasien/{id}` yang
+     * sudah dijaga `verifyDaftarPasienBranch` — itu cuma mengecek `{id}`
+     * (daftarpasien), jadi jadwal operasinya sendiri tetap wajib diverifikasi
+     * di sini: harus milik kunjungan DAN cabang yang sama.
+     */
+    public function updateStatusOperasi(Request $request, $id, $jadwalId)
+    {
+        $jadwal = $this->findJadwalOperasiForVisit($id, $jadwalId);
+        if (! $jadwal) {
+            return response()->json(['message' => 'error', 'error' => 'Jadwal operasi tidak ditemukan'], 404);
+        }
+
+        $validated = $request->validate(['status' => 'required|in:dijadwalkan,berlangsung,selesai']);
+
+        try {
+            app(OperasiHelper::class)->updateStatus($jadwal, $validated['status']);
+
+            return response()->json(['message' => 'success'], 200);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function cancelOperasi($id, $jadwalId)
+    {
+        $jadwal = $this->findJadwalOperasiForVisit($id, $jadwalId);
+        if (! $jadwal) {
+            return response()->json(['message' => 'error', 'error' => 'Jadwal operasi tidak ditemukan'], 404);
+        }
+
+        try {
+            app(OperasiHelper::class)->cancel($jadwal);
+
+            return response()->json(['message' => 'success'], 200);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    private function findJadwalOperasiForVisit($id, $jadwalId): ?JadwalOperasi
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klienfk = Auth::user()->klienfk ?? 1;
+
+        return JadwalOperasi::where('id', $jadwalId)
+            ->where('fk_daftarpasien', $daftarpasienId)
+            ->where('klienfk', $klienfk)
+            ->first();
+    }
+
+    /**
+     * Sama alasannya dengan admisi Rawat Inap/jadwal Operasi di atas — staf
+     * (di sini bisa juga dokter sendiri) sudah berada di kunjungan ini
+     * sambil memeriksa, jadi tidak perlu pindah ke `/biaya-tambahan` dan
+     * mencari pasiennya lagi dari awal. `BiayaTambahanController` yang
+     * berdiri sendiri tetap ada untuk kasus admin menambah biaya ke
+     * kunjungan yang TIDAK sedang dibuka siapa pun di Pemeriksaan.
+     */
+    public function biayaTambahan($id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klienfk = Auth::user()->klienfk ?? 1;
+
+        $biayaList = BiayaTambahan::where('daftarpasien_id', $daftarpasienId)
+            ->where('klienfk', $klienfk)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $daftarpasien = DaftarPasien::find($daftarpasienId);
+        $isLunas = $daftarpasien && $daftarpasien->statuspembayaran === 'Lunas';
+
+        return view('pages/pemeriksaan/content/biaya_tambahan', compact('id', 'biayaList', 'isLunas'));
+    }
+
+    public function saveBiayaTambahan(Request $request, $id)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klienfk = Auth::user()->klienfk ?? 1;
+
+        if (! DaftarPasien::where('id', $daftarpasienId)->where('klienfk', $klienfk)->exists()) {
+            return response()->json(['message' => 'error', 'error' => 'Daftar Pasien tidak ditemukan'], 404);
+        }
+
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
+            'jumlah' => 'required|numeric|min:1',
+            'keterangan' => 'nullable|string|max:1000',
+        ]);
+
+        $biaya = BiayaTambahan::create([
+            'klienfk' => $klienfk,
+            'daftarpasien_id' => $daftarpasienId,
+            'nama' => $validated['nama'],
+            'jumlah' => $validated['jumlah'],
+            'keterangan' => $validated['keterangan'] ?? null,
+            'created_by' => Auth::id(),
+        ]);
+
+        app(BillingStatusHelper::class)->refresh($daftarpasienId);
+
+        return response()->json(['message' => 'success', 'data' => $biaya], 201);
+    }
+
+    public function deleteBiayaTambahan($id, $biayaId)
+    {
+        $daftarpasienId = base64_decode(base64_decode($id));
+        $klienfk = Auth::user()->klienfk ?? 1;
+
+        $biaya = BiayaTambahan::where('id', $biayaId)
+            ->where('daftarpasien_id', $daftarpasienId)
+            ->where('klienfk', $klienfk)
+            ->first();
+
+        if (! $biaya) {
+            return response()->json(['message' => 'error', 'error' => 'Data tidak ditemukan'], 404);
+        }
+
+        $daftarPasien = DaftarPasien::find($daftarpasienId);
+        if ($daftarPasien && $daftarPasien->statuspembayaran === 'Lunas') {
+            return response()->json([
+                'message' => 'error',
+                'error' => 'Tagihan kunjungan ini sudah lunas & ditutup, tidak bisa menghapus biaya lagi',
+            ], 400);
+        }
+
+        $biaya->delete();
+
+        app(BillingStatusHelper::class)->refresh($daftarpasienId);
+
+        return response()->json(['message' => 'success'], 200);
     }
 }

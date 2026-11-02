@@ -46,6 +46,17 @@ class ReportFinansialController extends Controller
             ->selectRaw('fk_daftarpasien, SUM(harga_snapshot) as total_radiologi')
             ->groupBy('fk_daftarpasien');
 
+        // FK-nya `daftarpasien_id`, bukan `fk_daftarpasien` seperti tabel lain di atas.
+        $resepSub = DB::table('t_reseppasien')
+            ->whereNull('deleted_at')
+            ->selectRaw('daftarpasien_id, SUM(subtotal) as total_resep')
+            ->groupBy('daftarpasien_id');
+
+        $biayaLainSub = DB::table('t_biaya_tambahan')
+            ->whereNull('deleted_at')
+            ->selectRaw('daftarpasien_id, SUM(jumlah) as total_lain')
+            ->groupBy('daftarpasien_id');
+
         $paidSub = DB::table('t_transactions')
             ->whereNull('deleted_at')
             ->whereNotNull('daftarpasien_id')
@@ -58,6 +69,8 @@ class ReportFinansialController extends Controller
             ->leftJoinSub($diagnosaSub, 'di', 'di.fk_daftarpasien', '=', 'dp.id')
             ->leftJoinSub($labSub, 'lb', 'lb.fk_daftarpasien', '=', 'dp.id')
             ->leftJoinSub($radiologiSub, 'rd', 'rd.fk_daftarpasien', '=', 'dp.id')
+            ->leftJoinSub($resepSub, 'rs', 'rs.daftarpasien_id', '=', 'dp.id')
+            ->leftJoinSub($biayaLainSub, 'bl', 'bl.daftarpasien_id', '=', 'dp.id')
             ->leftJoinSub($paidSub, 'pay', 'pay.daftarpasien_id', '=', 'dp.id')
             ->where('dp.klienfk', $klienfk)
             ->where('dp.status', '!=', 'Dibatalkan')
@@ -65,7 +78,7 @@ class ReportFinansialController extends Controller
             ->whereDate('dp.tglregistrasi', '>=', $start)
             ->whereDate('dp.tglregistrasi', '<=', $end)
             ->selectRaw('dp.id, dp.noregistrasi, dp.tglregistrasi, dp.statuspembayaran, p.nama as pasien_nama,
-                (dp.biaya_registrasi + COALESCE(ti.total_tindakan, 0) + COALESCE(di.total_diagnosa, 0) + COALESCE(lb.total_lab, 0) + COALESCE(rd.total_radiologi, 0)) as total_tagihan,
+                (dp.biaya_registrasi + COALESCE(ti.total_tindakan, 0) + COALESCE(di.total_diagnosa, 0) + COALESCE(lb.total_lab, 0) + COALESCE(rd.total_radiologi, 0) + COALESCE(rs.total_resep, 0) + COALESCE(bl.total_lain, 0)) as total_tagihan,
                 COALESCE(pay.total_paid, 0) as total_paid')
             ->orderBy('dp.tglregistrasi')
             ->get();
@@ -73,6 +86,14 @@ class ReportFinansialController extends Controller
         $rows->each(function ($row) {
             $row->sisa = (float) $row->total_tagihan - (float) $row->total_paid;
         });
+
+        // `statuspembayaran != 'Lunas'` alone isn't enough to mean "still owed" —
+        // there's currently no flow anywhere in the app that ever actually sets
+        // `statuspembayaran = 'Lunas'` (see CLAUDE.md), so a fully-paid visit sits
+        // forever at 'Verifikasi' and would otherwise show up here as a phantom
+        // Rp 0 receivable. Filter on the computed balance itself instead, which
+        // stays correct regardless of what status label a visit happens to carry.
+        $rows = $rows->filter(fn ($row) => $row->sisa > 0.000001)->values();
 
         return response()->json(['message' => 'success', 'data' => $rows, 'total_piutang' => $rows->sum('sisa')], 200);
     }

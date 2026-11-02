@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\BiayaTambahan;
 use App\Models\BillingTransaction;
 use App\Models\DaftarPasien;
 use App\Models\LabPasien;
@@ -12,6 +13,7 @@ use App\Models\Product;
 use App\Models\ProductQTY;
 use App\Models\RadiologiPasien;
 use App\Models\ReceiveOrder;
+use App\Models\ResepPasien;
 use App\Models\Serial;
 use App\Models\Supplier;
 use App\Models\TindakanPasien;
@@ -159,6 +161,143 @@ class ReportFinansialControllerTest extends TestCase
         $response->assertOk();
         $data = collect($response->json('data'))->firstWhere('noregistrasi', 'REG-002');
         $this->assertEquals(175000, $data['total_tagihan']);
+    }
+
+    /**
+     * Regresi: t_reseppasien.subtotal tidak pernah ikut dihitung sebagai
+     * piutang sama sekali sebelumnya — FK-nya `daftarpasien_id`, bukan
+     * `fk_daftarpasien` seperti tabel tagihan lain di query ini.
+     */
+    public function test_piutang_includes_resep_charges(): void
+    {
+        $user = $this->authorizedUser();
+
+        $patient = Patient::create([
+            'klienfk' => $user->klienfk,
+            'norm' => 'RM012',
+            'nik' => '3335',
+            'nama' => 'Pasien Piutang Resep',
+        ]);
+
+        $daftar = DaftarPasien::create([
+            'klienfk' => $user->klienfk,
+            'noregistrasi' => 'REG-003',
+            'ruanganfk' => 1,
+            'pasienfk' => $patient->id,
+            'tglregistrasi' => now(),
+            'statuspasien' => 'BARU',
+            'status' => 'Selesai',
+            'noantrian' => 'A3',
+            'statuspembayaran' => 'Belum Verifikasi',
+            'biaya_registrasi' => 0,
+        ]);
+
+        ResepPasien::create([
+            'klienfk' => $user->klienfk, 'pasien_id' => $patient->id, 'daftarpasien_id' => $daftar->id,
+            'type' => 'non-racik', 'r_num' => 1, 'obat_name' => 'Amoxicillin', 'qty' => 10,
+            'harga_satuan' => 3000, 'unit' => 'Tablet', 'penggunaan_id' => 1, 'subtotal' => 30000,
+        ]);
+
+        $response = $this->actingAs($user)->post('/report-finansial/getPiutang', [
+            'start_date' => now()->startOfMonth()->toDateString(),
+            'end_date' => now()->toDateString(),
+        ]);
+
+        $response->assertOk();
+        $data = collect($response->json('data'))->firstWhere('noregistrasi', 'REG-003');
+        $this->assertEquals(30000, $data['total_tagihan']);
+    }
+
+    public function test_piutang_includes_biaya_tambahan(): void
+    {
+        $user = $this->authorizedUser();
+
+        $patient = Patient::create([
+            'klienfk' => $user->klienfk,
+            'norm' => 'RM014',
+            'nik' => '3337',
+            'nama' => 'Pasien Piutang Biaya Lain',
+        ]);
+
+        $daftar = DaftarPasien::create([
+            'klienfk' => $user->klienfk,
+            'noregistrasi' => 'REG-005',
+            'ruanganfk' => 1,
+            'pasienfk' => $patient->id,
+            'tglregistrasi' => now(),
+            'statuspasien' => 'BARU',
+            'status' => 'Selesai',
+            'noantrian' => 'A5',
+            'statuspembayaran' => 'Belum Verifikasi',
+            'biaya_registrasi' => 0,
+        ]);
+
+        BiayaTambahan::create([
+            'klienfk' => $user->klienfk, 'daftarpasien_id' => $daftar->id,
+            'nama' => 'Biaya Operasi', 'jumlah' => 750000,
+        ]);
+
+        $response = $this->actingAs($user)->post('/report-finansial/getPiutang', [
+            'start_date' => now()->startOfMonth()->toDateString(),
+            'end_date' => now()->toDateString(),
+        ]);
+
+        $response->assertOk();
+        $data = collect($response->json('data'))->firstWhere('noregistrasi', 'REG-005');
+        $this->assertEquals(750000, $data['total_tagihan']);
+    }
+
+    /**
+     * Regresi: tidak ada satu pun alur di aplikasi ini yang benar-benar
+     * pernah men-set statuspembayaran = 'Lunas' (lihat CLAUDE.md) — jadi
+     * kunjungan yang sudah dibayar lunas selamanya diam di status
+     * "Verifikasi", bukan "Lunas". Sebelum perbaikan ini, getPiutang() cuma
+     * mengecualikan 'Lunas', jadi kunjungan "Verifikasi" (lunas tapi belum
+     * pernah bisa jadi 'Lunas') nyangkut selamanya sebagai piutang Rp 0 di
+     * laporan ini. Sekarang difilter dari sisa riil (total_tagihan -
+     * total_paid), bukan dari label status.
+     */
+    public function test_piutang_excludes_a_visit_that_is_already_fully_paid(): void
+    {
+        $user = $this->authorizedUser();
+
+        $patient = Patient::create([
+            'klienfk' => $user->klienfk,
+            'norm' => 'RM013',
+            'nik' => '3336',
+            'nama' => 'Pasien Lunas',
+        ]);
+
+        $daftar = DaftarPasien::create([
+            'klienfk' => $user->klienfk,
+            'noregistrasi' => 'REG-004',
+            'ruanganfk' => 1,
+            'pasienfk' => $patient->id,
+            'tglregistrasi' => now(),
+            'statuspasien' => 'BARU',
+            'status' => 'Selesai',
+            'noantrian' => 'A4',
+            'statuspembayaran' => 'Verifikasi',
+            'biaya_registrasi' => 20000,
+        ]);
+
+        Transactions::create([
+            'klienfk' => $user->klienfk,
+            'no_transaction' => 'TRX-P4',
+            'daftarpasien_id' => $daftar->id,
+            'transaction_type' => 'in',
+            'typecode' => 'BIL',
+            'amount' => 20000,
+        ]);
+
+        $response = $this->actingAs($user)->post('/report-finansial/getPiutang', [
+            'start_date' => now()->startOfMonth()->toDateString(),
+            'end_date' => now()->toDateString(),
+        ]);
+
+        $response->assertOk();
+        $noregistrasi = collect($response->json('data'))->pluck('noregistrasi');
+        $this->assertFalse($noregistrasi->contains('REG-004'));
     }
 
     public function test_rekap_pembayaran_groups_billing_transactions_by_method(): void

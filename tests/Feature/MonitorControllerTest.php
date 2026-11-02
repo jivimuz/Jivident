@@ -4,10 +4,14 @@ namespace Tests\Feature;
 
 use App\Helpers\RawatInapHelper;
 use App\Models\DaftarPasien;
+use App\Models\JadwalOperasi;
 use App\Models\Kamar;
 use App\Models\Patient;
 use App\Models\RuanganInap;
+use App\Models\RuanganOperasi;
 use App\Models\Serial;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -165,5 +169,67 @@ class MonitorControllerTest extends TestCase
         $response->assertOk();
         $response->assertJsonFragment(['pasien_nama' => 'Pasien Cabang Satu']);
         $response->assertJsonMissing(['pasien_nama' => 'Pasien Cabang Dua']);
+    }
+
+    public function test_operasi_page_renders_without_login(): void
+    {
+        $this->activateLicense();
+
+        $response = $this->get('/monitor/operasi?klienfk=1');
+
+        $response->assertOk();
+        $response->assertSee('Monitor Operasi');
+    }
+
+    public function test_operasi_data_only_shows_the_requested_branch(): void
+    {
+        $this->activateLicense();
+
+        $ruangan1 = RuanganOperasi::create(['klienfk' => 1, 'nama' => 'OK 1', 'status' => 'tersedia']);
+        $patient1 = Patient::create(['klienfk' => 1, 'norm' => 'RM-OP1', 'nik' => '1', 'nama' => 'Pasien Operasi Satu']);
+        $dokter1 = User::first();
+        JadwalOperasi::create([
+            'klienfk' => 1, 'fk_ruangan_operasi' => $ruangan1->id, 'fk_pasien' => $patient1->id,
+            'fk_dokter' => $dokter1->id, 'nama_operasi' => 'Operasi Cabang Satu',
+            'tanggal' => '2026-06-10', 'jam_mulai' => '09:00', 'jam_selesai' => '10:00', 'status' => 'dijadwalkan',
+        ]);
+
+        $ruangan2 = RuanganOperasi::create(['klienfk' => 2, 'nama' => 'OK 2', 'status' => 'tersedia']);
+        $patient2 = Patient::create(['klienfk' => 2, 'norm' => 'RM-OP2', 'nik' => '2', 'nama' => 'Pasien Operasi Dua']);
+        JadwalOperasi::create([
+            'klienfk' => 2, 'fk_ruangan_operasi' => $ruangan2->id, 'fk_pasien' => $patient2->id,
+            'fk_dokter' => $dokter1->id, 'nama_operasi' => 'Operasi Cabang Dua',
+            'tanggal' => '2026-06-10', 'jam_mulai' => '09:00', 'jam_selesai' => '10:00', 'status' => 'dijadwalkan',
+        ]);
+
+        $response = $this->get('/monitor/operasiData?klienfk=1&start=2026-06-01&end=2026-06-30');
+
+        $response->assertOk();
+        $titles = collect($response->json())->pluck('title')->implode(' | ');
+        $this->assertStringContainsString('Pasien Operasi Satu', $titles);
+        $this->assertStringNotContainsString('Pasien Operasi Dua', $titles);
+    }
+
+    public function test_operasi_status_reports_the_in_progress_case_per_room(): void
+    {
+        $this->activateLicense();
+        Carbon::setTestNow('2026-06-10 10:00:00');
+
+        $ruangan = RuanganOperasi::create(['klienfk' => 1, 'nama' => 'OK Status', 'status' => 'tersedia']);
+        $patient = Patient::create(['klienfk' => 1, 'norm' => 'RM-OPS1', 'nik' => '9', 'nama' => 'Pasien Sedang Operasi']);
+        JadwalOperasi::create([
+            'klienfk' => 1, 'fk_ruangan_operasi' => $ruangan->id, 'fk_pasien' => $patient->id,
+            'fk_dokter' => User::first()->id, 'nama_operasi' => 'Operasi Berjalan',
+            'tanggal' => '2026-06-10', 'jam_mulai' => '09:00', 'jam_selesai' => '11:00', 'status' => 'berlangsung',
+        ]);
+
+        $response = $this->get('/monitor/operasiStatus?klienfk=1');
+
+        $response->assertOk();
+        $row = collect($response->json('data'))->firstWhere('id', $ruangan->id);
+        $this->assertSame('Pasien Sedang Operasi', $row['current']['pasien']);
+        $this->assertNull($row['next']);
+
+        Carbon::setTestNow();
     }
 }

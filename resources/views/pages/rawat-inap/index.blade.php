@@ -886,6 +886,7 @@
                         <tr><td>Lab</td><td class="text-end">${formatRupiahRWI(b.biaya_lab)}</td></tr>
                         <tr><td>Radiologi</td><td class="text-end">${formatRupiahRWI(b.biaya_radiologi)}</td></tr>
                         <tr><td>Resep</td><td class="text-end">${formatRupiahRWI(b.biaya_resep)}</td></tr>
+                        <tr><td>Biaya Lain-lain</td><td class="text-end">${formatRupiahRWI(b.biaya_lain)}</td></tr>
                         <tr class="fw-bold"><td>Total Tagihan</td><td class="text-end">${formatRupiahRWI(b.total_tagihan)}</td></tr>
                         <tr><td>Sudah Dibayar</td><td class="text-end">${formatRupiahRWI(b.total_paid)}</td></tr>
                         <tr class="fw-bold text-danger"><td>Sisa</td><td class="text-end">${formatRupiahRWI(b.sisa)}</td></tr>
