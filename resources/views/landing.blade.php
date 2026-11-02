@@ -15,9 +15,10 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
 // the original Indonesian copy — scoped to this page only, not the rest of
 // the app, which stays Indonesian everywhere else.
 $pageTitleEn = 'JiviDent — All-in-One Clinic & Dental Practice Management System';
-$pageDescriptionEn = "{$company_name} brings patient registration, queue, medical records, billing, pharmacy, payroll, and a patient portal together in one system — built for how clinics and dental practices in Indonesia actually work.";
-$pageTitleId = 'JiviDent — Sistem Manajemen Klinik & Praktek Dokter Gigi All-in-One';
-$pageDescriptionId = "{$company_name} menyatukan pendaftaran pasien, antrian, rekam medis, billing, farmasi, payroll, hingga portal pasien dalam satu sistem — dibangun untuk cara kerja klinik dan praktek dokter gigi di Indonesia.";
+$pageDescriptionEn = "{$company_name} is a free clinic and dental practice management system in Indonesia for patient registration, queues, medical records, billing, pharmacy, payroll, appointments, inpatient care, reports, and patient portals.";
+$pageTitleId = 'JiviDent — Sistem Manajemen Klinik & Praktik Dokter Gigi Gratis';
+$pageDescriptionId = "{$company_name} adalah sistem manajemen klinik dan praktik dokter gigi gratis di Indonesia untuk pendaftaran pasien, antrian, rekam medis, billing, farmasi, payroll, appointment, rawat inap, laporan, dan portal pasien.";
+$seoKeywords = 'sistem manajemen klinik gratis, software klinik Indonesia, aplikasi klinik gigi, sistem informasi klinik, aplikasi rekam medis, aplikasi billing klinik, software apotek, aplikasi rawat inap, payroll klinik, portal pasien';
 
 $pageTitle = $pageTitleEn;
 $pageDescription = $pageDescriptionEn;
@@ -31,8 +32,11 @@ $canonicalUrl = url()->current();
 
     <title>{{ $pageTitle }}</title>
     <meta name="description" content="{{ $pageDescription }}">
+    <meta name="keywords" content="{{ $seoKeywords }}">
     <meta name="robots" content="index, follow">
     <meta name="author" content="{{ $company_name }}">
+    <meta name="creator" content="Jivi Muzaqi Guntur">
+    <meta name="publisher" content="JiviDent">
     <link rel="canonical" href="{{ $canonicalUrl }}">
     <link href="{{ url('') }}/assets/favicon.ico" rel="icon" type="image/x-icon">
 
@@ -42,8 +46,8 @@ $canonicalUrl = url()->current();
     <meta property="og:description" content="{{ $pageDescription }}">
     <meta property="og:url" content="{{ $canonicalUrl }}">
     <meta property="og:image" content="{{ $logo }}">
-    <meta property="og:locale" content="en_US">
-    <meta property="og:locale:alternate" content="id_ID">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:locale:alternate" content="en_US">
     <meta property="og:site_name" content="{{ $company_name }}">
 
     <!-- Twitter Card -->
@@ -52,20 +56,97 @@ $canonicalUrl = url()->current();
     <meta name="twitter:description" content="{{ $pageDescription }}">
     <meta name="twitter:image" content="{{ $logo }}">
 
-    <!-- Structured data: lets search engines show this as software, not a generic page -->
+    <!-- Structured data: software, organization, website, and FAQ signals -->
     <script type="application/ld+json">
         {!! json_encode([
             '@context' => 'https://schema.org',
-            '@type' => 'SoftwareApplication',
-            'name' => 'JiviDent',
-            'description' => $pageDescription,
-            'applicationCategory' => 'BusinessApplication',
-            'applicationSubCategory' => 'Healthcare Practice Management',
-            'operatingSystem' => 'Web',
-            'url' => $canonicalUrl,
-            'image' => $logo,
-            'inLanguage' => 'en-US',
-        ], JSON_UNESCAPED_SLASHES) !!}
+            '@graph' => [
+                [
+                    '@type' => 'SoftwareApplication',
+                    '@id' => $canonicalUrl . '#software',
+                    'name' => 'JiviDent',
+                    'description' => $pageDescriptionId,
+                    'applicationCategory' => 'BusinessApplication',
+                    'applicationSubCategory' => 'Healthcare Practice Management',
+                    'operatingSystem' => 'Web',
+                    'url' => $canonicalUrl,
+                    'image' => $logo,
+                    'inLanguage' => ['id-ID', 'en-US'],
+                    'isAccessibleForFree' => true,
+                    'offers' => [
+                        '@type' => 'Offer',
+                        'price' => '0',
+                        'priceCurrency' => 'IDR',
+                        'description' => 'Sistem inti gratis. Pengembangan custom dan migrasi database tersedia dengan penawaran terpisah.',
+                    ],
+                    'creator' => ['@id' => $canonicalUrl . '#owner'],
+                ],
+                [
+                    '@type' => 'Person',
+                    '@id' => $canonicalUrl . '#owner',
+                    'name' => 'Jivi Muzaqi Guntur',
+                    'email' => 'mailto:jivirasga@gmail.com',
+                    'jobTitle' => 'Owner JiviDent',
+                    'url' => $canonicalUrl . '#kontak',
+                ],
+                [
+                    '@type' => 'Organization',
+                    '@id' => $canonicalUrl . '#organization',
+                    'name' => 'JiviDent',
+                    'url' => $canonicalUrl,
+                    'logo' => $logo,
+                    'email' => 'mailto:jivirasga@gmail.com',
+                    'founder' => ['@id' => $canonicalUrl . '#owner'],
+                    'contactPoint' => [
+                        '@type' => 'ContactPoint',
+                        'contactType' => 'customer support',
+                        'email' => 'mailto:jivirasga@gmail.com',
+                        'availableLanguage' => ['Indonesian', 'English'],
+                    ],
+                ],
+                [
+                    '@type' => 'WebSite',
+                    '@id' => $canonicalUrl . '#website',
+                    'name' => 'JiviDent',
+                    'url' => $canonicalUrl,
+                    'description' => $pageDescriptionId,
+                    'inLanguage' => ['id-ID', 'en-US'],
+                    'publisher' => ['@id' => $canonicalUrl . '#organization'],
+                ],
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => [
+                [
+                    '@type' => 'Question',
+                    'name' => 'Apakah JiviDent gratis?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'Ya. Sistem inti JiviDent gratis. Biaya hanya berlaku untuk pengembangan custom atau bantuan migrasi database.',
+                    ],
+                ],
+                [
+                    '@type' => 'Question',
+                    'name' => 'Fitur apa saja yang tersedia di JiviDent?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'JiviDent mencakup pendaftaran pasien, antrian, rekam medis, billing, farmasi, POS, stok, jadwal dokter, appointment, rawat inap, payroll, laporan, monitor publik, dan portal pasien.',
+                    ],
+                ],
+                [
+                    '@type' => 'Question',
+                    'name' => 'Bagaimana cara bertanya tentang JiviDent?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'Hubungi owner JiviDent, Jivi Muzaqi Guntur, melalui email jivirasga@gmail.com.',
+                    ],
+                ],
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -88,6 +169,102 @@ $canonicalUrl = url()->current();
             --mint-soft: #E2F3EE;
             --amber: #CF8A2E;
             --amber-soft: #FBF0DC;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .faq-card {
+            padding: 24px;
+            border: 1px solid #E1E5EF;
+            border-radius: 17px;
+            background: #fff;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .faq-card h3 {
+            margin: 0 0 9px;
+            color: var(--ink);
+            font-size: 16px;
+            line-height: 1.35;
+        }
+
+        .faq-card p {
+            margin: 0;
+            color: var(--ink-soft);
+            font-size: 13.5px;
+            line-height: 1.65;
+        }
+
+        .faq-card a {
+            color: var(--indigo);
+            font-weight: 700;
+        }
+
+        .preview-carousel {
+            position: relative;
+        }
+
+        .preview-grid {
+            display: flex;
+            gap: 22px;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            padding: 8px 4px 24px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: thin;
+            scrollbar-color: #B8C2EE transparent;
+        }
+
+        .preview-grid::-webkit-scrollbar {
+            height: 7px;
+        }
+
+        .preview-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .preview-grid::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #B8C2EE;
+        }
+
+        .preview-card {
+            flex: 0 0 min(350px, 82vw);
+            scroll-snap-align: start;
+        }
+
+        .carousel-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin: -35px 0 18px;
+        }
+
+        .carousel-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #D7DDEE;
+            border-radius: 50%;
+            color: var(--indigo-deep);
+            background: #fff;
+            box-shadow: 0 8px 18px rgba(29, 42, 91, .08);
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+            transition: transform .2s ease, background .2s ease, color .2s ease;
+        }
+
+        .carousel-button:hover {
+            color: #fff;
+            background: var(--indigo);
+            transform: translateY(-2px);
         }
 
         * {
@@ -156,6 +333,36 @@ $canonicalUrl = url()->current();
             background: rgba(250, 250, 247, 0.9);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--line);
+        }
+
+        .owner-bar {
+            padding: 9px 0;
+            color: #E8ECFF;
+            background: #101832;
+            font-size: 12.5px;
+        }
+
+        .owner-bar .wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            text-align: center;
+        }
+
+        .owner-bar strong {
+            color: #fff;
+        }
+
+        .owner-bar a {
+            color: #AEB9FF;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .owner-bar a:hover {
+            color: #fff;
+            text-decoration: underline;
         }
 
         .nav .wrap {
@@ -297,10 +504,32 @@ $canonicalUrl = url()->current();
         }
 
         .hero-copy h1 {
-            font-size: 44px;
+            font-size: clamp(42px, 5.2vw, 68px);
             line-height: 1.12;
             margin: 0 0 18px;
             font-weight: 600;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 18px;
+            padding: 7px 12px;
+            border: 1px solid #BCE4D8;
+            border-radius: 999px;
+            color: #14785F;
+            background: var(--mint-soft);
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .eyebrow::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--mint);
         }
 
         .hero-copy p.lead {
@@ -465,6 +694,112 @@ $canonicalUrl = url()->current();
             width: 100%;
             height: 100%;
             border: 0;
+        }
+
+        /* Real product previews */
+        .preview-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 22px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+        }
+
+        .preview-card {
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: var(--paper-raised);
+            box-shadow: 0 8px 24px rgba(29, 34, 48, 0.06);
+        }
+
+        .preview-card img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            object-position: top;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .preview-card-body {
+            padding: 16px 17px 18px;
+        }
+
+        .preview-card h3 {
+            margin: 0 0 5px;
+            font-size: 16px;
+        }
+
+        .preview-card p {
+            margin: 0;
+            color: var(--ink-soft);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .preview-card a {
+            display: inline-block;
+            margin-top: 11px;
+            color: var(--indigo);
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .preview-card a:hover {
+            text-decoration: underline;
+        }
+
+        .pricing-card {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 36px;
+            align-items: center;
+            padding: 34px;
+            border: 1px solid #BCE4D8;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--mint-soft), #fff 62%);
+        }
+
+        .pricing-card h2 {
+            margin: 0 0 9px;
+            font-size: 30px;
+        }
+
+        .pricing-card p {
+            max-width: 57ch;
+            margin: 0;
+            color: var(--ink-soft);
+            font-size: 15px;
+        }
+
+        .pricing-list {
+            display: grid;
+            gap: 9px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .pricing-list li {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .pricing-list li::before {
+            content: '✓';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 50%;
+            color: #fff;
+            background: var(--mint);
+            font-size: 12px;
         }
 
         /* Section scaffolding */
@@ -785,6 +1120,18 @@ $canonicalUrl = url()->current();
             font-family: 'Space Grotesk', sans-serif;
         }
 
+        .footer-contact {
+            margin-top: 5px;
+            color: var(--ink-soft);
+            font-size: 12.5px;
+        }
+
+        .footer-contact a {
+            color: var(--indigo);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
         footer nav {
             display: flex;
             gap: 20px;
@@ -814,7 +1161,9 @@ $canonicalUrl = url()->current();
             }
 
             .strip .wrap,
-            .mini-grid {
+            .mini-grid,
+            .pricing-card,
+            .faq-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -826,19 +1175,600 @@ $canonicalUrl = url()->current();
                 font-size: 32px;
             }
         }
+
+        /* Premium presentation layer */
+        :root {
+            --paper: #F7F8FC;
+            --paper-raised: #FFFFFF;
+            --ink: #11182D;
+            --ink-soft: #66708A;
+            --line: #E5E8F0;
+            --indigo: #5368E8;
+            --indigo-deep: #3648B9;
+            --indigo-soft: #EEF0FF;
+            --mint: #25B58E;
+            --mint-soft: #E7F8F3;
+            --shadow-soft: 0 16px 40px rgba(29, 42, 91, .08);
+            --shadow-card: 0 22px 65px rgba(21, 31, 75, .12);
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 8% 12%, rgba(83, 104, 232, .07), transparent 25rem),
+                var(--paper);
+        }
+
+        .wrap {
+            max-width: 1180px;
+        }
+
+        .nav {
+            background: rgba(247, 248, 252, .82);
+            border-bottom-color: rgba(229, 232, 240, .82);
+            box-shadow: 0 5px 24px rgba(19, 29, 67, .04);
+        }
+
+        .nav .wrap {
+            min-height: 72px;
+        }
+
+        .nav-brand img {
+            height: 36px;
+        }
+
+        .nav-links {
+            gap: 24px;
+        }
+
+        .nav-links a:not(.btn) {
+            position: relative;
+            font-size: 13px;
+            letter-spacing: -.01em;
+        }
+
+        .nav-links a:not(.btn)::after {
+            position: absolute;
+            right: 0;
+            bottom: -8px;
+            left: 0;
+            height: 2px;
+            content: '';
+            background: var(--indigo);
+            transform: scaleX(0);
+            transition: transform .2s ease;
+        }
+
+        .nav-links a:not(.btn):hover::after {
+            transform: scaleX(1);
+        }
+
+        .btn {
+            min-height: 46px;
+            padding: 12px 21px;
+            border-radius: 12px;
+            box-shadow: 0 7px 16px rgba(29, 42, 91, .08);
+            transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 22px rgba(29, 42, 91, .14);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6478F2, #4054D0);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #7183F5, #3648B9);
+        }
+
+        .btn-outline {
+            border-color: #D8DDEB;
+            background: rgba(255, 255, 255, .72);
+        }
+
+        .lang-switch {
+            border-color: #DCE1ED;
+            background: rgba(255, 255, 255, .75);
+        }
+
+        .hero {
+            position: relative;
+            isolation: isolate;
+            padding: 110px 0 104px;
+            color: #fff;
+            background:
+                radial-gradient(circle at 84% 18%, rgba(112, 132, 255, .38), transparent 23rem),
+                radial-gradient(circle at 20% 100%, rgba(37, 181, 142, .14), transparent 28rem),
+                linear-gradient(120deg, #101832 0%, #1B2854 56%, #263C8C 100%);
+        }
+
+        .hero::after {
+            position: absolute;
+            right: 7%;
+            bottom: -170px;
+            z-index: -1;
+            width: 420px;
+            height: 420px;
+            content: '';
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 50%;
+            box-shadow: 0 0 0 42px rgba(255, 255, 255, .025), 0 0 0 84px rgba(255, 255, 255, .018);
+        }
+
+        .hero .wrap {
+            gap: 76px;
+        }
+
+        .hero-copy h1 {
+            max-width: 760px;
+            margin-bottom: 24px;
+            color: #fff;
+            font-size: clamp(46px, 5.2vw, 72px);
+            letter-spacing: -.045em;
+        }
+
+        .hero-copy p.lead {
+            max-width: 52ch;
+            color: rgba(255, 255, 255, .72);
+            font-size: 17px;
+        }
+
+        .hero-portal-note {
+            color: rgba(255, 255, 255, .56);
+        }
+
+        .hero-portal-note a {
+            color: #AEB9FF;
+        }
+
+        .eyebrow {
+            border-color: rgba(112, 232, 199, .3);
+            color: #8DE4C7;
+            background: rgba(37, 181, 142, .12);
+            letter-spacing: .01em;
+            text-transform: uppercase;
+        }
+
+        .flow-card {
+            position: relative;
+            border-color: rgba(255, 255, 255, .4);
+            border-radius: 24px;
+            padding: 30px 28px;
+            background: rgba(255, 255, 255, .96);
+            box-shadow: var(--shadow-card);
+        }
+
+        .flow-card::before {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            padding: 5px 9px;
+            content: 'LIVE WORKFLOW';
+            border: 1px solid #D7F1E9;
+            border-radius: 999px;
+            color: #19866D;
+            background: #F0FBF7;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .1em;
+        }
+
+        .flow-card .flow-label {
+            max-width: 16ch;
+            margin-bottom: 28px;
+            color: var(--ink);
+            font-size: 16px;
+            line-height: 1.25;
+        }
+
+        .flow-step {
+            padding-bottom: 25px;
+        }
+
+        .flow-step::before {
+            background: #DDE2F0;
+        }
+
+        .flow-num {
+            width: 34px;
+            height: 34px;
+            border: 4px solid #fff;
+            background: #EFF1FF;
+            box-shadow: 0 2px 8px rgba(53, 73, 185, .14);
+        }
+
+        .flow-step.active .flow-num {
+            background: var(--indigo);
+            box-shadow: 0 5px 14px rgba(83, 104, 232, .34);
+        }
+
+        .flow-text h3 {
+            color: var(--ink);
+        }
+
+        .flow-text p {
+            color: var(--ink-soft);
+        }
+
+        .strip {
+            position: relative;
+            z-index: 1;
+            border: 0;
+            background: #fff;
+            box-shadow: 0 12px 30px rgba(25, 38, 84, .06);
+        }
+
+        .strip .wrap {
+            padding-top: 30px;
+            padding-bottom: 30px;
+        }
+
+        .strip-item {
+            align-items: flex-start;
+            padding: 5px 14px;
+            border-right: 1px solid var(--line);
+        }
+
+        .strip-item:last-child {
+            border-right: 0;
+        }
+
+        .strip-item .dot {
+            box-shadow: 0 0 0 5px rgba(37, 181, 142, .12);
+        }
+
+        section.block {
+            padding: 112px 0;
+        }
+
+        .section-head {
+            max-width: 65ch;
+            margin-bottom: 50px;
+        }
+
+        .section-head h2 {
+            color: var(--ink);
+            font-size: clamp(31px, 3.2vw, 44px);
+            letter-spacing: -.04em;
+            line-height: 1.1;
+        }
+
+        .section-head p {
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .video-frame {
+            border: 8px solid #fff;
+            border-radius: 24px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .preview-grid {
+            gap: 22px;
+        }
+
+        .preview-card {
+            border-color: #E0E4EE;
+            border-radius: 18px;
+            box-shadow: var(--shadow-soft);
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+        }
+
+        .preview-card:hover {
+            border-color: #BFC8F2;
+            box-shadow: 0 24px 48px rgba(32, 48, 113, .15);
+            transform: translateY(-7px);
+        }
+
+        .preview-card img {
+            aspect-ratio: 16 / 9;
+            transition: transform .35s ease;
+        }
+
+        .preview-card:hover img {
+            transform: scale(1.035);
+        }
+
+        .preview-card-body {
+            padding: 19px 19px 21px;
+        }
+
+        .preview-card h3 {
+            color: var(--ink);
+            font-size: 16px;
+            letter-spacing: -.02em;
+        }
+
+        .preview-card p {
+            min-height: 40px;
+            line-height: 1.6;
+        }
+
+        .pricing-card {
+            position: relative;
+            overflow: hidden;
+            min-height: 260px;
+            padding: 48px;
+            border-color: #BBDDD3;
+            border-radius: 26px;
+            background:
+                radial-gradient(circle at 90% 20%, rgba(37, 181, 142, .22), transparent 16rem),
+                linear-gradient(135deg, #E9FAF5, #fff 68%);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .pricing-card::after {
+            position: absolute;
+            right: -80px;
+            bottom: -145px;
+            width: 290px;
+            height: 290px;
+            content: '';
+            border: 1px solid rgba(37, 181, 142, .2);
+            border-radius: 50%;
+            box-shadow: 0 0 0 35px rgba(37, 181, 142, .06);
+        }
+
+        .pricing-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-card h2 {
+            font-size: clamp(31px, 3.3vw, 44px);
+            letter-spacing: -.04em;
+        }
+
+        .pricing-card p {
+            line-height: 1.7;
+        }
+
+        .pricing-list {
+            gap: 14px;
+        }
+
+        .pricing-list li {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .feature-row {
+            gap: 76px;
+            padding: 54px 0;
+        }
+
+        .feature-text h3 {
+            font-size: 27px;
+            letter-spacing: -.035em;
+        }
+
+        .feature-text p {
+            line-height: 1.7;
+        }
+
+        .feature-text li::before {
+            width: 8px;
+            height: 8px;
+            background: var(--mint);
+            box-shadow: 0 0 0 4px rgba(37, 181, 142, .12);
+        }
+
+        .feature-visual {
+            min-height: 250px;
+            border: 1px solid rgba(83, 104, 232, .1);
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at 75% 20%, rgba(255, 255, 255, .85), transparent 11rem),
+                linear-gradient(135deg, #EEF0FF, #E3E7FF);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .feature-visual.mint {
+            background: linear-gradient(135deg, #E8FAF5, #D9F1EA);
+        }
+
+        .feature-visual.amber {
+            background: linear-gradient(135deg, #FFF5E3, #F9E8C8);
+        }
+
+        .feature-visual .metric .num {
+            color: var(--indigo-deep);
+            font-size: 48px;
+            letter-spacing: -.06em;
+        }
+
+        .feature-visual .metric .cap {
+            max-width: 25ch;
+            line-height: 1.6;
+        }
+
+        .mini-grid {
+            gap: 16px;
+        }
+
+        .mini-grid .mini {
+            border: 1px solid #E1E5EF;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .72);
+            box-shadow: 0 8px 22px rgba(30, 45, 93, .04);
+            transition: transform .2s ease, border-color .2s ease;
+        }
+
+        .mini-grid .mini:hover {
+            border-color: #BFC8F2;
+            transform: translateY(-4px);
+        }
+
+        .spotlight {
+            border-radius: 26px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .cta-band {
+            position: relative;
+            overflow: hidden;
+            padding: 112px 0;
+            background:
+                radial-gradient(circle at 10% 40%, rgba(112, 132, 255, .25), transparent 22rem),
+                linear-gradient(120deg, #101832, #263C8C);
+        }
+
+        .cta-band::after {
+            position: absolute;
+            top: -190px;
+            right: -50px;
+            width: 430px;
+            height: 430px;
+            content: '';
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 50%;
+            box-shadow: 0 0 0 38px rgba(255, 255, 255, .035), 0 0 0 76px rgba(255, 255, 255, .025);
+        }
+
+        .cta-band h2 {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(32px, 4vw, 52px);
+            letter-spacing: -.045em;
+        }
+
+        .cta-band p,
+        .cta-actions {
+            position: relative;
+            z-index: 1;
+        }
+
+        footer {
+            background: #fff;
+        }
+
+        @media (max-width: 860px) {
+            .nav .wrap {
+                min-height: 64px;
+            }
+
+            .owner-bar .wrap {
+                flex-wrap: wrap;
+                gap: 3px 7px;
+            }
+
+            .nav-cta .btn {
+                padding-right: 14px;
+                padding-left: 14px;
+                font-size: 12px;
+            }
+
+            .hero {
+                padding: 76px 0 72px;
+            }
+
+            .hero .wrap {
+                gap: 42px;
+            }
+
+            .hero-copy h1 {
+                font-size: clamp(42px, 11vw, 58px);
+            }
+
+            .strip-item {
+                border-right: 0;
+                border-bottom: 1px solid var(--line);
+                padding: 13px 0;
+            }
+
+            .strip-item:last-child {
+                border-bottom: 0;
+            }
+
+            section.block {
+                padding: 78px 0;
+            }
+
+            .pricing-card {
+                padding: 32px 26px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .wrap {
+                padding-right: 18px;
+                padding-left: 18px;
+            }
+
+            .nav .wrap {
+                gap: 10px;
+            }
+
+            .nav-brand img {
+                height: 30px;
+            }
+
+            .lang-switch {
+                display: none;
+            }
+
+            .nav-cta .btn {
+                min-height: 40px;
+            }
+
+            .hero-copy h1 {
+                font-size: 42px;
+            }
+
+            .hero-ctas .btn {
+                width: 100%;
+            }
+
+            .flow-card {
+                padding: 25px 20px;
+            }
+
+            .section-head {
+                margin-bottom: 32px;
+            }
+
+            .carousel-controls {
+                margin-top: -22px;
+            }
+
+            .video-frame {
+                border-width: 4px;
+                border-radius: 17px;
+            }
+
+            .pricing-card {
+                border-radius: 20px;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="owner-bar" id="kontak">
+        <div class="wrap">
+            <span data-en="Questions or want to discuss your clinic setup?"
+                data-id="Mau tanya atau diskusi tentang kebutuhan klinik?">Mau tanya atau diskusi tentang kebutuhan
+                klinik?</span>
+            <strong>Jivi Muzaqi Guntur</strong>
+            <a href="mailto:jivirasga@gmail.com">jivirasga@gmail.com</a>
+        </div>
+    </div>
     <nav class="nav">
         <div class="wrap">
             <a href="{{ url('/i') }}" class="nav-brand">
                 <img src="{{ $logo }}" alt="Logo {{ $company_name }}">
             </a>
             <div class="nav-links">
+                <a href="#preview" data-en="Product preview" data-id="Preview produk">Product preview</a>
                 <a href="#fitur" data-en="Features" data-id="Fitur">Features</a>
                 <a href="#layanan-lanjutan" data-en="Advanced Services" data-id="Layanan Lanjutan">Advanced
                     Services</a>
+                <a href="#harga" data-en="Pricing" data-id="Harga">Pricing</a>
+                <a href="#kontak" data-en="Contact owner" data-id="Kontak owner">Contact owner</a>
                 <a href="{{ url('portal/login') }}" data-en="Patient Portal" data-id="Portal Pasien">Patient
                     Portal</a>
             </div>
@@ -856,9 +1786,11 @@ $canonicalUrl = url()->current();
     <header class="hero">
         <div class="wrap">
             <div class="hero-copy">
-                <h1 class="display" data-en="One system, from check-in to cash in."
-                    data-id="Satu sistem, dari pasien datang sampai kas masuk.">One system, from check-in to cash
-                    in.</h1>
+                <p class="eyebrow" data-en="Free core clinic system"
+                    data-id="Sistem inti klinik gratis">Free core clinic system</p>
+                <h1 class="display" data-en="Free clinic system, from check-in to cash in."
+                    data-id="Sistem klinik gratis, dari pasien datang sampai kas masuk.">Free clinic system, from
+                    check-in to cash in.</h1>
                 <p class="lead"
                     data-en="{{ $company_name }} brings together registration, queue, medical records, pharmacy, billing, and payroll in one application — built for how clinics and dental practices in Indonesia actually work, not a generic template translated after the fact."
                     data-id="{{ $company_name }} menyatukan pendaftaran, antrian, rekam medis, farmasi, billing, hingga payroll dalam satu aplikasi — dibangun untuk cara kerja klinik dan praktek dokter gigi di Indonesia, bukan template generik yang diterjemahkan.">
@@ -976,6 +1908,145 @@ $canonicalUrl = url()->current();
                     loading="lazy"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+        </div>
+    </section>
+
+    <section class="block" id="preview">
+        <div class="wrap">
+            <div class="section-head">
+                <h2 class="display" data-en="Preview the system before you commit"
+                    data-id="Lihat preview sistemnya sebelum mulai">Preview the system before you commit</h2>
+                <p data-en="These are real screens from the application — not stock illustrations. Open the demo, then explore the modules that matter to your team."
+                    data-id="Ini adalah tampilan nyata dari aplikasi — bukan ilustrasi stok. Tonton demo, lalu lihat modul yang paling relevan untuk tim Anda.">
+                    These are real screens from the application — not stock illustrations. Open the demo, then
+                    explore the modules that matter to your team.</p>
+            </div>
+            <div class="carousel-controls" aria-label="Preview navigation">
+                <button type="button" class="carousel-button" data-carousel-direction="-1"
+                    aria-label="Previous preview">‹</button>
+                <button type="button" class="carousel-button" data-carousel-direction="1"
+                    aria-label="Next preview">›</button>
+            </div>
+            <div class="preview-carousel">
+                <div class="preview-grid" id="feature-preview-carousel" tabindex="0"
+                    aria-label="Feature previews, swipe horizontally">
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/dashboard.png') }}" alt="Dashboard JiviDent" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Dashboard & daily control" data-id="Dashboard & kontrol harian">Dashboard & daily control</h3>
+                        <p data-en="See your clinic's operational picture at a glance." data-id="Lihat kondisi operasional klinik dalam satu layar.">See your clinic's operational picture at a glance.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/pendaftaran.png') }}" alt="Pendaftaran pasien" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Patient registration" data-id="Pendaftaran pasien">Patient registration</h3>
+                        <p data-en="New and returning patients, medical record number, doctor, room, and visit type." data-id="Pasien baru/lama, No. RM, dokter, ruang, dan jenis kunjungan.">New and returning patients, medical record number, doctor, room, and visit type.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/ruang-tunggu.png') }}" alt="Ruang tunggu dan antrian" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Waiting room & queue" data-id="Ruang tunggu & antrian">Waiting room & queue</h3>
+                        <p data-en="Keep the front desk and examination flow moving." data-id="Jaga alur meja depan dan pemeriksaan tetap lancar.">Keep the front desk and examination flow moving.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/billing.png') }}" alt="Billing dan pembayaran" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Billing & payments" data-id="Billing & pembayaran">Billing & payments</h3>
+                        <p data-en="Procedures, diagnosis, lab, radiology, and prescriptions flow into one bill." data-id="Tindakan, diagnosa, lab, radiologi, dan resep masuk ke satu tagihan.">Procedures, diagnosis, lab, radiology, and prescriptions flow into one bill.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/pos.png') }}" alt="POS Apotek" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Pharmacy POS" data-id="POS Apotek">Pharmacy POS</h3>
+                        <p data-en="Fast checkout with product-master pricing, discounts, and stock deduction." data-id="Kasir cepat dengan harga master, diskon, dan potongan stok otomatis.">Fast checkout with product-master pricing, discounts, and stock deduction.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/product.png') }}" alt="Master produk dan stok" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Products & inventory" data-id="Produk & persediaan">Products & inventory</h3>
+                        <p data-en="Manage catalog, suppliers, receive orders, lots, expiry, and stock opname." data-id="Kelola katalog, supplier, penerimaan, lot, kedaluwarsa, dan stok opname.">Manage catalog, suppliers, receive orders, lots, expiry, and stock opname.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/jadwal-dokter.png') }}" alt="Jadwal dokter" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Doctor schedules & booking" data-id="Jadwal dokter & booking">Doctor schedules & booking</h3>
+                        <p data-en="Generate bookable slots and prevent room or doctor clashes." data-id="Buat slot booking dan cegah benturan ruang atau dokter.">Generate bookable slots and prevent room or doctor clashes.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/rawat-inap.png') }}" alt="Rawat inap" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Inpatient care" data-id="Rawat inap">Inpatient care</h3>
+                        <p data-en="Bed management, admission, transfer, discharge, and accumulated billing." data-id="Kelola kamar, admisi, pindah kamar, pulang, dan billing terakumulasi.">Bed management, admission, transfer, discharge, and accumulated billing.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/report.png') }}" alt="Laporan klinik dan keuangan" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Clinical & financial reports" data-id="Laporan klinis & keuangan">Clinical & financial reports</h3>
+                        <p data-en="Turn visit, payment, and operational data into useful reports." data-id="Ubah data kunjungan, pembayaran, dan operasional menjadi laporan.">Turn visit, payment, and operational data into useful reports.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/employees.png') }}" alt="Manajemen karyawan dan payroll" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Employees, shifts & payroll" data-id="Karyawan, jadwal & payroll">Employees, shifts & payroll</h3>
+                        <p data-en="Employee records, contracts, leave, attendance schedules, BPJS, and PPh21 TER." data-id="Data karyawan, kontrak, cuti, jadwal kerja, BPJS, dan PPh21 TER.">Employee records, contracts, leave, attendance schedules, BPJS, and PPh21 TER.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/monitor-antrian.png') }}" alt="Monitor antrian publik" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Public queue monitor" data-id="Monitor antrian publik">Public queue monitor</h3>
+                        <p data-en="A clear screen for patients and staff, including IGD triage priority." data-id="Layar jelas untuk pasien dan staf, termasuk prioritas triase IGD.">A clear screen for patients and staff, including IGD triage priority.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/monitor-ruangan.png') }}" alt="Monitor ruangan rawat inap" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Room occupancy monitor" data-id="Monitor ruangan">Room occupancy monitor</h3>
+                        <p data-en="Show occupied beds and patient details on a public display." data-id="Tampilkan kamar terisi dan detail pasien di layar publik.">Show occupied beds and patient details on a public display.</p>
+                    </div>
+                </article>
+                <article class="preview-card">
+                    <img src="{{ asset('assets/images/landing-preview/portal-login.png') }}" alt="Portal pasien" loading="lazy">
+                    <div class="preview-card-body">
+                        <h3 data-en="Patient Portal" data-id="Portal Pasien">Patient Portal</h3>
+                        <p data-en="Patients can access visit history, prescriptions, bills, and doctor booking." data-id="Pasien dapat melihat riwayat, resep, tagihan, dan booking dokter.">Patients can access visit history, prescriptions, bills, and doctor booking.</p>
+                        <a href="{{ url('portal/login') }}" data-en="Open the portal →" data-id="Buka portal →">Open the portal →</a>
+                    </div>
+                </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="block" id="harga">
+        <div class="wrap">
+            <div class="pricing-card">
+                <div>
+                    <p class="eyebrow" data-en="Transparent pricing" data-id="Harga transparan">Transparent pricing</p>
+                    <h2 class="display" data-en="The core system is free."
+                        data-id="Sistem intinya gratis.">The core system is free.</h2>
+                    <p data-en="Use the clinic management features without a monthly subscription. You only pay when you need custom development or help migrating your existing database."
+                        data-id="Gunakan fitur manajemen klinik tanpa langganan bulanan. Biaya hanya berlaku jika Anda membutuhkan pengembangan custom atau bantuan migrasi database lama.">
+                        Use the clinic management features without a monthly subscription. You only pay when you need a
+                        custom development or help migrating your existing database.
+                    </p>
+                </div>
+                <ul class="pricing-list">
+                    <li data-en="Core clinic system: free" data-id="Sistem inti klinik: gratis">Core clinic system: free</li>
+                    <li data-en="Custom features: quoted separately" data-id="Fitur custom: penawaran terpisah">Custom features: quoted separately</li>
+                    <li data-en="Database migration: quoted separately" data-id="Migrasi database: penawaran terpisah">Database migration: quoted separately</li>
+                    <li data-en="No surprise monthly fee" data-id="Tanpa biaya bulanan tersembunyi">No surprise monthly fee</li>
+                </ul>
             </div>
         </div>
     </section>
@@ -1160,6 +2231,18 @@ $canonicalUrl = url()->current();
                         data-id="Cetak surat sehat/sakit/rujukan, termasuk untuk yang bukan pasien terdaftar.">Print
                         health/sick/referral certificates, even for people who aren't registered patients.</p>
                 </div>
+                <div class="mini">
+                    <h4 data-en="Operating Room Scheduling" data-id="Jadwal Operasi">Operating Room Scheduling</h4>
+                    <p data-en="Schedule procedures from the patient's examination page, with room and doctor conflict checks."
+                        data-id="Jadwalkan tindakan dari halaman pemeriksaan pasien, lengkap dengan cek benturan ruang dan dokter.">
+                        Schedule procedures from the patient's examination page, with room and doctor conflict checks.</p>
+                </div>
+                <div class="mini">
+                    <h4 data-en="Extra Charges & Consent" data-id="Biaya Tambahan & Consent">Extra Charges & Consent</h4>
+                    <p data-en="Add visit-linked charges and preserve signed consent wording as a historical snapshot."
+                        data-id="Tambahkan biaya ke kunjungan dan simpan isi consent yang ditandatangani sebagai snapshot historis.">
+                        Add visit-linked charges and preserve signed consent wording as a historical snapshot.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -1202,6 +2285,38 @@ $canonicalUrl = url()->current();
         </div>
     </section>
 
+    <section class="block" id="faq" style="padding-top:0">
+        <div class="wrap">
+            <div class="section-head">
+                <h2 class="display" data-en="Frequently asked questions"
+                    data-id="Pertanyaan yang sering ditanyakan">Frequently asked questions</h2>
+                <p data-en="Still comparing clinic management systems? Here are the essentials before you start."
+                    data-id="Masih membandingkan sistem manajemen klinik? Ini hal penting sebelum mulai.">
+                    Still comparing clinic management systems? Here are the essentials before you start.</p>
+            </div>
+            <div class="faq-grid">
+                <article class="faq-card">
+                    <h3 data-en="Is JiviDent really free?" data-id="Apakah JiviDent benar-benar gratis?">Is JiviDent really free?</h3>
+                    <p data-en="Yes. The core system is free. You only pay if you request custom development or database migration assistance."
+                        data-id="Ya. Sistem inti gratis. Biaya hanya berlaku jika membutuhkan pengembangan custom atau bantuan migrasi database.">
+                        Yes. The core system is free. You only pay if you request custom development or database migration assistance.</p>
+                </article>
+                <article class="faq-card">
+                    <h3 data-en="What does the system cover?" data-id="Apa saja yang tersedia?">What does the system cover?</h3>
+                    <p data-en="Registration, queues, medical records, billing, pharmacy, POS, inventory, appointments, inpatient care, payroll, reports, monitors, and the patient portal."
+                        data-id="Pendaftaran, antrian, rekam medis, billing, farmasi, POS, stok, appointment, rawat inap, payroll, laporan, monitor, dan portal pasien.">
+                        Registration, queues, medical records, billing, pharmacy, POS, inventory, appointments, inpatient care, payroll, reports, monitors, and the patient portal.</p>
+                </article>
+                <article class="faq-card">
+                    <h3 data-en="Want to ask the owner directly?" data-id="Ingin tanya langsung ke owner?">Want to ask the owner directly?</h3>
+                    <p data-en="Contact Jivi Muzaqi Guntur at "
+                        data-id="Hubungi Jivi Muzaqi Guntur di ">Contact Jivi Muzaqi Guntur at
+                        <a href="mailto:jivirasga@gmail.com">jivirasga@gmail.com</a>.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
     <section class="cta-band">
         <div class="wrap">
             <h2 class="display" data-en="Start running your clinic from one place."
@@ -1226,10 +2341,17 @@ $canonicalUrl = url()->current();
                     @if ($company_address || $company_city)
                         {{ $company_address }}{{ $company_address && $company_city ? ', ' : '' }}{{ $company_city }}
                     @endif
+                    <div class="footer-contact">
+                        <span data-en="Owner: Jivi Muzaqi Guntur · "
+                            data-id="Owner: Jivi Muzaqi Guntur · ">Owner: Jivi Muzaqi Guntur · </span>
+                        <a href="mailto:jivirasga@gmail.com">jivirasga@gmail.com</a>
+                    </div>
                 </div>
             </div>
             <nav>
                 <a href="#fitur" data-en="Features" data-id="Fitur">Features</a>
+                <a href="#faq" data-en="FAQ" data-id="FAQ">FAQ</a>
+                <a href="#kontak" data-en="Contact" data-id="Kontak">Contact</a>
                 <a href="{{ url('portal/login') }}" data-en="Patient Portal" data-id="Portal Pasien">Patient
                     Portal</a>
                 <a href="{{ route('login') }}" data-en="Log In" data-id="Masuk">Log In</a>
@@ -1279,6 +2401,29 @@ $canonicalUrl = url()->current();
                     applyLang(btn.getAttribute('data-lang'));
                 });
             });
+
+            var previewCarousel = document.getElementById('feature-preview-carousel');
+            if (previewCarousel) {
+                document.querySelectorAll('[data-carousel-direction]').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var direction = Number(button.getAttribute('data-carousel-direction'));
+                        previewCarousel.scrollBy({
+                            left: direction * Math.min(previewCarousel.clientWidth * .82, 380),
+                            behavior: 'smooth'
+                        });
+                    });
+                });
+
+                previewCarousel.addEventListener('keydown', function (event) {
+                    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                        event.preventDefault();
+                        previewCarousel.scrollBy({
+                            left: (event.key === 'ArrowRight' ? 1 : -1) * Math.min(previewCarousel.clientWidth * .82, 380),
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            }
 
             // Default is English (server-rendered); only switch on load if this
             // visitor had previously chosen Indonesian on this page before.
