@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\LabRadiologyWorkflowHelper;
 use App\Http\Controllers\Controller;
 use App\Models\JenisPemeriksaanRadiologi;
 use App\Models\RadiologiPasien;
@@ -118,5 +119,13 @@ class RadiologiController extends Controller
         ]);
 
         return response()->json(['message' => 'success'], 200);
+    }
+
+    public function approveReport($id)
+    {
+        $order = RadiologiPasien::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id);
+        $order = LabRadiologyWorkflowHelper::approveRadiologyReport($order, Auth::id());
+
+        return response()->json(['message' => 'Laporan radiologi berhasil disetujui.', 'data' => $order]);
     }
 }

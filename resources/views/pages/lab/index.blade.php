@@ -113,6 +113,9 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 success: function(res) {
+                    if ($.fn.DataTable.isDataTable('#masterTable')) {
+                        $('#masterTable').DataTable().destroy();
+                    }
                     var rows = '';
                     res.data.forEach(d => rows += `<tr>
                         <td>${d.nama}</td>
@@ -124,7 +127,21 @@
                             <a class="btn btn-xs btn-outline-danger" onclick="deleteMaster(${d.id})">Hapus</a>
                         </td>
                     </tr>`);
-                    $('#masterTable tbody').html(rows || '<tr><td colspan="5" class="text-muted text-center">Belum ada data</td></tr>');
+                    $('#masterTable tbody').html(rows);
+                    $('#masterTable').DataTable({
+                        pageLength: 10,
+                        lengthMenu: [10, 25, 50],
+                        language: {
+                            emptyTable: 'Belum ada data',
+                            search: 'Cari:',
+                            lengthMenu: 'Tampilkan _MENU_',
+                            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+                            paginate: {
+                                previous: 'Sebelumnya',
+                                next: 'Berikutnya'
+                            }
+                        }
+                    });
                 }
             });
         }
@@ -198,6 +215,9 @@
                     status: $('#worklistStatus').val()
                 },
                 success: function(res) {
+                    if ($.fn.DataTable.isDataTable('#worklistTable')) {
+                        $('#worklistTable').DataTable().destroy();
+                    }
                     var rows = '';
                     res.data.forEach(d => rows += `<tr>
                         <td>${d.tgl_diminta}</td>
@@ -206,7 +226,21 @@
                         <td>${d.hasil ?? '-'} ${d.satuan_snapshot ?? ''} ${d.hasil_abnormal ? '<span class="badge bg-danger">Abnormal</span>' : ''}</td>
                         <td>${d.status === 'diminta' ? `<a class="btn btn-xs btn-outline-success" onclick="inputHasil(${d.id})">Input Hasil</a>` : '-'}</td>
                     </tr>`);
-                    $('#worklistTable tbody').html(rows || '<tr><td colspan="5" class="text-muted text-center">Tidak ada data</td></tr>');
+                    $('#worklistTable tbody').html(rows);
+                    $('#worklistTable').DataTable({
+                        pageLength: 10,
+                        lengthMenu: [10, 25, 50],
+                        language: {
+                            emptyTable: 'Tidak ada data',
+                            search: 'Cari:',
+                            lengthMenu: 'Tampilkan _MENU_',
+                            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+                            paginate: {
+                                previous: 'Sebelumnya',
+                                next: 'Berikutnya'
+                            }
+                        }
+                    });
                 }
             });
         }

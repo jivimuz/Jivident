@@ -180,7 +180,15 @@ final class RawatInapHelper
             'nadi' => $data['nadi'] ?? null,
             'pernapasan' => $data['pernapasan'] ?? null,
             'tensi' => $data['tensi'] ?? null,
+            'kesadaran' => $data['kesadaran'] ?? null,
+            'gcs' => $data['gcs'] ?? null,
+            'spo2' => $data['spo2'] ?? null,
+            'skala_nyeri' => $data['skala_nyeri'] ?? null,
+            'intake_ml' => $data['intake_ml'] ?? null,
+            'output_ml' => $data['output_ml'] ?? null,
             'catatan' => $data['catatan'],
+            'intervensi' => $data['intervensi'] ?? null,
+            'respons' => $data['respons'] ?? null,
             'fk_userhandler' => $data['fk_userhandler'] ?? null,
         ]);
     }

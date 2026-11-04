@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Transactional\AllModulesDemoSeeder;
 use Database\Seeders\Transactional\AppointmentDemoSeeder;
 use Database\Seeders\Transactional\PatientVisitDemoSeeder;
 use Database\Seeders\Transactional\PosSaleDemoSeeder;
@@ -34,6 +35,7 @@ class TransactionalSeeder extends Seeder
             PosSaleDemoSeeder::class,
             AppointmentDemoSeeder::class,
             RawatInapDemoSeeder::class,
+            AllModulesDemoSeeder::class,
         ]);
     }
 }

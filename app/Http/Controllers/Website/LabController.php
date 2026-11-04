@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\LabRadiologyWorkflowHelper;
 use App\Http\Controllers\Controller;
 use App\Models\JenisPemeriksaanLab;
 use App\Models\LabPasien;
@@ -93,5 +94,21 @@ class LabController extends Controller
         ]);
 
         return response()->json(['message' => 'success'], 200);
+    }
+
+    public function collectSpecimen($id)
+    {
+        $order = LabPasien::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id);
+        $order = LabRadiologyWorkflowHelper::collectSpecimen($order, Auth::id());
+
+        return response()->json(['message' => 'Spesimen berhasil diambil.', 'data' => $order]);
+    }
+
+    public function verifyResult($id)
+    {
+        $order = LabPasien::where('klienfk', Auth::user()->klienfk ?? 1)->findOrFail($id);
+        $order = LabRadiologyWorkflowHelper::verifyLabResult($order, Auth::id());
+
+        return response()->json(['message' => 'Hasil laboratorium berhasil diverifikasi.', 'data' => $order]);
     }
 }

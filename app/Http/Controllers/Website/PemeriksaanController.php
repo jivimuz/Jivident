@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Website;
 
-use App\Helpers\RawatInapHelper;
 use App\Helpers\BillingStatusHelper;
+use App\Helpers\OperasiClinicalHelper;
 use App\Helpers\OperasiHelper;
+use App\Helpers\RawatInapHelper;
 use App\Http\Controllers\Controller;
 use App\Models\BiayaTambahan;
 use App\Models\DaftarPasien;
@@ -14,17 +15,18 @@ use App\Models\JadwalOperasi;
 use App\Models\JenisPemeriksaanLab;
 use App\Models\JenisPemeriksaanRadiologi;
 use App\Models\LabPasien;
-use App\Models\RadiologiPasien;
+use App\Models\OperasiRecord;
 use App\Models\Patient;
 use App\Models\PenggunaanProduct;
 use App\Models\Product;
+use App\Models\RadiologiPasien;
 use App\Models\RawatInap;
 use App\Models\ResepPasien;
 use App\Models\RuanganOperasi;
 use App\Models\Setting;
+use App\Models\SOAPE;
 use App\Models\Tindakan;
 use App\Models\TindakanPasien;
-use App\Models\SOAPE;
 use App\Models\User;
 use App\Models\VitalSign;
 use Carbon\Carbon;
@@ -82,6 +84,7 @@ class PemeriksaanController extends Controller
 
             return view('pages/pemeriksaan/index', compact('data', 'id', 'admission'));
         }
+
         return redirect()->back();
     }
 
@@ -89,8 +92,10 @@ class PemeriksaanController extends Controller
     {
         $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
         $vital_sign = VitalSign::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
+
         return view('pages/pemeriksaan/content/vitalsign', compact('vital_sign', 'id', 'status'));
     }
+
     public function saveVitalSign(Request $request, $id)
     {
         try {
@@ -116,13 +121,13 @@ class PemeriksaanController extends Controller
             return response()->json([
                 'code' => 1,
                 'message' => 'Data Vital Sign berhasil disimpan.',
-                'data' => $vitalSign
+                'data' => $vitalSign,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'code' => 0,
                 'message' => $e->getMessage(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 400);
         }
     }
@@ -133,22 +138,23 @@ class PemeriksaanController extends Controller
         $idReal = base64_decode(base64_decode($id));
         try {
             $target = DaftarPasien::where('id', $idReal)->first();
-            if (!$target) {
+            if (! $target) {
                 return response()->json(['code' => 0, 'message' => 'Data pasien tidak ditemukan.']);
             }
 
             $target->keluhan = $request->value;
             $target->save();
+
             return response()->json([
                 'code' => 1,
                 'message' => 'Data keluhan berhasil disimpan.',
-                'data' => $target
+                'data' => $target,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'code' => 0,
                 'message' => $e->getMessage(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 400);
         }
     }
@@ -157,12 +163,13 @@ class PemeriksaanController extends Controller
     {
         try {
             $target = Patient::where('id', $idp)->first();
-            if (!$target) {
+            if (! $target) {
                 return response()->json(['code' => 0, 'message' => 'Data pasien tidak ditemukan.']);
             }
 
             $target->alergi = $request->value;
             $target->save();
+
             return response()->json([
                 'code' => 1,
                 'message' => 'Data alergi berhasil disimpan.',
@@ -175,11 +182,12 @@ class PemeriksaanController extends Controller
             ], 400);
         }
     }
+
     public function updateCatatan(Request $request, $id, $idp)
     {
         try {
             $target = Patient::where('id', $idp)->first();
-            if (!$target) {
+            if (! $target) {
                 return response()->json(['code' => 0, 'message' => 'Data pasien tidak ditemukan.']);
             }
 
@@ -194,11 +202,10 @@ class PemeriksaanController extends Controller
             return response()->json([
                 'code' => 0,
                 'message' => $e->getMessage(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 400);
         }
     }
-
 
     public function soape($id)
     {
@@ -215,10 +222,11 @@ class PemeriksaanController extends Controller
             'm_pasien.is_diare',
             'm_pasien.is_hipertensi',
             'm_pasien.is_tbc',
-            'm_pasien.is_pnemonea'
+            'm_pasien.is_pnemonea',
         ])
             ->join('t_daftarpasien as a', 'a.pasienfk', 'm_pasien.id')
             ->where('a.id', base64_decode(base64_decode($id)))->first();
+
         return view('pages/pemeriksaan/content/soape', compact('soap', 'data', 'objective', 'id', 'status'));
     }
 
@@ -240,8 +248,8 @@ class PemeriksaanController extends Controller
                 ]
             );
             $data = DaftarPasien::select('pasienfk')->where('id', base64_decode(base64_decode($id)))->first();
-            if (!$data) {
-                throw new \Exception("Data pasien tidak ada.");
+            if (! $data) {
+                throw new \Exception('Data pasien tidak ada.');
             }
             $patien = Patient::where('id', $data->pasienfk)->update(
                 [
@@ -256,13 +264,13 @@ class PemeriksaanController extends Controller
             return response()->json([
                 'code' => 1,
                 'message' => 'Data SOAPE berhasil disimpan.',
-                'data' => $soap
+                'data' => $soap,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'code' => 0,
                 'message' => $e->getMessage(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 400);
         }
     }
@@ -271,6 +279,7 @@ class PemeriksaanController extends Controller
     {
         $status = DaftarPasien::select('status')->where('id', base64_decode(base64_decode($id)))->first();
         $tindakan = TindakanPasien::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
+
         return view('pages/pemeriksaan/content/tindakan', compact('tindakan', 'id', 'status'));
     }
 
@@ -298,7 +307,7 @@ class PemeriksaanController extends Controller
             // 3. Cari yang harus dihapus
             $deleteIds = array_diff($existingIds, $incomingIds);
 
-            if (!empty($deleteIds)) {
+            if (! empty($deleteIds)) {
                 TindakanPasien::where('klienfk', $klien)
                     ->where('fk_daftarpasien', $daftarpasienId)
                     ->whereIn('fk_tindakan', $deleteIds)
@@ -309,18 +318,18 @@ class PemeriksaanController extends Controller
             foreach ($request->tindakan as $i) {
                 TindakanPasien::updateOrCreate(
                     [
-                        'klienfk'          => $klien,
-                        'fk_daftarpasien'  => $daftarpasienId,
-                        'fk_tindakan'      => $i['tindakan_id'] ?? null,
+                        'klienfk' => $klien,
+                        'fk_daftarpasien' => $daftarpasienId,
+                        'fk_tindakan' => $i['tindakan_id'] ?? null,
                     ],
                     [
-                        'fk_dokter'       => $i['dokter_id'] ?? null,
-                        'fk_userhandler'  => Auth::user()->id ?? null,
-                        'tindakan'        => $i['tindakan_name'] ?? null,
-                        'dokter'          => $i['dokter_text'] ?? null,
-                        'price'          => $i['tindakan_amount'] ?? 0,
-                        'amount'          => ($i['tindakan_amount'] ?? 0) * ($i['qty'] ?? 1),
-                        'qty'             => $i['qty'] ?? 1,
+                        'fk_dokter' => $i['dokter_id'] ?? null,
+                        'fk_userhandler' => Auth::user()->id ?? null,
+                        'tindakan' => $i['tindakan_name'] ?? null,
+                        'dokter' => $i['dokter_text'] ?? null,
+                        'price' => $i['tindakan_amount'] ?? 0,
+                        'amount' => ($i['tindakan_amount'] ?? 0) * ($i['qty'] ?? 1),
+                        'qty' => $i['qty'] ?? 1,
                     ]
                 );
             }
@@ -340,7 +349,6 @@ class PemeriksaanController extends Controller
         }
     }
 
-
     public function updateStatus(Request $request, $id)
     {
         $daftarPasienID = base64_decode(base64_decode($id));
@@ -349,13 +357,13 @@ class PemeriksaanController extends Controller
             // Cari data pasien
             $pasien = DaftarPasien::find($daftarPasienID);
 
-            if (!$pasien) {
+            if (! $pasien) {
                 return response()->json([
-                    'error' => 'Data pasien tidak ditemukan'
+                    'error' => 'Data pasien tidak ditemukan',
                 ], 400);
             }
 
-            if ((int)$request->f == 1) {
+            if ((int) $request->f == 1) {
                 $daftarPasienID = ($daftarPasienID === '' || $daftarPasienID === 0) ? null : $daftarPasienID;
 
                 // "Selesai" menandai pemeriksaannya sudah ditutup secara
@@ -402,11 +410,10 @@ class PemeriksaanController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Gagal memperbarui status',
-                'detail' => $e->getMessage()
+                'detail' => $e->getMessage(),
             ], 400);
         }
     }
-
 
     public function resep($id)
     {
@@ -421,10 +428,10 @@ class PemeriksaanController extends Controller
         try {
             $daftarPasienId = base64_decode(base64_decode($id), true);
 
-            if (!$daftarPasienId || !is_numeric($daftarPasienId)) {
+            if (! $daftarPasienId || ! is_numeric($daftarPasienId)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'ID tidak valid'
+                    'message' => 'ID tidak valid',
                 ], 422);
             }
 
@@ -439,7 +446,7 @@ class PemeriksaanController extends Controller
             if ($resepRows->isEmpty()) {
                 return response()->json([
                     'success' => true,
-                    'data' => []
+                    'data' => [],
                 ], 200);
             }
 
@@ -460,35 +467,35 @@ class PemeriksaanController extends Controller
             $data = $resepRows->map(function ($row) use ($detailRows) {
                 $ingredients = collect($detailRows[$row->id] ?? [])->map(function ($d) {
                     return [
-                        'id'   => (int) $d->id_product,
+                        'id' => (int) $d->id_product,
                         'name' => $d->name,
-                        'qty'  => (float) $d->qty,
+                        'qty' => (float) $d->qty,
                     ];
                 })->values();
 
                 return [
-                    'id'            => $row->id,
-                    'type'          => $row->type, // non-racik / racik
-                    'r_num'         => (int) $row->r_num,
-                    'obat_id'       => $row->obat_id,
-                    'nama_racikan'  => $row->nama_racikan,
-                    'bentuk'        => $row->bentuk,
-                    'obat_name'     => $row->obat_name,
-                    'qty'           => (float) $row->qty,
-                    'qty_buat'      => (float) $row->qty_buat,
-                    'harga_satuan'  => (float) $row->harga_satuan,
-                    'satuan'        => $row->unit, // db=unit -> frontend=satuan
+                    'id' => $row->id,
+                    'type' => $row->type, // non-racik / racik
+                    'r_num' => (int) $row->r_num,
+                    'obat_id' => $row->obat_id,
+                    'nama_racikan' => $row->nama_racikan,
+                    'bentuk' => $row->bentuk,
+                    'obat_name' => $row->obat_name,
+                    'qty' => (float) $row->qty,
+                    'qty_buat' => (float) $row->qty_buat,
+                    'harga_satuan' => (float) $row->harga_satuan,
+                    'satuan' => $row->unit, // db=unit -> frontend=satuan
                     'penggunaan_id' => $row->penggunaan_id,
-                    'signa'         => $row->signa,
-                    'subtotal'      => (float) $row->subtotal,
-                    'jasa_racik'    => (float) $row->jasa_racik,
-                    'ingredients'   => $row->type === 'racik' ? $ingredients : [],
+                    'signa' => $row->signa,
+                    'subtotal' => (float) $row->subtotal,
+                    'jasa_racik' => (float) $row->jasa_racik,
+                    'ingredients' => $row->type === 'racik' ? $ingredients : [],
                 ];
             })->values();
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ], 200);
         } catch (\Throwable $e) {
             report($e);
@@ -506,7 +513,6 @@ class PemeriksaanController extends Controller
         $q = $request->q;
         $locationId = $request->location_id ?? 1;
         $klienFk = Auth::user()->klienfk ?? 1;
-
 
         $data = Product::from('m_products')
             ->selectRaw("
@@ -534,10 +540,9 @@ class PemeriksaanController extends Controller
             ->limit(20)
             ->get();
 
-
         return response()->json([
-            "message" => 'success',
-            "data" => $data
+            'message' => 'success',
+            'data' => $data,
         ], 200);
     }
 
@@ -552,8 +557,8 @@ class PemeriksaanController extends Controller
             ->get();
 
         return response()->json([
-            "message" => 'success',
-            "data" => $data
+            'message' => 'success',
+            'data' => $data,
         ], 200);
     }
 
@@ -561,7 +566,7 @@ class PemeriksaanController extends Controller
     {
         $validated = $request->validate([
             'cart' => ['required', 'array', 'min:1'],
-            'cart.*.type' => ['required', \Illuminate\Validation\Rule::in(['non-racik', 'racik'])],
+            'cart.*.type' => ['required', Rule::in(['non-racik', 'racik'])],
             'cart.*.r_num' => ['required', 'numeric'],
             'cart.*.obat_id' => ['nullable'],
             'cart.*.obat_name' => ['nullable', 'string', 'max:100'],
@@ -584,14 +589,13 @@ class PemeriksaanController extends Controller
         $daftarpasienId = base64_decode(base64_decode($id));
         $klien = Auth::user()->klienfk ?? 1;
         $daftarpasien = DaftarPasien::find($daftarpasienId);
-        if (!$daftarpasien) {
+        if (! $daftarpasien) {
             return response()->json([
                 'success' => false,
                 'message' => 'Daftar Pasien tidak ditemukan.',
                 'error' => 'Daftar Pasien tidak ditemukan.',
             ], 500);
         }
-
 
         DB::beginTransaction();
 
@@ -602,13 +606,19 @@ class PemeriksaanController extends Controller
 
             // helper
             $num = function ($v) {
-                if ($v === null || $v === '') return 0;
+                if ($v === null || $v === '') {
+                    return 0;
+                }
                 $v = str_replace(',', '', (string) $v);
+
                 return is_numeric($v) ? ($v + 0) : 0;
             };
 
             $nullableInt = function ($v) {
-                if ($v === null || $v === '') return null;
+                if ($v === null || $v === '') {
+                    return null;
+                }
+
                 return (int) $v;
             };
 
@@ -636,7 +646,7 @@ class PemeriksaanController extends Controller
             $mode = empty($existingResepIds) ? 'create' : 'update';
 
             // 2) jika ada, hapus detail racikan + soft delete parent
-            if (!empty($existingResepIds)) {
+            if (! empty($existingResepIds)) {
                 DB::table('t_reseppasienracikan')
                     ->whereIn('reseppasien_id', $existingResepIds)
                     ->delete();
@@ -655,48 +665,50 @@ class PemeriksaanController extends Controller
 
             foreach ($cart as $item) {
                 $reseppasienId = DB::table('t_reseppasien')->insertGetId([
-                    'klienfk'       => $klien,
-                    'pasien_id'       => $pasienId,
+                    'klienfk' => $klien,
+                    'pasien_id' => $pasienId,
                     'daftarpasien_id' => $daftarId,
-                    'type'            => $item['type'],
-                    'r_num'           => $num($item['r_num'] ?? 0),
-                    'obat_id'         => $nullableInt($item['obat_id'] ?? null),
-                    'obat_name'       => $item['obat_name'] ?? null,
-                    'nama_racikan'    => $item['nama_racikan'] ?? null,
-                    'bentuk'          => $item['bentuk'] ?? null,
-                    'qty'             => $num($item['qty'] ?? 0),
-                    'qty_buat'        => $num($item['qty_buat'] ?? 0),
-                    'harga_satuan'    => $num($item['harga_satuan'] ?? 0),
-                    'unit'            => $item['satuan'] ?? null, // payload 'satuan' -> db 'unit'
-                    'penggunaan_id'   => (int) $item['penggunaan_id'],
-                    'signa'           => $item['signa'] ?? null,
-                    'subtotal'        => $num($item['subtotal'] ?? 0),
-                    'jasa_racik'      => $num($item['jasa_racik'] ?? 0),
-                    'created_at'      => now(),
-                    'updated_at'      => now(),
+                    'type' => $item['type'],
+                    'r_num' => $num($item['r_num'] ?? 0),
+                    'obat_id' => $nullableInt($item['obat_id'] ?? null),
+                    'obat_name' => $item['obat_name'] ?? null,
+                    'nama_racikan' => $item['nama_racikan'] ?? null,
+                    'bentuk' => $item['bentuk'] ?? null,
+                    'qty' => $num($item['qty'] ?? 0),
+                    'qty_buat' => $num($item['qty_buat'] ?? 0),
+                    'harga_satuan' => $num($item['harga_satuan'] ?? 0),
+                    'unit' => $item['satuan'] ?? null, // payload 'satuan' -> db 'unit'
+                    'penggunaan_id' => (int) $item['penggunaan_id'],
+                    'signa' => $item['signa'] ?? null,
+                    'subtotal' => $num($item['subtotal'] ?? 0),
+                    'jasa_racik' => $num($item['jasa_racik'] ?? 0),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
 
                 $insertedResepIds[] = $reseppasienId;
 
-                if (($item['type'] ?? null) === 'racik' && !empty($item['ingredients']) && is_array($item['ingredients'])) {
+                if (($item['type'] ?? null) === 'racik' && ! empty($item['ingredients']) && is_array($item['ingredients'])) {
                     $detailRows = [];
 
                     foreach ($item['ingredients'] as $ingredient) {
-                        if (empty($ingredient['id'])) continue;
+                        if (empty($ingredient['id'])) {
+                            continue;
+                        }
 
                         $detailRows[] = [
-                            'pasien_id'       => $pasienId,
+                            'pasien_id' => $pasienId,
                             'daftarpasien_id' => $daftarId,
-                            'reseppasien_id'  => $reseppasienId,
-                            'product_id'      => (int) $ingredient['id'],
-                            'product_name'    => (string) ($ingredient['name'] ?? ''),
-                            'qty'             => $num($ingredient['qty'] ?? 0),
-                            'created_at'      => now(),
-                            'updated_at'      => now(),
+                            'reseppasien_id' => $reseppasienId,
+                            'product_id' => (int) $ingredient['id'],
+                            'product_name' => (string) ($ingredient['name'] ?? ''),
+                            'qty' => $num($ingredient['qty'] ?? 0),
+                            'created_at' => now(),
+                            'updated_at' => now(),
                         ];
                     }
 
-                    if (!empty($detailRows)) {
+                    if (! empty($detailRows)) {
                         DB::table('t_reseppasienracikan')->insert($detailRows);
                         $racikanDetailCount += count($detailRows);
                     }
@@ -715,7 +727,7 @@ class PemeriksaanController extends Controller
                     'resep_count' => count($insertedResepIds),
                     'racikan_detail_count' => $racikanDetailCount,
                     'reseppasien_ids' => $insertedResepIds,
-                ]
+                ],
             ], $mode === 'create' ? 201 : 200);
         } catch (InvalidArgumentException $e) {
             DB::rollBack();
@@ -743,6 +755,7 @@ class PemeriksaanController extends Controller
     {
         $diagnosa = DiagnosaPasien::where('fk_daftarpasien', base64_decode(base64_decode($id)))->get();
         $status = DaftarPasien::select('status', 'pasienfk')->where('id', base64_decode(base64_decode($id)))->first();
+
         return view('pages/pemeriksaan/content/diagnosa', compact('id', 'status', 'diagnosa'));
     }
 
@@ -762,17 +775,17 @@ class PemeriksaanController extends Controller
                 $tipe = strtoupper(trim((string) ($i['diagnosa_tipe'] ?? $i['tipe_diagnosa'] ?? '')));
 
                 return [
-                    'diagnosa_id'    => isset($i['diagnosa_id']) ? (int) $i['diagnosa_id'] : null,
-                    'tipe_diagnosa'  => $tipe, // X / IX
-                    'pasien_id'      => $i['pasien_id'] ?? null,
-                    'dokter_id'      => $i['dokter_id'] ?? null,
-                    'diagnosa_name'  => $i['diagnosa_name'] ?? ($i['tindakan_name'] ?? null), // sesuaikan field UI
-                    'dokter_text'    => $i['dokter_text'] ?? null,
-                    'price'          => (float) ($i['diagnosa_amount'] ?? $i['tindakan_amount'] ?? 0),
-                    'qty'            => (int) ($i['qty'] ?? 1),
+                    'diagnosa_id' => isset($i['diagnosa_id']) ? (int) $i['diagnosa_id'] : null,
+                    'tipe_diagnosa' => $tipe, // X / IX
+                    'pasien_id' => $i['pasien_id'] ?? null,
+                    'dokter_id' => $i['dokter_id'] ?? null,
+                    'diagnosa_name' => $i['diagnosa_name'] ?? ($i['tindakan_name'] ?? null), // sesuaikan field UI
+                    'dokter_text' => $i['dokter_text'] ?? null,
+                    'price' => (float) ($i['diagnosa_amount'] ?? $i['tindakan_amount'] ?? 0),
+                    'qty' => (int) ($i['qty'] ?? 1),
                 ];
             })->filter(function ($i) {
-                return !empty($i['diagnosa_id']) && in_array($i['tipe_diagnosa'], ['X', 'IX'], true);
+                return ! empty($i['diagnosa_id']) && in_array($i['tipe_diagnosa'], ['X', 'IX'], true);
             })->values();
 
             // ===== 1) Ambil existing rows (harus ambil ID + fk_diagnosa + tipe_diagnosa)
@@ -784,7 +797,8 @@ class PemeriksaanController extends Controller
             // ===== 2) Bentuk set key incoming: "X|10", "IX|10", dst
             $incomingKeySet = $payload
                 ->mapWithKeys(function ($i) {
-                    $key = $i['tipe_diagnosa'] . '|' . $i['diagnosa_id'];
+                    $key = $i['tipe_diagnosa'].'|'.$i['diagnosa_id'];
+
                     return [$key => true];
                 });
 
@@ -792,13 +806,14 @@ class PemeriksaanController extends Controller
             $deleteRowIds = $existingRows
                 ->filter(function ($row) use ($incomingKeySet) {
                     $rowTipe = strtoupper(trim((string) $row->tipe_diagnosa));
-                    $key = $rowTipe . '|' . (int) $row->fk_diagnosa;
-                    return !$incomingKeySet->has($key);
+                    $key = $rowTipe.'|'.(int) $row->fk_diagnosa;
+
+                    return ! $incomingKeySet->has($key);
                 })
                 ->pluck('id')
                 ->all();
 
-            if (!empty($deleteRowIds)) {
+            if (! empty($deleteRowIds)) {
                 DiagnosaPasien::query()
                     ->where('klienfk', $klien)
                     ->where('fk_daftarpasien', $daftarpasienId)
@@ -814,20 +829,20 @@ class PemeriksaanController extends Controller
 
                 DiagnosaPasien::updateOrCreate(
                     [
-                        'klienfk'         => $klien,
+                        'klienfk' => $klien,
                         'fk_daftarpasien' => $daftarpasienId,
-                        'fk_diagnosa'     => $i['diagnosa_id'],
-                        'tipe_diagnosa'   => $i['tipe_diagnosa'], // pembeda utama X vs IX
+                        'fk_diagnosa' => $i['diagnosa_id'],
+                        'tipe_diagnosa' => $i['tipe_diagnosa'], // pembeda utama X vs IX
                     ],
                     [
-                        'fk_pasien'       => $i['pasien_id'],
-                        'fk_dokter'       => $i['dokter_id'],
-                        'fk_userhandler'  => Auth::id(),
-                        'diagnosa'        => $i['diagnosa_name'], // ganti nama kolom kalau sebenarnya "diagnosa"
-                        'dokter'          => $i['dokter_text'],
-                        'price'           => $price,
-                        'qty'             => $qty,
-                        'amount'          => $amount,
+                        'fk_pasien' => $i['pasien_id'],
+                        'fk_dokter' => $i['dokter_id'],
+                        'fk_userhandler' => Auth::id(),
+                        'diagnosa' => $i['diagnosa_name'], // ganti nama kolom kalau sebenarnya "diagnosa"
+                        'dokter' => $i['dokter_text'],
+                        'price' => $price,
+                        'qty' => $qty,
+                        'amount' => $amount,
                     ]
                 );
             }
@@ -842,17 +857,18 @@ class PemeriksaanController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'error'  => 'Gagal menyimpan diagnosa.',
+                'error' => 'Gagal menyimpan diagnosa.',
                 'detail' => $e->getMessage(),
             ], 400);
         }
     }
 
-    public function  cetaksurat($id)
+    public function cetaksurat($id)
     {
         $status = DaftarPasien::select(['t_daftarpasien.status', 't_daftarpasien.pasienfk', 't_daftarpasien.keluhan', 'm_pasien.nama'])->join('m_pasien', 'm_pasien.id', 't_daftarpasien.pasienfk')->where('t_daftarpasien.id', base64_decode(base64_decode($id)))->first();
         $vitalsign = VitalSign::where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
         $diagnosa = DiagnosaPasien::where('tipe_diagnosa', 'X')->where('fk_daftarpasien', base64_decode(base64_decode($id)))->first();
+
         return view('pages/pemeriksaan/content/cetak_surat', compact('id', 'status', 'vitalsign', 'diagnosa'));
     }
 
@@ -1293,6 +1309,82 @@ class PemeriksaanController extends Controller
             ->where('fk_daftarpasien', $daftarpasienId)
             ->where('klienfk', $klienfk)
             ->first();
+    }
+
+    public function operasiRecord($id, $jadwalId)
+    {
+        $jadwal = $this->findJadwalOperasiForVisit($id, $jadwalId);
+        if (! $jadwal) {
+            return response()->json(['message' => 'error', 'error' => 'Jadwal operasi tidak ditemukan'], 404);
+        }
+
+        $record = OperasiRecord::with('monitoring')
+            ->where('klienfk', Auth::user()->klienfk ?? 1)
+            ->where('jadwal_operasi_id', $jadwal->id)
+            ->first();
+
+        return response()->json(['message' => 'success', 'data' => $record]);
+    }
+
+    public function saveOperasiRecord(Request $request, $id, $jadwalId)
+    {
+        $jadwal = $this->findJadwalOperasiForVisit($id, $jadwalId);
+        if (! $jadwal) {
+            return response()->json(['message' => 'error', 'error' => 'Jadwal operasi tidak ditemukan'], 404);
+        }
+
+        $validated = $request->validate([
+            'preop_checklist' => 'nullable|array',
+            'anesthesia_plan' => 'nullable|string|max:5000',
+            'anesthesia_record' => 'nullable|string|max:5000',
+            'procedure_notes' => 'nullable|string|max:10000',
+            'consumables' => 'nullable|array',
+            'implants' => 'nullable|array',
+            'recovery_notes' => 'nullable|string|max:5000',
+            'recovery_status' => 'nullable|in:recovery,stabil,rujuk',
+        ]);
+
+        try {
+            $record = app(OperasiClinicalHelper::class)->saveRecord($jadwal, $validated, Auth::id());
+
+            return response()->json(['message' => 'Catatan operasi tersimpan.', 'data' => $record], 200);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function addOperasiMonitoring(Request $request, $id, $jadwalId)
+    {
+        $jadwal = $this->findJadwalOperasiForVisit($id, $jadwalId);
+        if (! $jadwal) {
+            return response()->json(['message' => 'error', 'error' => 'Jadwal operasi tidak ditemukan'], 404);
+        }
+
+        $record = OperasiRecord::where('klienfk', Auth::user()->klienfk ?? 1)
+            ->where('jadwal_operasi_id', $jadwal->id)
+            ->first();
+        if (! $record) {
+            return response()->json(['message' => 'error', 'error' => 'Catatan operasi belum dibuat'], 422);
+        }
+
+        $validated = $request->validate([
+            'observed_at' => 'nullable|date',
+            'consciousness' => 'nullable|string|max:50',
+            'pain_scale' => 'nullable|integer|min:0|max:10',
+            'systolic' => 'nullable|integer|min:40|max:300',
+            'diastolic' => 'nullable|integer|min:20|max:200',
+            'pulse' => 'nullable|integer|min:20|max:250',
+            'spo2' => 'nullable|integer|min:0|max:100',
+            'notes' => 'nullable|string|max:5000',
+        ]);
+
+        try {
+            $monitoring = app(OperasiClinicalHelper::class)->addMonitoring($record, $validated, Auth::id());
+
+            return response()->json(['message' => 'Monitoring pascaoperasi tersimpan.', 'data' => $monitoring], 201);
+        } catch (InvalidArgumentException $e) {
+            return response()->json(['message' => 'error', 'error' => $e->getMessage()], 400);
+        }
     }
 
     /**

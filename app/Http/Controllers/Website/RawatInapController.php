@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\DaftarPasien;
 use App\Models\Kamar;
 use App\Models\RawatInap;
+use App\Models\RawatInapCarePlan;
 use App\Models\RawatInapCatatan;
+use App\Models\RawatInapMedicalRecord;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -277,7 +279,15 @@ class RawatInapController extends Controller
                 'nadi' => $request->nadi,
                 'pernapasan' => $request->pernapasan,
                 'tensi' => $request->tensi,
+                'kesadaran' => $request->kesadaran,
+                'gcs' => $request->gcs,
+                'spo2' => $request->spo2,
+                'skala_nyeri' => $request->skala_nyeri,
+                'intake_ml' => $request->intake_ml,
+                'output_ml' => $request->output_ml,
                 'catatan' => $request->catatan,
+                'intervensi' => $request->intervensi,
+                'respons' => $request->respons,
                 'fk_userhandler' => Auth::id(),
             ]);
 
@@ -285,6 +295,113 @@ class RawatInapController extends Controller
         } catch (Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
+    }
+
+    public function getCarePlans($id)
+    {
+        if (! $this->admissionBelongsToCurrentKlien($id)) {
+            return response()->json(['error' => 'Admisi tidak ditemukan'], 404);
+        }
+
+        $data = RawatInapCarePlan::where('fk_rawatinap', $id)
+            ->orderByRaw("CASE status WHEN 'aktif' THEN 0 WHEN 'teratasi' THEN 1 ELSE 2 END")
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
+    }
+
+    public function saveCarePlan(Request $request, $id)
+    {
+        if (! $this->admissionBelongsToCurrentKlien($id)) {
+            return response()->json(['error' => 'Admisi tidak ditemukan'], 404);
+        }
+
+        $validated = $request->validate([
+            'diagnosis' => 'required|string|max:255',
+            'goal' => 'required|string|max:5000',
+            'interventions' => 'required|string|max:5000',
+            'target_date' => 'nullable|date',
+        ]);
+
+        $admission = RawatInap::findOrFail($id);
+        if ($admission->status !== 'dirawat') {
+            return response()->json(['error' => 'Care plan hanya dapat ditambahkan saat pasien masih dirawat'], 400);
+        }
+
+        $plan = RawatInapCarePlan::create([
+            'fk_rawatinap' => $id,
+            ...$validated,
+            'created_by' => Auth::id(),
+        ]);
+
+        return response()->json(['message' => 'success', 'data' => $plan], 200);
+    }
+
+    public function evaluateCarePlan(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:aktif,teratasi,dihentikan',
+            'evaluation' => 'required|string|max:5000',
+        ]);
+
+        $plan = RawatInapCarePlan::where('id', $id)
+            ->whereHas('admission', fn ($query) => $query->where('klienfk', Auth::user()->klienfk ?? 1))
+            ->first();
+
+        if (! $plan) {
+            return response()->json(['error' => 'Care plan tidak ditemukan'], 404);
+        }
+
+        $plan->update([
+            ...$validated,
+            'evaluated_by' => Auth::id(),
+            'evaluated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'success', 'data' => $plan->refresh()], 200);
+    }
+
+    public function getMedicalRecords($id)
+    {
+        if (! $this->admissionBelongsToCurrentKlien($id)) {
+            return response()->json(['error' => 'Admisi tidak ditemukan'], 404);
+        }
+
+        $data = RawatInapMedicalRecord::where('fk_rawatinap', $id)
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json(['message' => 'success', 'data' => $data], 200);
+    }
+
+    public function saveMedicalRecord(Request $request, $id)
+    {
+        if (! $this->admissionBelongsToCurrentKlien($id)) {
+            return response()->json(['error' => 'Admisi tidak ditemukan'], 404);
+        }
+
+        $validated = $request->validate([
+            'type' => 'required|in:cppt,instruksi_dokter,resume_medis,surat_kontrol',
+            'subjective' => 'nullable|string|max:10000',
+            'objective' => 'nullable|string|max:10000',
+            'assessment' => 'nullable|string|max:10000',
+            'plan' => 'nullable|string|max:10000',
+            'instruction' => 'nullable|string|max:10000',
+            'diagnosis_final' => 'nullable|string|max:10000',
+            'procedure_summary' => 'nullable|string|max:10000',
+            'condition_discharge' => 'nullable|string|max:10000',
+            'follow_up_date' => 'nullable|date',
+            'follow_up_destination' => 'nullable|string|max:255',
+        ]);
+
+        $record = RawatInapMedicalRecord::create([
+            'fk_rawatinap' => $id,
+            ...$validated,
+            'created_by' => Auth::id(),
+        ]);
+
+        return response()->json(['message' => 'success', 'data' => $record], 200);
     }
 
     /**

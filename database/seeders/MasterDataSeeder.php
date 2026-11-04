@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Master\ExtendedMasterDataSeeder;
 use Database\Seeders\Master\JadwalKerjaSeeder;
 use Database\Seeders\Master\JenisPemeriksaanLabSeeder;
 use Database\Seeders\Master\JenisPemeriksaanRadiologiSeeder;
@@ -35,6 +36,8 @@ class MasterDataSeeder extends Seeder
             JenisPemeriksaanRadiologiSeeder::class,
             RuangPraktekSeeder::class,
             JadwalKerjaSeeder::class,
+            ExtendedMasterDataSeeder::class,
+            ModuleSeeder::class,
         ]);
     }
 }

@@ -19,5 +19,6 @@ class RadiologiPasien extends Model
         'tgl_diminta' => 'datetime',
         'tgl_jadwal' => 'datetime',
         'tgl_hasil' => 'datetime',
+        'report_approved_at' => 'datetime',
     ];
 }

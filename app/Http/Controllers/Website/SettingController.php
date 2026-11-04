@@ -6,7 +6,8 @@ use App\Helpers\DatabaseBackupHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class SettingController extends Controller
 {
@@ -18,20 +19,20 @@ class SettingController extends Controller
     public function getParameter()
     {
         $setting = Setting::get();
-        return response()->json(["message" => 'success', 'data' => $setting], 200);
-    }
 
+        return response()->json(['message' => 'success', 'data' => $setting], 200);
+    }
 
     public function saveSettingD(Request $request)
     {
         $setting = Setting::where('id', $request->param)->update(['value' => $request->val]);
-        return response()->json(["message" => 'success', 'data' => $setting], 200);
+
+        return response()->json(['message' => 'success', 'data' => $setting], 200);
     }
 
     public function saveSettingF(Request $request)
     {
         try {
-
 
             $cek = Setting::where('id', $request->param[0])->first();
 
@@ -43,7 +44,6 @@ class SettingController extends Controller
                 }
             }
 
-
             $upload_dir = 'images/config';
             // Store the new file
             if ($request->file('val')) {
@@ -52,26 +52,33 @@ class SettingController extends Controller
                 ]);
 
                 $file = $request->file('val')[0];
-                $file_name = uniqid() . '-' . $file->getClientOriginalName();
-                $file_path = $upload_dir . '/' . $file_name;
+                $file_name = uniqid().'-'.$file->getClientOriginalName();
+                $file_path = $upload_dir.'/'.$file_name;
 
                 // Move the file to the public directory
                 $file->move(public_path($upload_dir), $file_name);
 
                 // Update the setting with the new file path
                 $setting = Setting::where('id', $request->param[0])->update(['value' => $file_path]);
-                return response()->json(["message" => 'success', 'data' => $setting], 200);
+
+                return response()->json(['message' => 'success', 'data' => $setting], 200);
             }
             $setting = Setting::where('id', $request->param[0])->update(['value' => null]);
-            return response()->json(["message" => 'success', 'data' => $setting], 200);
+
+            return response()->json(['message' => 'success', 'data' => $setting], 200);
         } catch (\Throwable $e) {
-            return response()->json(["error" => $e->getMessage()], 400);
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 
     public function downloadBackup()
     {
         $filename = 'backup-jivident-'.now()->format('Y-m-d_His').'.sql';
+        Log::channel('user_actions')->info('Database backup downloaded', [
+            'user_id' => Auth::id(),
+            'klienfk' => Auth::user()?->klienfk,
+            'filename' => $filename,
+        ]);
 
         return response()->streamDownload(function () {
             app(DatabaseBackupHelper::class)->streamSqlDump();

@@ -34,4 +34,14 @@ class RawatInap extends Model
     {
         return $this->hasMany(RawatInapCatatan::class, 'fk_rawatinap');
     }
+
+    public function carePlans()
+    {
+        return $this->hasMany(RawatInapCarePlan::class, 'fk_rawatinap');
+    }
+
+    public function medicalRecords()
+    {
+        return $this->hasMany(RawatInapMedicalRecord::class, 'fk_rawatinap');
+    }
 }

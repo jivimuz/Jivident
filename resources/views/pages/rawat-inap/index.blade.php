@@ -248,9 +248,48 @@
                             <label class="form-label">Tensi</label>
                             <input type="text" class="form-control" id="catatanTensi">
                         </div>
+                        <div class="col-3 mt-2">
+                            <label class="form-label">Kesadaran</label>
+                            <select class="form-select" id="catatanKesadaran">
+                                <option value="">Pilih</option>
+                                <option>Compos Mentis</option>
+                                <option>Apatis</option>
+                                <option>Somnolen</option>
+                                <option>Sopor</option>
+                                <option>Koma</option>
+                            </select>
+                        </div>
+                        <div class="col-3 mt-2">
+                            <label class="form-label">GCS</label>
+                            <input type="text" class="form-control" id="catatanGcs" placeholder="E4V5M6">
+                        </div>
+                        <div class="col-3 mt-2">
+                            <label class="form-label">SpO₂ (%)</label>
+                            <input type="number" class="form-control" id="catatanSpo2" min="0" max="100">
+                        </div>
+                        <div class="col-3 mt-2">
+                            <label class="form-label">Skala Nyeri</label>
+                            <input type="number" class="form-control" id="catatanSkalaNyeri" min="0" max="10">
+                        </div>
+                        <div class="col-3 mt-2">
+                            <label class="form-label">Intake (ml)</label>
+                            <input type="number" class="form-control" id="catatanIntake" min="0" step="0.01">
+                        </div>
+                        <div class="col-3 mt-2">
+                            <label class="form-label">Output (ml)</label>
+                            <input type="number" class="form-control" id="catatanOutput" min="0" step="0.01">
+                        </div>
                         <div class="col-12 mt-2">
                             <label class="form-label">Catatan</label>
                             <textarea class="form-control" id="catatanIsi" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <label class="form-label">Intervensi Keperawatan</label>
+                            <textarea class="form-control" id="catatanIntervensi" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <label class="form-label">Respons Pasien</label>
+                            <textarea class="form-control" id="catatanRespons" rows="2"></textarea>
                         </div>
                         <div class="col-12 mt-2">
                             <button class="btn btn-primary btn-sm" id="btnTambahCatatan">Tambah Catatan</button>
@@ -262,11 +301,105 @@
                             <tr>
                                 <th>Waktu</th>
                                 <th>TTV</th>
-                                <th>Catatan</th>
+                                <th>Observasi & Catatan</th>
                             </tr>
                         </thead>
                         <tbody id="catatanBody"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Care Plan Keperawatan -->
+    <div class="modal fade" id="modalCarePlan" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Asuhan Keperawatan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="carePlanRawatInapId">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label">Diagnosis Keperawatan</label>
+                            <input type="text" class="form-control" id="carePlanDiagnosis"
+                                placeholder="Contoh: Nyeri akut">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label">Target Tanggal</label>
+                            <input type="date" class="form-control" id="carePlanTargetDate">
+                        </div>
+                        <div class="col-md-4 mb-2 d-flex align-items-end">
+                            <button class="btn btn-primary" id="btnSaveCarePlan">Tambah Care Plan</button>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Tujuan / Luaran</label>
+                            <textarea class="form-control" id="carePlanGoal" rows="3"
+                                placeholder="Hasil yang ingin dicapai"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Intervensi</label>
+                            <textarea class="form-control" id="carePlanInterventions" rows="3"
+                                placeholder="Tindakan keperawatan yang direncanakan"></textarea>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Diagnosis & Tujuan</th>
+                                    <th>Intervensi</th>
+                                    <th>Status & Evaluasi</th>
+                                    <th>Target</th>
+                                </tr>
+                            </thead>
+                            <tbody id="carePlanBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Rekam Medis Rawat Inap -->
+    <div class="modal fade" id="modalMedicalRecord" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rekam Medis Rawat Inap</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="medicalRecordRawatInapId">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Jenis Dokumen</label>
+                            <select class="form-select" id="medicalRecordType">
+                                <option value="cppt">CPPT</option>
+                                <option value="instruksi_dokter">Instruksi Dokter</option>
+                                <option value="resume_medis">Resume Medis</option>
+                                <option value="surat_kontrol">Surat Kontrol</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row" id="medicalRecordFields"></div>
+                    <button class="btn btn-primary mb-3" id="btnSaveMedicalRecord">Simpan Dokumen</button>
+                    <hr>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Jenis</th>
+                                    <th>Isi</th>
+                                    <th>Dibuat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicalRecordBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -758,9 +891,12 @@
                     res.data.forEach(function(d) {
                         var aksi = d.status === 'dirawat' ?
                             `<a class="btn btn-xs btn-outline-info" onclick="bukaCatatan(${d.id})"><i class="fa fa-eye"></i></a>
-                             <a class="btn btn-xs btn-outline-secondary" onclick="bukaRiwayatPindah(${d.id})"><i class="fa fa-book"></i></a>
-                             <a class="btn btn-xs btn-outline-danger" onclick="bukaPulangkan(${d.id})">Pulangkan</a>` :
-                            `<a class="btn btn-xs btn-outline-secondary" onclick="bukaRiwayatPindah(${d.id})"><i class="fa fa-book"></i></a>`;
+                                 <a class="btn btn-xs btn-outline-primary" onclick="bukaCarePlan(${d.id})">Asuhan</a>
+                                 <a class="btn btn-xs btn-outline-success" onclick="bukaRekamMedis(${d.id})">RM Inap</a>
+                                 <a class="btn btn-xs btn-outline-secondary" onclick="bukaRiwayatPindah(${d.id})"><i class="fa fa-book"></i></a>
+                                 <a class="btn btn-xs btn-outline-danger" onclick="bukaPulangkan(${d.id})">Pulangkan</a>` :
+                            `<a class="btn btn-xs btn-outline-success" onclick="bukaRekamMedis(${d.id})">RM Inap</a>
+                                 <a class="btn btn-xs btn-outline-secondary" onclick="bukaRiwayatPindah(${d.id})"><i class="fa fa-book"></i></a>`;
                         rows += `<tr>
                             <td>${d.pasien_nama}<br><small class="text-muted">${d.pasien_norm}</small></td>
                             <td>${d.kamar_nama}</td>
@@ -778,7 +914,7 @@
 
         function bukaCatatan(id) {
             $('#catatanRawatInapId').val(id);
-            $('#catatanSuhu,#catatanNadi,#catatanPernapasan,#catatanTensi,#catatanIsi').val('');
+            $('#catatanSuhu,#catatanNadi,#catatanPernapasan,#catatanTensi,#catatanKesadaran,#catatanGcs,#catatanSpo2,#catatanSkalaNyeri,#catatanIntake,#catatanOutput,#catatanIsi,#catatanIntervensi,#catatanRespons').val('');
             loadCatatanList(id);
             $('#modalCatatan').modal('show');
         }
@@ -794,8 +930,14 @@
                     var rows = '';
                     res.data.forEach(d => rows += `<tr>
                         <td>${d.waktu}</td>
-                        <td>S:${d.suhu ?? '-'} N:${d.nadi ?? '-'} RR:${d.pernapasan ?? '-'} TD:${d.tensi ?? '-'}</td>
-                        <td>${d.catatan}</td>
+                        <td>
+                            S:${d.suhu ?? '-'} N:${d.nadi ?? '-'} RR:${d.pernapasan ?? '-'} TD:${d.tensi ?? '-'}<br>
+                            Kesadaran:${d.kesadaran ?? '-'} GCS:${d.gcs ?? '-'} SpO₂:${d.spo2 ?? '-'} Nyeri:${d.skala_nyeri ?? '-'}<br>
+                            Intake:${d.intake_ml ?? '-'} ml · Output:${d.output_ml ?? '-'} ml<br>
+                            <strong>Catatan:</strong> ${d.catatan}<br>
+                            <strong>Intervensi:</strong> ${d.intervensi ?? '-'}<br>
+                            <strong>Respons:</strong> ${d.respons ?? '-'}
+                        </td>
                     </tr>`);
                     $('#catatanBody').html(rows ||
                         '<tr><td colspan="3" class="text-muted text-center">Belum ada catatan</td></tr>');
@@ -822,15 +964,176 @@
                     nadi: $('#catatanNadi').val(),
                     pernapasan: $('#catatanPernapasan').val(),
                     tensi: $('#catatanTensi').val(),
+                    kesadaran: $('#catatanKesadaran').val(),
+                    gcs: $('#catatanGcs').val(),
+                    spo2: $('#catatanSpo2').val(),
+                    skala_nyeri: $('#catatanSkalaNyeri').val(),
+                    intake_ml: $('#catatanIntake').val(),
+                    output_ml: $('#catatanOutput').val(),
                     catatan: $('#catatanIsi').val(),
+                    intervensi: $('#catatanIntervensi').val(),
+                    respons: $('#catatanRespons').val(),
                 },
                 success: function() {
                     Toast.fire({
                         icon: 'success',
                         title: 'Catatan ditambahkan'
                     });
-                    $('#catatanSuhu,#catatanNadi,#catatanPernapasan,#catatanTensi,#catatanIsi').val('');
+                    $('#catatanSuhu,#catatanNadi,#catatanPernapasan,#catatanTensi,#catatanKesadaran,#catatanGcs,#catatanSpo2,#catatanSkalaNyeri,#catatanIntake,#catatanOutput,#catatanIsi,#catatanIntervensi,#catatanRespons').val('');
                     loadCatatanList(id);
+                }
+            });
+        });
+
+        function bukaCarePlan(id) {
+            $('#carePlanRawatInapId').val(id);
+            $('#carePlanDiagnosis,#carePlanGoal,#carePlanInterventions,#carePlanTargetDate').val('');
+            loadCarePlans(id);
+            $('#modalCarePlan').modal('show');
+        }
+
+        function loadCarePlans(id) {
+            $.ajax({
+                url: "{{ url('rawat-inap/getCarePlans') }}/" + id,
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(res) {
+                    var rows = '';
+                    res.data.forEach(function(d) {
+                        rows += `<tr>
+                            <td><strong>${d.diagnosis}</strong><br><small>${d.goal}</small></td>
+                            <td>${d.interventions}</td>
+                            <td>${d.status}<br><small>${d.evaluation ?? '-'}</small></td>
+                            <td>${d.target_date ?? '-'}</td>
+                        </tr>`;
+                    });
+                    $('#carePlanBody').html(rows ||
+                        '<tr><td colspan="4" class="text-muted text-center">Belum ada care plan</td></tr>');
+                }
+            });
+        }
+
+        $('#btnSaveCarePlan').on('click', function() {
+            var id = $('#carePlanRawatInapId').val();
+            if (!$('#carePlanDiagnosis').val() || !$('#carePlanGoal').val() || !$('#carePlanInterventions').val()) {
+                return Toast.fire({
+                    icon: 'warning',
+                    title: 'Diagnosis, tujuan, dan intervensi wajib diisi'
+                });
+            }
+            $.ajax({
+                url: "{{ url('rawat-inap/saveCarePlan') }}/" + id,
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                data: {
+                    diagnosis: $('#carePlanDiagnosis').val(),
+                    goal: $('#carePlanGoal').val(),
+                    interventions: $('#carePlanInterventions').val(),
+                    target_date: $('#carePlanTargetDate').val(),
+                },
+                success: function() {
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Care plan ditambahkan'
+                    });
+                    $('#carePlanDiagnosis,#carePlanGoal,#carePlanInterventions,#carePlanTargetDate').val('');
+                    loadCarePlans(id);
+                }
+            });
+        });
+
+        function bukaRekamMedis(id) {
+            $('#medicalRecordRawatInapId').val(id);
+            $('#medicalRecordType').val('cppt');
+            $('#medicalRecordFields').html('');
+            loadMedicalRecords(id);
+            renderMedicalRecordFields();
+            $('#modalMedicalRecord').modal('show');
+        }
+
+        function renderMedicalRecordFields() {
+            var type = $('#medicalRecordType').val();
+            var fields = '';
+            if (type === 'cppt') {
+                fields = `
+                    <div class="col-md-6 mb-2"><label class="form-label">Subjective</label><textarea class="form-control" id="medicalSubjective" rows="3"></textarea></div>
+                    <div class="col-md-6 mb-2"><label class="form-label">Objective</label><textarea class="form-control" id="medicalObjective" rows="3"></textarea></div>
+                    <div class="col-md-6 mb-2"><label class="form-label">Assessment</label><textarea class="form-control" id="medicalAssessment" rows="3"></textarea></div>
+                    <div class="col-md-6 mb-2"><label class="form-label">Plan</label><textarea class="form-control" id="medicalPlan" rows="3"></textarea></div>`;
+            } else if (type === 'instruksi_dokter') {
+                fields = `<div class="col-12 mb-2"><label class="form-label">Instruksi Dokter</label><textarea class="form-control" id="medicalInstruction" rows="4"></textarea></div>`;
+            } else if (type === 'resume_medis') {
+                fields = `
+                    <div class="col-md-6 mb-2"><label class="form-label">Diagnosis Akhir</label><textarea class="form-control" id="medicalDiagnosisFinal" rows="3"></textarea></div>
+                    <div class="col-md-6 mb-2"><label class="form-label">Ringkasan Tindakan</label><textarea class="form-control" id="medicalProcedureSummary" rows="3"></textarea></div>
+                    <div class="col-12 mb-2"><label class="form-label">Kondisi Saat Pulang</label><textarea class="form-control" id="medicalConditionDischarge" rows="3"></textarea></div>`;
+            } else {
+                fields = `
+                    <div class="col-md-4 mb-2"><label class="form-label">Tanggal Kontrol</label><input type="date" class="form-control" id="medicalFollowUpDate"></div>
+                    <div class="col-md-8 mb-2"><label class="form-label">Tujuan Kontrol / Fasilitas</label><input type="text" class="form-control" id="medicalFollowUpDestination"></div>`;
+            }
+            $('#medicalRecordFields').html(fields);
+        }
+
+        $('#medicalRecordType').on('change', renderMedicalRecordFields);
+
+        function escapeMedicalRecordValue(value) {
+            return $('<div>').text(value ?? '-').html();
+        }
+
+        function loadMedicalRecords(id) {
+            $.ajax({
+                url: "{{ url('rawat-inap/getMedicalRecords') }}/" + id,
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                success: function(res) {
+                    var rows = '';
+                    res.data.forEach(function(d) {
+                        var detail = d.type === 'cppt' ?
+                            `S: ${escapeMedicalRecordValue(d.subjective)}<br>O: ${escapeMedicalRecordValue(d.objective)}<br>A: ${escapeMedicalRecordValue(d.assessment)}<br>P: ${escapeMedicalRecordValue(d.plan)}` :
+                            d.type === 'instruksi_dokter' ? escapeMedicalRecordValue(d.instruction) :
+                            d.type === 'resume_medis' ? `Diagnosis: ${escapeMedicalRecordValue(d.diagnosis_final)}<br>Tindakan: ${escapeMedicalRecordValue(d.procedure_summary)}<br>Kondisi: ${escapeMedicalRecordValue(d.condition_discharge)}` :
+                            `Tanggal: ${escapeMedicalRecordValue(d.follow_up_date)}<br>Tujuan: ${escapeMedicalRecordValue(d.follow_up_destination)}`;
+                        rows += `<tr><td>${escapeMedicalRecordValue(d.type.replaceAll('_', ' '))}</td><td>${detail}</td><td>${escapeMedicalRecordValue(d.created_at)}</td></tr>`;
+                    });
+                    $('#medicalRecordBody').html(rows ||
+                        '<tr><td colspan="3" class="text-muted text-center">Belum ada dokumen medis</td></tr>');
+                }
+            });
+        }
+
+        $('#btnSaveMedicalRecord').on('click', function() {
+            var id = $('#medicalRecordRawatInapId').val();
+            var type = $('#medicalRecordType').val();
+            var data = { type: type };
+            if (type === 'cppt') {
+                data.subjective = $('#medicalSubjective').val();
+                data.objective = $('#medicalObjective').val();
+                data.assessment = $('#medicalAssessment').val();
+                data.plan = $('#medicalPlan').val();
+            } else if (type === 'instruksi_dokter') {
+                data.instruction = $('#medicalInstruction').val();
+            } else if (type === 'resume_medis') {
+                data.diagnosis_final = $('#medicalDiagnosisFinal').val();
+                data.procedure_summary = $('#medicalProcedureSummary').val();
+                data.condition_discharge = $('#medicalConditionDischarge').val();
+            } else {
+                data.follow_up_date = $('#medicalFollowUpDate').val();
+                data.follow_up_destination = $('#medicalFollowUpDestination').val();
+            }
+            $.ajax({
+                url: "{{ url('rawat-inap/saveMedicalRecord') }}/" + id,
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                data: data,
+                success: function() {
+                    Toast.fire({ icon: 'success', title: 'Dokumen medis disimpan' });
+                    loadMedicalRecords(id);
+                    renderMedicalRecordFields();
                 }
             });
         });

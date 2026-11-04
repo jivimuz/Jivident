@@ -4,6 +4,21 @@
         a {
             margin-right: 5px
         }
+
+        .setting-value-cell {
+            min-width: 260px;
+        }
+
+        .setting-unit {
+            min-width: 52px;
+            justify-content: center;
+        }
+
+        .setting-description {
+            display: block;
+            margin-top: 2px;
+            font-size: .75rem;
+        }
     </style>
 @endsection
 
@@ -58,8 +73,8 @@
         })
 
         function getList() {
-            let noD = 1
-            const columns = [{
+            var noD = 1
+            var columns = [{
                     data: "id",
                     render: function(data, b, c) {
 
@@ -69,24 +84,40 @@
                 },
                 {
                     data: 'name'
+                    ,
+                    render: function(data, b, c) {
+                        var meta = settingMeta(c);
+                        return `<strong>${escapeSettingHtml(data)}</strong><small class="setting-description text-muted">${meta.description}</small>`;
+                    }
                 },
                 {
                     data: 'value',
+                    className: 'setting-value-cell',
                     render: function(a, b, c) {
-                        var a = ``
+                        var value = c.value ?? '';
                         if (c.type == "file") {
-                            a += (`${ c.value && c.value != '' ? `  <div class="iq-avatar me-2" id='lab-${c.id}'><img style="max-height:50px" src="<?= url('') ?>/${c.value}"></div>` :
+                            var fileValue = (`${ value && value != '' ? `  <div class="iq-avatar me-2" id='lab-${c.id}'><img style="max-height:50px" src="<?= url('') ?>/${escapeSettingHtml(value)}"></div>` :
                                     `<span id='lab-${c.id}'><i class="fa fa-cube"></i></span>`}`)
-
-                            a += `<form id='form-${c.id}'>`
-                            a += `<input type="text" name='param[]' value="${c.id}" hidden>`
-                            a += `<input type="${c.type}" class="form-control" id='val-${c.id}' name="val[]" value="${c.value}" hidden>`
-                            a += `</form>`
+                            return `<span id='lab-${c.id}'>${fileValue}</span>
+                                <form id='form-${c.id}'>
+                                    <input type="text" name="param[]" value="${c.id}" hidden>
+                                    <input type="file" class="form-control" id="val-${c.id}" name="val[]" hidden>
+                                </form>`;
                         } else {
-                            a += `<span id='lab-${c.id}'>${c.type == "number" ? Number(c.value || 0).toLocaleString('id-ID') : c.value}</span>`
-                            a += `<input type="${c.type}" class="form-control" id='val-${c.id}' value="${c.value}" hidden>`
+                            var meta = settingMeta(c);
+                            var displayValue = formatSettingValue(value, meta);
+                            var inputType = meta.inputType || c.type || 'text';
+                            var inputConstraints = `${meta.min ? ` min="${meta.min}"` : ''}${meta.max ? ` max="${meta.max}"` : ''}${meta.step ? ` step="${meta.step}"` : ''}`;
+                            var control = `<input type="${inputType}" class="form-control" id="val-${c.id}" value="${escapeSettingAttribute(value)}"${inputConstraints} hidden>`;
+                            if (meta.prefix || meta.suffix) {
+                                control = `<div class="input-group" id="input-group-${c.id}" hidden>
+                                    ${meta.prefix ? `<span class="input-group-text setting-unit">${meta.prefix}</span>` : ''}
+                                    ${control.replace(' hidden', '')}
+                                    ${meta.suffix ? `<span class="input-group-text setting-unit">${meta.suffix}</span>` : ''}
+                                </div>`;
+                            }
+                            return `<span id="lab-${c.id}">${displayValue}</span>${control}`;
                         }
-                        return a
                     }
                 },
                 {
@@ -145,11 +176,83 @@
 
         }
 
+        function settingMeta(setting) {
+            var parameter = setting.parameter || '';
+            var meta = {
+                inputType: setting.type === 'number' ? 'number' : 'text',
+                prefix: '',
+                suffix: '',
+                description: setting.type === 'number' ? 'Nilai angka' : 'Nilai teks',
+                min: '',
+                max: '',
+                step: ''
+            };
+
+            if (parameter.endsWith('_persen') || parameter === 'ppn_persen') {
+                meta.suffix = '%';
+                meta.description = 'Persentase (0 sampai 100)';
+                meta.inputType = 'number';
+                meta.min = '0';
+                meta.max = '100';
+                meta.step = '0.01';
+            } else if (parameter.includes('_price') || parameter.endsWith('_cap')) {
+                meta.prefix = 'Rp';
+                meta.description = 'Nominal dalam Rupiah';
+                meta.inputType = 'number';
+                meta.min = '0';
+                meta.step = '0.01';
+            } else if (parameter.includes('email')) {
+                meta.description = 'Alamat email';
+                meta.inputType = 'email';
+            } else if (parameter.includes('base_url')) {
+                meta.description = 'Alamat URL endpoint';
+                meta.inputType = 'url';
+            } else if (parameter.includes('secret') || parameter.includes('user_key')) {
+                meta.description = 'Credential rahasia';
+                meta.inputType = 'password';
+            } else if (parameter.includes('cons_id') || parameter.includes('client_id')) {
+                meta.description = 'ID credential integrasi';
+            } else if (parameter.includes('youtube')) {
+                meta.description = 'ID video YouTube';
+            } else if (parameter === 'company_logo') {
+                meta.description = 'File gambar logo';
+            } else if (parameter === 'app_name' || parameter.includes('company_')) {
+                meta.description = 'Informasi identitas klinik';
+            }
+
+            return meta;
+        }
+
+        function formatSettingValue(value, meta) {
+            if (value === null || value === '') {
+                return '<span class="text-muted">Belum diatur</span>';
+            }
+            if (meta.prefix === 'Rp') {
+                return `<span class="fw-semibold">Rp ${Number(value).toLocaleString('id-ID')}</span>`;
+            }
+            if (meta.suffix) {
+                return `<span class="fw-semibold">${escapeSettingHtml(value)} ${meta.suffix}</span>`;
+            }
+            if (meta.inputType === 'password') {
+                return '<span class="text-muted">Tersimpan (klik edit untuk mengganti)</span>';
+            }
+            return escapeSettingHtml(value);
+        }
+
+        function escapeSettingHtml(value) {
+            return $('<div>').text(value ?? '').html();
+        }
+
+        function escapeSettingAttribute(value) {
+            return escapeSettingHtml(value).replace(/"/g, '&quot;');
+        }
+
 
         function editVal(id) {
             $('#edit-' + id).attr('hidden', true);
             $('#lab-' + id).attr('hidden', true)
             $('#val-' + id).attr('hidden', false)
+            $('#input-group-' + id).attr('hidden', false)
             $('#cancel-' + id).attr('hidden', false);
             $('#send-' + id).attr('hidden', false);
         }
@@ -158,6 +261,7 @@
             $('#edit-' + id).attr('hidden', false);
             $('#lab-' + id).attr('hidden', false)
             $('#val-' + id).attr('hidden', true)
+            $('#input-group-' + id).attr('hidden', true)
             $('#cancel-' + id).attr('hidden', true);
             $('#send-' + id).attr('hidden', true);
         }

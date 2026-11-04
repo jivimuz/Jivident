@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Website\AccountingController;
 use App\Http\Controllers\Website\ActivityLogController;
 use App\Http\Controllers\Website\AntrianController;
 use App\Http\Controllers\Website\AppointmentController;
 use App\Http\Controllers\Website\AuthController;
 use App\Http\Controllers\Website\BiayaTambahanController;
 use App\Http\Controllers\Website\BillingController;
+use App\Http\Controllers\Website\BpjsClaimController;
 use App\Http\Controllers\Website\CutiController;
 use App\Http\Controllers\Website\DibatalkanController;
 use App\Http\Controllers\Website\DiperiksaController;
@@ -29,9 +31,11 @@ use App\Http\Controllers\Website\PemeriksaanController;
 use App\Http\Controllers\Website\PortalController;
 use App\Http\Controllers\Website\PosController;
 use App\Http\Controllers\Website\PrintController;
+use App\Http\Controllers\Website\ProcurementController;
 use App\Http\Controllers\Website\ProductCategoriesController;
 use App\Http\Controllers\Website\ProductController;
 use App\Http\Controllers\Website\profileController;
+use App\Http\Controllers\Website\QualityController;
 use App\Http\Controllers\Website\RadiologiController;
 use App\Http\Controllers\Website\RawatInapController;
 use App\Http\Controllers\Website\ReceiveOrderController;
@@ -106,7 +110,7 @@ Route::get('_ops/storage-link', function () {
     // beberapa hosting disable symlink()
     $ok = symlink($target, $link);
 
-    if (!$ok) {
+    if (! $ok) {
         return response()->json([
             'ok' => false,
             'message' => 'symlink() gagal (mungkin diblok hosting). Buat manual lewat file manager/ssh.',
@@ -357,6 +361,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('deleteMaster/{id}', [LabController::class, 'deleteMaster']);
         Route::post('getWorklist', [LabController::class, 'getWorklist']);
         Route::post('saveHasil/{id}', [LabController::class, 'saveHasil']);
+        Route::post('collectSpecimen/{id}', [LabController::class, 'collectSpecimen']);
+        Route::post('verifyResult/{id}', [LabController::class, 'verifyResult']);
     });
 
     Route::middleware(['checkAccess:RAD'])->prefix('radiologi')->group(function () {
@@ -365,8 +371,20 @@ Route::middleware(['auth'])->group(function () {
         Route::post('saveMaster', [RadiologiController::class, 'saveMaster']);
         Route::post('deleteMaster/{id}', [RadiologiController::class, 'deleteMaster']);
         Route::post('getWorklist', [RadiologiController::class, 'getWorklist']);
+        Route::post('approveReport/{id}', [RadiologiController::class, 'approveReport']);
         Route::post('jadwalkan/{id}', [RadiologiController::class, 'jadwalkan']);
         Route::post('saveHasil/{id}', [RadiologiController::class, 'saveHasil']);
+    });
+
+    Route::middleware(['checkAccess:QLT'])->prefix('quality')->group(function () {
+        Route::get('/', [QualityController::class, 'index']);
+        Route::post('incidents', [QualityController::class, 'incidents']);
+        Route::post('incidents/store', [QualityController::class, 'storeIncident']);
+        Route::post('incidents/update/{id}', [QualityController::class, 'updateIncident']);
+        Route::post('indicators', [QualityController::class, 'indicators']);
+        Route::post('indicators/store', [QualityController::class, 'storeIndicator']);
+        Route::post('integrations', [QualityController::class, 'integrations']);
+        Route::post('integrations/queue', [QualityController::class, 'queueIntegration']);
     });
 
     Route::middleware(['checkAccess:RWI'])->prefix('rawat-inap')->group(function () {
@@ -387,6 +405,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getCatatanList/{id}', [RawatInapController::class, 'getCatatanList']);
         Route::post('getPindahLog/{id}', [RawatInapController::class, 'getPindahLog']);
         Route::post('saveCatatan/{id}', [RawatInapController::class, 'saveCatatan']);
+        Route::post('getCarePlans/{id}', [RawatInapController::class, 'getCarePlans']);
+        Route::post('saveCarePlan/{id}', [RawatInapController::class, 'saveCarePlan']);
+        Route::post('evaluateCarePlan/{id}', [RawatInapController::class, 'evaluateCarePlan']);
+        Route::post('getMedicalRecords/{id}', [RawatInapController::class, 'getMedicalRecords']);
+        Route::post('saveMedicalRecord/{id}', [RawatInapController::class, 'saveMedicalRecord']);
     });
 
     Route::middleware(['checkAccess:OK'])->prefix('ruangan-operasi')->group(function () {
@@ -469,6 +492,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('operasi/save', [PemeriksaanController::class, 'saveOperasi']);
             Route::post('operasi/status/{jadwalId}', [PemeriksaanController::class, 'updateStatusOperasi']);
             Route::post('operasi/cancel/{jadwalId}', [PemeriksaanController::class, 'cancelOperasi']);
+            Route::post('operasi/record/{jadwalId}', [PemeriksaanController::class, 'operasiRecord']);
+            Route::post('operasi/record/save/{jadwalId}', [PemeriksaanController::class, 'saveOperasiRecord']);
+            Route::post('operasi/monitoring/{jadwalId}', [PemeriksaanController::class, 'addOperasiMonitoring']);
 
             Route::post('biayatambahan', [PemeriksaanController::class, 'biayaTambahan']);
             Route::post('biayatambahan/save', [PemeriksaanController::class, 'saveBiayaTambahan']);
@@ -522,6 +548,21 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getDaftarPasienList', [BiayaTambahanController::class, 'getDaftarPasienList']);
         Route::post('store', [BiayaTambahanController::class, 'store']);
         Route::post('delete/{id}', [BiayaTambahanController::class, 'destroy']);
+    });
+
+    Route::middleware(['checkAccess:BPJ'])->prefix('bpjs-claims')->group(function () {
+        Route::get('/', [BpjsClaimController::class, 'index']);
+        Route::post('getList', [BpjsClaimController::class, 'getList']);
+        Route::post('store', [BpjsClaimController::class, 'store']);
+        Route::post('transition/{id}', [BpjsClaimController::class, 'transition']);
+    });
+
+    Route::middleware(['checkAccess:AKT'])->prefix('accounting')->group(function () {
+        Route::get('/', [AccountingController::class, 'index']);
+        Route::post('accounts', [AccountingController::class, 'accounts']);
+        Route::post('accounts/store', [AccountingController::class, 'storeAccount']);
+        Route::post('journals', [AccountingController::class, 'journals']);
+        Route::post('journals/store', [AccountingController::class, 'storeJournal']);
     });
 
     Route::middleware(['checkAccess:SRT'])->prefix('surat-mandiri')->group(function () {
@@ -623,6 +664,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('getSupplierList', [ReceiveOrderController::class, 'getSupplierList']);
         Route::post('getProductList', [ReceiveOrderController::class, 'getProductList']);
         Route::post('getUnitList', [ReceiveOrderController::class, 'getUnitList']);
+    });
+
+    Route::middleware(['checkAccess:PRC'])->prefix('procurement')->group(function () {
+        Route::get('/', [ProcurementController::class, 'index']);
+        Route::post('requests', [ProcurementController::class, 'requests']);
+        Route::post('requests/store', [ProcurementController::class, 'storeRequest']);
+        Route::post('requests/transition/{id}', [ProcurementController::class, 'transition']);
+        Route::post('purchase-orders', [ProcurementController::class, 'purchaseOrders']);
+        Route::post('purchase-orders/store', [ProcurementController::class, 'storePurchaseOrder']);
     });
 })->middleware('throttle:300,1');
 

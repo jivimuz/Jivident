@@ -18,5 +18,7 @@ class LabPasien extends Model
     protected $casts = [
         'tgl_diminta' => 'datetime',
         'tgl_hasil' => 'datetime',
+        'specimen_collected_at' => 'datetime',
+        'verified_at' => 'datetime',
     ];
 }
