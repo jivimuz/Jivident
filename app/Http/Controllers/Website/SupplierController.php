@@ -20,12 +20,27 @@ class SupplierController extends Controller
         $query = DB::table('m_suppliers')->whereNull('deleted_at')->where('klienfk', Auth::user()->klienfk ?? 1);
 
         if ($request->search_name) {
-            $query->where('name', 'like', '%' . $request->search_name . '%');
+            $query->where('name', 'like', '%'.$request->search_name.'%');
         }
 
-        $data = $query->orderBy('name', 'asc')->get();
+        $total = (clone $query)->count();
+        $search = $request->input('search.value', $request->search_name);
+        if ($search) {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+        $length = min(max((int) $request->input('length', 10), 1), 100);
+        $page = $query->orderBy('name')->paginate($length, ['*'], 'page', (int) floor((int) $request->input('start', 0) / $length) + 1);
 
-        return response()->json(['data' => $data]);
+        return response()->json([
+            'draw' => (int) $request->input('draw'),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $page->total(),
+            'data' => $page->items(),
+        ]);
     }
 
     public function store(Request $request)
@@ -53,7 +68,8 @@ class SupplierController extends Controller
 
             return response()->json(['status' => 'success', 'message' => 'Supplier berhasil ditambahkan.']);
         } catch (\Exception $e) {
-            Log::error('Error Store Supplier: ' . $e->getMessage());
+            Log::error('Error Store Supplier: '.$e->getMessage());
+
             return response()->json(['status' => 'error', 'message' => 'Terjadi kesalahan sistem.'], 500);
         }
     }
@@ -64,6 +80,7 @@ class SupplierController extends Controller
         if ($data) {
             return response()->json(['status' => 'success', 'data' => $data]);
         }
+
         return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan.'], 404);
     }
 
@@ -90,7 +107,8 @@ class SupplierController extends Controller
 
             return response()->json(['status' => 'success', 'message' => 'Supplier berhasil diperbarui.']);
         } catch (\Exception $e) {
-            Log::error('Error Update Supplier: ' . $e->getMessage());
+            Log::error('Error Update Supplier: '.$e->getMessage());
+
             return response()->json(['status' => 'error', 'message' => 'Terjadi kesalahan sistem.'], 500);
         }
     }
@@ -102,9 +120,11 @@ class SupplierController extends Controller
             if (! $updated) {
                 return response()->json(['status' => 'error', 'message' => 'Data tidak ditemukan.'], 404);
             }
+
             return response()->json(['status' => 'success', 'message' => 'Supplier berhasil dihapus.']);
         } catch (\Exception $e) {
-            Log::error('Error Delete Supplier: ' . $e->getMessage());
+            Log::error('Error Delete Supplier: '.$e->getMessage());
+
             return response()->json(['status' => 'error', 'message' => 'Terjadi kesalahan sistem.'], 500);
         }
     }

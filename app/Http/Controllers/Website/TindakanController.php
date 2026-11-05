@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\Tindakan;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,10 +15,23 @@ class TindakanController extends Controller
         return view('pages/tindakan/index');
     }
 
-    public function getList()
+    public function getList(Request $request)
     {
-        $data = Tindakan::where('klienfk', Auth::user()->klienfk ?? 1)->get();
-        return response()->json(["message" => 'success', 'data' => $data], 200);
+        $query = Tindakan::where('klienfk', Auth::user()->klienfk ?? 1);
+        $total = (clone $query)->count();
+        if ($request->input('search.value')) {
+            $search = $request->input('search.value');
+            $query->where('name', 'like', "%{$search}%");
+        }
+        $length = min(max((int) $request->input('length', 10), 1), 100);
+        $page = $query->orderBy('name')->paginate($length, ['*'], 'page', (int) floor((int) $request->input('start', 0) / $length) + 1);
+
+        return response()->json([
+            'draw' => (int) $request->input('draw'),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $page->total(),
+            'data' => $page->items(),
+        ], 200);
     }
 
     // SHOW BY ID (for Edit Modal)
@@ -27,6 +39,7 @@ class TindakanController extends Controller
     {
         $id = $request->id;
         $data = Tindakan::where('klienfk', Auth::user()->klienfk ?? 1)->find($id);
+
         return response()->json($data);
     }
 
@@ -34,8 +47,8 @@ class TindakanController extends Controller
     public function saveTindakan(Request $request)
     {
         $request->validate([
-            'name'   => 'required|string',
-            'amount' => 'required|numeric|min:0|max:9999999999'
+            'name' => 'required|string',
+            'amount' => 'required|numeric|min:0|max:9999999999',
         ]);
 
         $klienfk = Auth::user()->klienfk ?? 1;
@@ -62,6 +75,7 @@ class TindakanController extends Controller
     public function deleteTindakan(Request $request)
     {
         Tindakan::where('id', $request->id)->where('klienfk', Auth::user()->klienfk ?? 1)->delete();
+
         return response()->json(['status' => 'deleted']);
     }
 
@@ -77,11 +91,10 @@ class TindakanController extends Controller
             ->get();
 
         return response()->json([
-            "message" => "success",
-            "data" => $data
+            'message' => 'success',
+            'data' => $data,
         ], 200);
     }
-
 
     public function getDokterList(Request $request)
     {
@@ -101,8 +114,8 @@ class TindakanController extends Controller
             ->get();
 
         return response()->json([
-            "message" => 'success',
-            "data" => $data
+            'message' => 'success',
+            'data' => $data,
         ], 200);
     }
 }

@@ -133,42 +133,15 @@
         }
 
         function loadMasterList() {
-            $.ajax({
-                url: "{{ url('radiologi/getMasterList') }}",
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                success: function(res) {
-                    if ($.fn.DataTable.isDataTable('#masterTable')) {
-                        $('#masterTable').DataTable().destroy();
-                    }
-                    var rows = '';
-                    res.data.forEach(d => rows += `<tr>
-                        <td>${d.nama}</td>
-                        <td>${d.deskripsi ?? '-'}</td>
-                        <td>Rp ${Number(d.harga).toLocaleString('id-ID')}</td>
-                        <td>
-                            <a class="btn btn-xs btn-outline-primary" onclick="editMaster(${d.id}, '${d.nama}', '${d.deskripsi ?? ''}', ${d.harga})">Edit</a>
-                            <a class="btn btn-xs btn-outline-danger" onclick="deleteMaster(${d.id})">Hapus</a>
-                        </td>
-                    </tr>`);
-                    $('#masterTable tbody').html(rows);
-                    $('#masterTable').DataTable({
-                        pageLength: 10,
-                        lengthMenu: [10, 25, 50],
-                        language: {
-                            emptyTable: 'Belum ada data',
-                            search: 'Cari:',
-                            lengthMenu: 'Tampilkan _MENU_',
-                            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
-                            paginate: {
-                                previous: 'Sebelumnya',
-                                next: 'Berikutnya'
-                            }
-                        }
-                    });
-                }
+            $('#masterTable').DataTable({
+                processing: true, serverSide: true, destroy: true, pageLength: 10,
+                ajax: {url: "{{ url('radiologi/getMasterList') }}", type: 'POST', headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}},
+                columns: [
+                    {data: 'nama'}, {data: 'deskripsi', defaultContent: '-'},
+                    {data: 'harga', render: d => 'Rp ' + Number(d).toLocaleString('id-ID')},
+                    {data: null, orderable: false, render: d => `<a class="btn btn-xs btn-outline-primary" onclick="editMaster(${d.id}, '${String(d.nama).replace(/'/g, "\\'")}', '${d.deskripsi ?? ''}', ${d.harga})">Edit</a> <a class="btn btn-xs btn-outline-danger" onclick="deleteMaster(${d.id})">Hapus</a>`}
+                ],
+                language: {emptyTable: 'Belum ada data', search: 'Cari:', lengthMenu: 'Tampilkan _MENU_', paginate: {previous: 'Sebelumnya', next: 'Berikutnya'}}
             });
         }
 
@@ -230,56 +203,17 @@
         }
 
         function loadWorklist() {
-            $.ajax({
-                url: "{{ url('radiologi/getWorklist') }}",
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                data: {
-                    status: $('#worklistStatus').val()
-                },
-                success: function(res) {
-                    if ($.fn.DataTable.isDataTable('#worklistTable')) {
-                        $('#worklistTable').DataTable().destroy();
-                    }
-                    var rows = '';
-                    res.data.forEach(function(d) {
-                        var statusCls = d.status === 'selesai' ? 'bg-success' : (d.status === 'terjadwal' ?
-                            'bg-info' : 'bg-warning text-dark');
-                        var aksi = '-';
-                        if (d.status === 'diminta') {
-                            aksi =
-                                `<a class="btn btn-xs btn-outline-info" onclick="jadwalkan(${d.id})">Jadwalkan</a>`;
-                        } else if (d.status === 'terjadwal') {
-                            aksi =
-                                `<a class="btn btn-xs btn-outline-success" onclick="bukaModalHasil(${d.id})">Input Hasil</a>`;
-                        }
-                        rows += `<tr>
-                            <td>${d.tgl_diminta}</td>
-                            <td>${d.pasien_nama} <br><small class="text-muted">${d.pasien_norm}</small></td>
-                            <td>${d.jenis_nama}<br><small class="text-muted">${d.catatan_klinis ?? ''}</small></td>
-                            <td>${d.tgl_jadwal ?? '-'}</td>
-                            <td><span class="badge ${statusCls}">${d.status}</span></td>
-                            <td>${aksi}</td>
-                        </tr>`;
-                    });
-                    $('#worklistTable tbody').html(rows);
-                    $('#worklistTable').DataTable({
-                        pageLength: 10,
-                        lengthMenu: [10, 25, 50],
-                        language: {
-                            emptyTable: 'Tidak ada data',
-                            search: 'Cari:',
-                            lengthMenu: 'Tampilkan _MENU_',
-                            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
-                            paginate: {
-                                previous: 'Sebelumnya',
-                                next: 'Berikutnya'
-                            }
-                        }
-                    });
-                }
+            $('#worklistTable').DataTable({
+                processing: true, serverSide: true, destroy: true, pageLength: 10,
+                ajax: {url: "{{ url('radiologi/getWorklist') }}", type: 'POST', headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}, data: d => { d.status = $('#worklistStatus').val(); }},
+                columns: [
+                    {data: 'tgl_diminta'}, {data: null, render: d => `${d.pasien_nama} <br><small class="text-muted">${d.pasien_norm}</small>`},
+                    {data: null, render: d => `${d.jenis_nama}<br><small class="text-muted">${d.catatan_klinis ?? ''}</small>`},
+                    {data: 'tgl_jadwal', defaultContent: '-'},
+                    {data: 'status', render: d => `<span class="badge ${d === 'selesai' ? 'bg-success' : (d === 'terjadwal' ? 'bg-info' : 'bg-warning text-dark')}">${d}</span>`},
+                    {data: null, orderable: false, render: d => d.status === 'diminta' ? `<a class="btn btn-xs btn-outline-info" onclick="jadwalkan(${d.id})">Jadwalkan</a>` : (d.status === 'terjadwal' ? `<a class="btn btn-xs btn-outline-success" onclick="bukaModalHasil(${d.id})">Input Hasil</a>` : '-')}
+                ],
+                language: {emptyTable: 'Tidak ada data', search: 'Cari:', lengthMenu: 'Tampilkan _MENU_', paginate: {previous: 'Sebelumnya', next: 'Berikutnya'}}
             });
         }
 

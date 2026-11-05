@@ -21,18 +21,25 @@ class RuanganOperasiController extends Controller
         return view('pages/ruangan_operasi/index');
     }
 
-    public function getList()
+    public function getList(Request $request)
     {
         $klienfk = Auth::user()->klienfk ?? 1;
 
-        $data = RuanganOperasi::where('klienfk', $klienfk)
+        $query = RuanganOperasi::where('klienfk', $klienfk)
             ->withCount(['jadwal as jadwal_aktif_count' => function ($q) {
                 $q->whereIn('status', ['dijadwalkan', 'berlangsung']);
-            }])
-            ->orderBy('nama')
-            ->get();
+            }]);
+        $total = (clone $query)->count();
+        if ($search = $request->input('search.value')) {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('nama', 'like', "%{$search}%")
+                    ->orWhere('kode', 'like', "%{$search}%");
+            });
+        }
+        $length = min(max((int) $request->input('length', 10), 1), 100);
+        $page = $query->orderBy('nama')->paginate($length, ['*'], 'page', (int) floor((int) $request->input('start', 0) / $length) + 1);
 
-        return response()->json(['message' => 'success', 'data' => $data], 200);
+        return response()->json(['draw' => (int) $request->input('draw'), 'recordsTotal' => $total, 'recordsFiltered' => $page->total(), 'data' => $page->items()], 200);
     }
 
     public function store(Request $request)

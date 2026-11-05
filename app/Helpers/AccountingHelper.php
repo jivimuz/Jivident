@@ -4,11 +4,63 @@ namespace App\Helpers;
 
 use App\Models\AccountingAccount;
 use App\Models\AccountingJournal;
+use App\Models\Transactions;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class AccountingHelper
 {
+    public static function postTransaction(Transactions $transaction, int $klienfk, ?int $userId = null): ?AccountingJournal
+    {
+        $existing = AccountingJournal::query()
+            ->where('klienfk', $klienfk)
+            ->where('source_type', 'ledger_transaction')
+            ->where('source_id', $transaction->id)
+            ->first();
+
+        if ($existing) {
+            return $existing->load('lines.account');
+        }
+
+        $accounts = AccountingAccount::query()
+            ->where('klienfk', $klienfk)
+            ->whereIn('code', ['1101', '4101', '5101'])
+            ->get()
+            ->keyBy('code');
+
+        foreach (['1101', '4101', '5101'] as $code) {
+            if (! $accounts->has($code)) {
+                throw new InvalidArgumentException("Akun default {$code} belum tersedia untuk cabang ini.");
+            }
+        }
+
+        $isInflow = $transaction->transaction_type === 'in';
+        $amount = (float) $transaction->amount;
+        $counterpart = $isInflow ? $accounts['4101'] : $accounts['5101'];
+
+        return self::createJournal([
+            'journal_no' => 'AUTO-TRX-'.$transaction->id,
+            'journal_date' => optional($transaction->created_at)->toDateString() ?? now()->toDateString(),
+            'description' => 'Posting otomatis '.$transaction->typecode.' '.$transaction->no_transaction,
+            'source_type' => 'ledger_transaction',
+            'source_id' => $transaction->id,
+            'lines' => [
+                [
+                    'account_id' => $isInflow ? $accounts['1101']->id : $counterpart->id,
+                    'debit' => $amount,
+                    'credit' => 0,
+                    'description' => $transaction->notes,
+                ],
+                [
+                    'account_id' => $isInflow ? $counterpart->id : $accounts['1101']->id,
+                    'debit' => 0,
+                    'credit' => $amount,
+                    'description' => $transaction->notes,
+                ],
+            ],
+        ], $klienfk, $userId);
+    }
+
     public static function createJournal(array $data, int $klienfk, ?int $userId = null): AccountingJournal
     {
         $lines = $data['lines'] ?? [];

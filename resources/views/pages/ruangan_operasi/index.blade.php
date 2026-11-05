@@ -133,6 +133,8 @@
             ];
 
             mainTable = $('#main-table').DataTable({
+                processing: true,
+                serverSide: true,
                 searching: true,
                 destroy: true,
                 lengthChange: false,

@@ -21,15 +21,21 @@ class OdontogramDiagnosisController extends Controller
         return view('pages/odontogram_diagnosis/index');
     }
 
-    public function getList()
+    public function getList(Request $request)
     {
-        $data = OdontogramDiagnosis::where('klienfk', Auth::user()->klienfk ?? 1)
-            ->orderBy('kategori')
-            ->orderBy('urutan')
-            ->orderBy('id')
-            ->get();
+        $query = OdontogramDiagnosis::where('klienfk', Auth::user()->klienfk ?? 1);
+        $total = (clone $query)->count();
+        if ($search = $request->input('search.value')) {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('nama', 'like', "%{$search}%")
+                    ->orWhere('kategori', 'like', "%{$search}%");
+            });
+        }
+        $length = min(max((int) $request->input('length', 10), 1), 100);
+        $page = $query->orderBy('kategori')->orderBy('urutan')->orderBy('id')
+            ->paginate($length, ['*'], 'page', (int) floor((int) $request->input('start', 0) / $length) + 1);
 
-        return response()->json(['message' => 'success', 'data' => $data], 200);
+        return response()->json(['draw' => (int) $request->input('draw'), 'recordsTotal' => $total, 'recordsFiltered' => $page->total(), 'data' => $page->items()], 200);
     }
 
     public function showDiagnosis(Request $request)

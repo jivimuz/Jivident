@@ -204,18 +204,24 @@
 
             table = $('#supplier-table').DataTable({
                 responsive: true,
-                searching: false,
+                processing: true,
+                serverSide: true,
+                searching: true,
                 destroy: true,
-                lengthChange: false,
                 pageLength: 10,
                 ajax: {
-                    url: `{{ url('supplier/get-data') }}?${filterData}`,
-                    type: 'GET'
+                    url: `{{ url('supplier/get-data') }}`,
+                    type: 'GET',
+                    data: function (data) {
+                        $('#form-filter').serializeArray().forEach(function (item) {
+                            data[item.name] = item.value;
+                        });
+                    }
                 },
                 columns: [{
                         data: null,
                         className: 'text-center',
-                        render: (data, type, row, meta) => meta.row + 1
+                        render: (data, type, row, meta) => meta.settings._iDisplayStart + meta.row + 1
                     },
                     {
                         data: 'name',

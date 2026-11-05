@@ -182,9 +182,8 @@
                 destroy: true,
                 lengthChange: false,
                 responsive: true,
-                // pageLength: 2,
-                // processing: true,
-                // serverSide: true,
+                processing: true,
+                serverSide: true,
                 ajax: {
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'

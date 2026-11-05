@@ -16,11 +16,13 @@ class LabController extends Controller
         return view('pages/lab/index');
     }
 
-    public function getMasterList()
+    public function getMasterList(Request $request)
     {
-        $data = JenisPemeriksaanLab::where('klienfk', Auth::user()->klienfk ?? 1)->orderBy('nama')->get();
+        $query = JenisPemeriksaanLab::where('klienfk', Auth::user()->klienfk ?? 1);
+        $total = (clone $query)->count();
+        $this->applyDataTableSearch($query, $request, ['nama', 'satuan', 'nilai_rujukan']);
 
-        return response()->json(['message' => 'success', 'data' => $data], 200);
+        return $this->dataTableResponse($query->orderBy('nama')->paginate($this->dataTableLength($request), ['*'], 'page', $this->dataTablePage($request)), $request, $total);
     }
 
     public function saveMaster(Request $request)
@@ -72,9 +74,42 @@ class LabController extends Controller
             $query->where('t_labpasien.status', 'diminta');
         }
 
-        $data = $query->orderBy('t_labpasien.tgl_diminta')->get();
+        $total = (clone $query)->count();
+        $this->applyDataTableSearch($query, $request, ['m_pasien.nama', 'm_pasien.norm', 't_labpasien.jenis_nama']);
 
-        return response()->json(['message' => 'success', 'data' => $data], 200);
+        return $this->dataTableResponse($query->orderBy('t_labpasien.tgl_diminta')->paginate($this->dataTableLength($request), ['*'], 'page', $this->dataTablePage($request)), $request, $total);
+    }
+
+    private function applyDataTableSearch($query, Request $request, array $columns): void
+    {
+        $search = $request->input('search.value');
+        if ($search) {
+            $query->where(function ($builder) use ($columns, $search) {
+                foreach ($columns as $column) {
+                    $builder->orWhere($column, 'like', "%{$search}%");
+                }
+            });
+        }
+    }
+
+    private function dataTableLength(Request $request): int
+    {
+        return min(max((int) $request->input('length', 10), 1), 100);
+    }
+
+    private function dataTablePage(Request $request): int
+    {
+        return (int) floor((int) $request->input('start', 0) / $this->dataTableLength($request)) + 1;
+    }
+
+    private function dataTableResponse($paginator, Request $request, int $total)
+    {
+        return response()->json([
+            'draw' => (int) $request->input('draw'),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $paginator->total(),
+            'data' => $paginator->items(),
+        ]);
     }
 
     public function saveHasil(Request $request, $id)
