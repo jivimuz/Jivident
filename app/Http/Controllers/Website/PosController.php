@@ -103,6 +103,7 @@ class PosController extends Controller
                     'buyer_name' => $sale->buyer_name ?? '-',
                     'total_net' => (float) $sale->total_net,
                     'status' => $sale->status,
+                    'can_void' => $sale->created_at->isToday() && $sale->status !== 'voided',
                 ];
             });
 

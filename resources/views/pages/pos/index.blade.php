@@ -764,42 +764,58 @@ $icon = str_contains($lower, 'cash') || str_contains($lower, 'tunai')
                 });
             }
 
-            $.ajax({
-                url: "{{ url('pos/checkout') }}",
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                data: {
-                    fk_payment: $('#fkPayment').val(),
-                    buyer_name: $('#buyerName').val(),
-                    buyer_phone: $('#buyerPhone').val(),
-                    items: cart.map(i => ({
-                        product_id: i.product_id,
-                        qty: i.qty,
-                        discount: i.discount
-                    })),
-                },
-                success: function(res) {
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Transaksi berhasil: ' + res.data.no_sale
-                    });
-                    window.open("{{ url('pos/receipt') }}/" + res.data.id, '_blank');
-                    cart = [];
-                    $('#buyerName').val('');
-                    $('#buyerPhone').val('');
-                    $('#cashReceived').val('');
-                    $('#paymentMethods .pos-payment-btn:first').trigger('click');
-                    renderCart();
-                    if (salesTable) salesTable.ajax.reload();
-                },
-                error: function(xhr) {
-                    Toast.fire({
-                        icon: 'error',
-                        title: JSON.parse(xhr.responseText).error ?? 'Checkout gagal'
-                    });
-                }
+            Swal.fire({
+                title: 'Proses dan cetak struk?',
+                html: `Total transaksi <strong>${formatRupiah(currentTotalNet)}</strong><br><small>Stok akan dikurangi dan transaksi dicatat.</small>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, proses & cetak',
+                cancelButtonText: 'Batal'
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+
+                var checkoutButton = $('#checkoutBtn');
+                checkoutButton.prop('disabled', true);
+                $.ajax({
+                    url: "{{ url('pos/checkout') }}",
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    data: {
+                        fk_payment: $('#fkPayment').val(),
+                        buyer_name: $('#buyerName').val(),
+                        buyer_phone: $('#buyerPhone').val(),
+                        items: cart.map(i => ({
+                            product_id: i.product_id,
+                            qty: i.qty,
+                            discount: i.discount
+                        })),
+                    },
+                    success: function(res) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Transaksi berhasil: ' + res.data.no_sale
+                        });
+                        window.open("{{ url('pos/receipt') }}/" + res.data.id, '_blank');
+                        cart = [];
+                        $('#buyerName').val('');
+                        $('#buyerPhone').val('');
+                        $('#cashReceived').val('');
+                        $('#paymentMethods .pos-payment-btn:first').trigger('click');
+                        renderCart();
+                        if (salesTable) salesTable.ajax.reload();
+                    },
+                    error: function(xhr) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: xhr.responseJSON?.error ?? 'Checkout gagal'
+                        });
+                    },
+                    complete: function() {
+                        checkoutButton.prop('disabled', false);
+                    }
+                });
             });
         });
 
@@ -880,7 +896,7 @@ $icon = str_contains($lower, 'cash') || str_contains($lower, 'tunai')
                         render: function(id, type, row) {
                             var btn =
                                 `<a class="btn btn-xs btn-outline-primary" onclick="window.open('{{ url('pos/receipt') }}/${id}','_blank')">Struk</a>`;
-                            if (row.status !== 'voided') {
+                            if (row.can_void) {
                                 btn += ` <a class="btn btn-xs btn-outline-danger" onclick="voidSale(${id})">Void</a>`;
                             }
                             return btn;

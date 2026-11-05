@@ -141,7 +141,10 @@ final class PosSaleHelper
 
     public function void(int $posSaleId): PosSale
     {
-        $sale = PosSale::with('items')->findOrFail($posSaleId);
+        $sale = PosSale::with('items')
+            ->where('klienfk', Auth::user()->klienfk ?? 1)
+            ->whereDate('created_at', today())
+            ->findOrFail($posSaleId);
 
         if ($sale->status === 'voided') {
             throw new RuntimeException('Penjualan ini sudah di-void sebelumnya');
