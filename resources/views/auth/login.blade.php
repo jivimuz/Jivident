@@ -55,7 +55,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                         <div class="col-12 p-0">
                             <div class="login-form-container">
                                 <div class="mb-4">
-                                    <a class="logo d-inline-block">
+                                    <a href="{{ url('') }}" class="logo d-inline-block">
                                         <img alt="#" src="{{ $logo }}" width="250">
                                     </a>
                                 </div>

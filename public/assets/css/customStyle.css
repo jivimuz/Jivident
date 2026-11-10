@@ -5,14 +5,17 @@
     vertical-align: middle !important;
     width: 100% !important;
 }
+
 .select2-selection__rendered,
 .select2-selection__arrow {
     margin-top: 0px !important;
 }
+
 .select2-dropdown {
     border-radius: 1.5rem !important;
     overflow: hidden !important;
 }
+
 .select2-search__field {
     border-top-left-radius: 1.3rem !important;
     border-top-right-radius: 1.3rem !important;
@@ -21,26 +24,31 @@
     width: 100% !important;
 }
 
-.select2{
+.select2 {
     width: 100% !important;
 }
+
 /* Stop Select2 CSS */
 
 /* Start Datatables CSS */
 .dataTables_filter {
     align-items: end !important;
 }
+
 .dataTables_filter input {
     border-radius: 1.5rem !important;
     padding-left: 10px !important;
 }
+
 .table {
     width: 100% !important;
 }
+
 /* Stop Datatables CSS */
 body {
     font-size: 12px;
 }
+
 .nav-tabs {
     position: relative;
 }
@@ -68,26 +76,30 @@ body {
     top: 6px;
 }
 
-li.tabdrop > a {
+li.tabdrop>a {
     margin-right: 0;
     z-index: 3;
 }
+
 .form-control {
     font-size: 12px !important;
 }
-.default-data-table{
+
+.default-data-table {
     width: 100% !important;
 }
 
-table{
+table {
     width: 100% !important;
 }
 
 input[readonly],
 textarea[readonly],
 select[readonly] {
-    background-color: #f0f0f0; /* abu lembut */
-    color: #555; /* teks sedikit gelap */
+    background-color: #f0f0f0;
+    /* abu lembut */
+    color: #555;
+    /* teks sedikit gelap */
     cursor: not-allowed;
 }
 
@@ -95,9 +107,10 @@ select[readonly] {
     width: 100% !important;
 }
 
-.horizontal-sidebar{
+.horizontal-sidebar {
     height: 110px !important;
 }
+
 .mobile-hidden {
     display: none;
 }
@@ -108,11 +121,13 @@ select[readonly] {
     }
 }
 
-select, option, input {
+select,
+option,
+input {
     color: black !important;
 }
 
-  .proof-circle{
+.proof-circle {
     width: 42px;
     height: 42px;
     border-radius: 999px;
@@ -120,27 +135,32 @@ select, option, input {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(0,0,0,.08);
+    border: 1px solid rgba(0, 0, 0, .08);
     background: #fff;
     cursor: pointer;
     transition: transform .12s ease;
-  }
-  .proof-circle:hover{ transform: scale(1.04); }
-  .proof-img{
+}
+
+.proof-circle:hover {
+    transform: scale(1.04);
+}
+
+.proof-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display:block;
-  }
-  .proof-pdf svg{
+    display: block;
+}
+
+.proof-pdf svg {
     width: 22px;
     height: 22px;
-  }
+}
 
 
-  .hover-border-b:hover{
+.hover-border-b:hover {
     text-decoration: underline;
-  }
+}
 
 .section-title {
     font-size: 1rem;
@@ -293,7 +313,7 @@ label {
    font-size:0 text-hiding trick, and expanded-state background
    silently win instead and the tile layout breaks.
    ============================================================ */
-nav .app-nav .main-nav > li.nav-tile {
+nav .app-nav .main-nav>li.nav-tile {
     padding: 0 0.6rem !important;
     margin-bottom: 0.2rem;
 }
@@ -355,7 +375,7 @@ nav .app-nav .main-nav .nav-tile-link[aria-expanded="true"] .nav-tile-label {
 /* Explicit caret instead of the base theme's absolutely-positioned ::after,
    which was placed for the inline icon+text row layout and would float at a
    fixed right offset over this stacked tile. */
-nav .app-nav .main-nav > li:not(.menu-title) > a.nav-tile-link::after {
+nav .app-nav .main-nav>li:not(.menu-title)>a.nav-tile-link::after {
     content: none !important;
 }
 
@@ -374,12 +394,12 @@ nav .app-nav .main-nav .nav-tile-link[aria-expanded="true"] .nav-caret {
 
 /* Submenu rows: swap the underline hover for a tinted-pill hover, matching
    the tile style above. */
-nav .app-nav .main-nav > li.nav-tile ul li a {
+nav .app-nav .main-nav>li.nav-tile ul li a {
     border-radius: 8px;
     transition: var(--app-transition);
 }
 
-nav .app-nav .main-nav > li.nav-tile ul li a:hover {
+nav .app-nav .main-nav>li.nav-tile ul li a:hover {
     background: rgba(var(--primary), 0.07);
     color: rgba(var(--primary-dark), 1);
 }
@@ -411,4 +431,20 @@ nav .app-nav .main-nav > li.nav-tile ul li a:hover {
 
 .app-wrapper .semi-nav:hover .app-nav .main-nav .nav-caret {
     display: inline-block !important;
+}
+
+.color-pd {
+    background-color: rgba(var(--primary-dark), 1);
+}
+
+.color-pl {
+    background-color: rgba(var(--primary), 1);
+}
+
+.text-pd {
+    color: var(--primary-dark);
+}
+
+.text-pl {
+    color: var(--primary);
 }
