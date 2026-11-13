@@ -21,6 +21,7 @@ use App\Http\Controllers\Website\KlienController;
 use App\Http\Controllers\Website\LabController;
 use App\Http\Controllers\Website\ModuleController;
 use App\Http\Controllers\Website\MonitorController;
+use App\Http\Controllers\Website\NativeConfigController;
 use App\Http\Controllers\Website\OdontogramController;
 use App\Http\Controllers\Website\OdontogramDiagnosisController;
 use App\Http\Controllers\Website\PasienRawatInapController;
@@ -77,6 +78,14 @@ Route::prefix('monitor')->group(function () {
     Route::get('operasi', [MonitorController::class, 'operasi']);
     Route::get('operasiData', [MonitorController::class, 'operasiData']);
     Route::get('operasiStatus', [MonitorController::class, 'operasiStatus']);
+});
+
+// NativePHP Configuration Routes (accessible without database/auth)
+Route::prefix('native-config')->group(function () {
+    Route::get('/', [NativeConfigController::class, 'index'])->name('native-config.index');
+    Route::post('test', [NativeConfigController::class, 'testConnection'])->name('native-config.test');
+    Route::post('save', [NativeConfigController::class, 'saveConfig'])->name('native-config.save');
+    Route::post('migrate', [NativeConfigController::class, 'runMigrationsAndSeed'])->name('native-config.migrate');
 });
 
 Route::get('_ops/config-cache', function () {

@@ -12,18 +12,30 @@ class AuthApiMiddleware
 {
     public function handle($request, Closure $next)
     {
-        if ($request->is('license') || $request->is('license/*') || $request->routeIs('license.*') || $request->is('serialActivation')) {
+        // Always allow native-config setup wizard and NativePHP internal paths
+        if ($request->is('native-config') || $request->is('native-config/*') || $request->is('_native/*')) {
             return $next($request);
         }
 
-        $type = app()->environment('testing')
-            ? (int) env('TYPE_LOCAL_SERVER', config('license.type_local_server', 0))
-            : (int) config('license.type_local_server', 0);
+        // Check if database tables are set up yet. If not, MUST go to setup wizard first!
+        try {
+            $serial = Serial::first();
+        } catch (\Throwable $e) {
+            return redirect()->route('native-config.index');
+        }
+
+        $type = (int) config('license.type_local_server', env('TYPE_LOCAL_SERVER', 0));
+        
+        // If type is 2 (bypass license), allow everything
         if ($type === 2) {
             return $next($request);
         }
 
-        $serial = Serial::first();
+        // If type is 0 or 1, user must set up / validate serial first
+        if ($request->is('license') || $request->is('license/*') || $request->routeIs('license.*') || $request->is('serialActivation')) {
+            return $next($request);
+        }
+
         if (! $serial) {
             return redirect()->route('license', ['expired' => 1]);
         }
@@ -33,11 +45,19 @@ class AuthApiMiddleware
 
         $twoWeeksLater = now()->addWeeks(2);
         if ($type === 0) {
+            // In mode 0 (offline/local mode), we don't force a remote server check if the server is offline or dead,
+            // we trust the stored `valid_until` date unless it's completely empty.
+            if (empty($serial->valid_until)) {
+                $serial->valid_until = now()->addYears(1)->toDateString();
+                $serial->save();
+            }
+        } else {
+            // Mode 1 (online mode) checks remote server with fallback handling
             $lastCheck = $serial->last_check ? Carbon::parse($serial->last_check) : null;
             $shouldCheckRemote = ! $lastCheck || $lastCheck->lte(now()->subHours(3));
             if ($shouldCheckRemote) {
                 try {
-                    $response = Http::timeout(8)->get(config('license.auth_server'), [
+                    $response = Http::timeout(5)->get(config('license.auth_server'), [
                         'license_key' => $serial->serial_code,
                         'product_code' => 'ANX20260222AL01012',
                     ]);
@@ -48,16 +68,15 @@ class AuthApiMiddleware
                             $serial->valid_until = Carbon::parse($data['expires'])->toDateString();
                         }
                     } else {
-                        Log::warning('License validate HTTP failed', [
+                        Log::warning('License validate HTTP failed, keeping offline grace period', [
                             'status' => $response->status(),
-                            'body' => $response->body(),
                         ]);
                     }
                     $serial->save();
                 } catch (\Throwable $e) {
                     $serial->last_check = now();
                     $serial->save();
-                    Log::warning('License validation exception: '.$e->getMessage());
+                    Log::warning('License validation exception (offline grace): '.$e->getMessage());
                 }
             }
         }

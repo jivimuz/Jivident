@@ -1,7 +1,11 @@
  <!-- Footer Section Start -->
  <?php
  use App\Models\Setting;
- $app_name = Setting::where('parameter', 'app_name')->first()->value ?: 'AppName';
+ try {
+     $app_name = Setting::where('parameter', 'app_name')->first()?->value ?: 'Jivident';
+ } catch (\Throwable $e) {
+     $app_name = 'Jivident';
+ }
  ?>
  <!-- Footer Section starts-->
  <footer>
@@ -38,7 +42,7 @@
              <div class="modal-body" id="changePassBody">
                  <div class="form-group">
                      <label for="accLog">Username</label>
-                     <input type="text" disabled class="form-control" value="{{ auth()->user()->username }}"
+                     <input type="text" disabled class="form-control" value="{{ auth()->user()?->username }}"
                          id="accLog">
                  </div>
                  <div class="form-group">

@@ -22,10 +22,12 @@ class NativeAppServiceProvider implements ProvidesPhpIni
                 Menu::link(url('/i'), 'Home'),
                 Menu::link(url('/login'), 'App Dashboard'),
                 Menu::link(url('/portal'), 'Portal'),
+                Menu::link(url('/native-config'), 'Pengaturan Database'),
             )->label('Menu'),
 
             Menu::make(
                 Menu::link(url('/setting'), 'Setting'),
+                Menu::link(url('/native-config'), 'Database Config'),
             )->label('Setting'),
 
             // Native window controls
@@ -34,6 +36,7 @@ class NativeAppServiceProvider implements ProvidesPhpIni
 
 
         Window::open()
+            ->route('native-config.index')
             ->position(100, 100)
             ->minWidth(1280)
             ->minHeight(960)
