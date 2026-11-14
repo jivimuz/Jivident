@@ -75,6 +75,12 @@ return new class extends Migration
                 "value" => 0,
                 "type" => 'number',
             ],
+            [
+                "name" => 'Type Local Server',
+                "parameter" => 'type_local_server',
+                "value" => '0',
+                "type" => 'number',
+            ],
 
 
         ]);

@@ -184,6 +184,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateStatusBadge(dbStatus);
             loadSavedConfig();
+            toggleDriverFields();
         });
 
         function loadSavedConfig() {
@@ -364,8 +365,9 @@
                 if (result.success) {
                     showToast('Setup berhasil! Mengalihkan...', 'success');
                     setTimeout(function() {
-                        const typeServer = document.getElementById('type_local_server').value;
-                        if (String(typeServer) === '2') {
+                        const typeServerInput = document.getElementById('type_local_server');
+                        const typeVal = typeServerInput ? parseInt(typeServerInput.value, 10) : 0;
+                        if (typeVal === 2) {
                             window.location.href = '<?php echo e(url('')); ?>';
                         } else {
                             window.location.href = '<?php echo e(url('license')); ?>';
@@ -454,16 +456,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="auth_server" class="block text-sm font-medium text-gray-700">URL Server Lisensi
-                        (AUTH_SERVER)</label>
+                    <label for="auth_server" class="block text-sm font-medium text-gray-700">Auth URL</label>
                     <input type="text" id="auth_server" name="auth_server" class="input" value="<?php echo e($config['auth_server'] ?? 'https://management.antariks.id/api/license/validate'); ?>"
                         required placeholder="https://management.antariks.id/api/license/validate">
                     <p class="text-xs text-gray-500 mt-1">Dapat diubah secara offline sebelum koneksi divalidasi.</p>
                 </div>
 
                 <div class="form-group">
-                    <label for="type_local_server" class="block text-sm font-medium text-gray-700">Mode Server
-                        (TYPE_LOCAL_SERVER)</label>
+                    <label for="type_local_server" class="block text-sm font-medium text-gray-700">Server Mode</label>
                     <input type="number" id="type_local_server" name="type_local_server" class="input" min="0"
                         max="2" value="<?php echo e($config['type_local_server'] ?? 0); ?>" required placeholder="0">
                 </div>

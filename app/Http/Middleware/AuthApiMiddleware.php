@@ -12,6 +12,34 @@ class AuthApiMiddleware
 {
     public function handle($request, Closure $next)
     {
+        // Read type_local_server: priority 1: env, priority 2: native_config.json, priority 3: m_setting
+        $type = (int) env('TYPE_LOCAL_SERVER', 0);
+        if ($type === 0) {
+            try {
+                $configPath = storage_path('app/native_config.json');
+                if (file_exists($configPath)) {
+                    $nativeConfig = json_decode(file_get_contents($configPath), true);
+                    if (isset($nativeConfig['type_local_server'])) {
+                        $type = (int) $nativeConfig['type_local_server'];
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        if ($type === 0) {
+            try {
+                $setting = \App\Models\Setting::where('parameter', 'type_local_server')->first();
+                if ($setting) {
+                    $type = (int) $setting->value;
+                }
+            } catch (\Throwable $e) {}
+        }
+        
+        // If type is 2 (bypass license), allow everything immediately without checking serial
+        if ($type === 2) {
+            return $next($request);
+        }
+
         // Always allow native-config setup wizard and NativePHP internal paths
         if ($request->is('native-config') || $request->is('native-config/*') || $request->is('_native/*')) {
             return $next($request);
@@ -22,13 +50,6 @@ class AuthApiMiddleware
             $serial = Serial::first();
         } catch (\Throwable $e) {
             return redirect()->route('native-config.index');
-        }
-
-        $type = (int) config('license.type_local_server', env('TYPE_LOCAL_SERVER', 0));
-        
-        // If type is 2 (bypass license), allow everything
-        if ($type === 2) {
-            return $next($request);
         }
 
         // If type is 0 or 1, user must set up / validate serial first

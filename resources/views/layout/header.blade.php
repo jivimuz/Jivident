@@ -1,3 +1,8 @@
+<?php
+use App\Models\Setting;
+$app_name = Setting::where('parameter', 'app_name')->first()?->value ?: 'JiviDent';
+$company_icon = Setting::where('parameter', 'company_icon')->first()?->value ? url(Setting::where('parameter', 'company_icon')->first()->value) : url('/assets/favicon.ico');
+?>
 <head>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <meta content="IE=edge" http-equiv="X-UA-Compatible">
@@ -12,10 +17,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.23/dist/turbo.es2017-umd.js"></script>
 
     <meta content="la-themes" name="author">
-    <link href="{{ url('') }}/assets/favicon.ico" rel="icon" type="image/x-icon">
-    <link href="{{ url('') }}/assets/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="shortcut icon" type="image/x-icon">
 
-    <title>Jivident </title>
+    <title>{{ $app_name }}</title>
     <!--font-awesome-css-->
     <link href="{{ url('') }}/assets/vendor/fontawesome/css/all.css" rel="stylesheet">
 

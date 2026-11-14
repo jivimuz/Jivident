@@ -94,10 +94,11 @@ class DatabaseBackupHelperTest extends TestCase
         $lines = explode("\n", $dump);
 
         return array_filter($lines, function ($line) use ($table) {
-            // CREATE TABLE identifier quoting is dialect-specific (backtick on MySQL,
-            // double-quote on SQLite) — just check the table name appears at all.
-            return str_contains($line, $table) &&
-                (str_starts_with(trim($line), 'CREATE TABLE') || str_starts_with(trim($line), 'INSERT INTO'));
+            $trimmed = trim($line);
+            return str_starts_with($trimmed, "CREATE TABLE `{$table}`") ||
+                str_starts_with($trimmed, "CREATE TABLE \"{$table}\"") ||
+                str_starts_with($trimmed, "INSERT INTO `{$table}`") ||
+                str_starts_with($trimmed, "INSERT INTO \"{$table}\"");
         });
     }
 }

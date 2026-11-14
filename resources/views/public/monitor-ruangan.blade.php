@@ -4,16 +4,18 @@
 use App\Models\Setting;
 
 $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/assets/logo.png');
+$app_name = Setting::where('parameter', 'app_name')->first()?->value ?: 'JiviDent';
+$company_icon = Setting::where('parameter', 'company_icon')->first()?->value ? url(Setting::where('parameter', 'company_icon')->first()->value) : url('/assets/favicon.ico');
 ?>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JiviDent - Monitor Ruangan</title>
+    <title>{{ $app_name }} - Monitor Ruangan</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    <link href="{{ url('') }}/assets/favicon.ico" rel="icon" type="image/x-icon">
-    <link href="{{ url('') }}/assets/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="shortcut icon" type="image/x-icon">
     <style>
         html {
             font-size: clamp(10px, 1.1vw, 17px);

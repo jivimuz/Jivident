@@ -9,6 +9,7 @@ $company_address = Setting::where('parameter', 'company_address')->first()->valu
 // Same resolution pattern as navbar.blade.php / layout/main.blade.php: a
 // clinic's own uploaded logo if set, otherwise the product's default mark.
 $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/assets/logo.png');
+$company_icon = Setting::where('parameter', 'company_icon')->first()?->value ? url(Setting::where('parameter', 'company_icon')->first()->value) : url('/assets/favicon.ico');
 
 // This landing page defaults to English (server-rendered, so it's what
 // first-time visitors and crawlers see) with a client-side toggle back to
@@ -38,7 +39,8 @@ $canonicalUrl = url()->current();
     <meta name="creator" content="Jivi Muzaqi Guntur">
     <meta name="publisher" content="JiviDent">
     <link rel="canonical" href="{{ $canonicalUrl }}">
-    <link href="{{ url('') }}/assets/favicon.ico" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="shortcut icon" type="image/x-icon">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">

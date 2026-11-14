@@ -3,8 +3,8 @@
 <?php
 use App\Models\Setting;
 $company_name = Setting::where('parameter', 'company_name')->first()->value ?? 'Klinik';
-
 $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/assets/logo.png');
+$company_icon = Setting::where('parameter', 'company_icon')->first()?->value ? url(Setting::where('parameter', 'company_icon')->first()->value) : url('/assets/favicon.ico');
 ?>
 
 <head>
@@ -12,7 +12,8 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#2F49C7">
     <title>Portal Pasien - {{ $company_name }}</title>
-    <link href="{{ url('') }}/assets/favicon.ico" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="shortcut icon" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link

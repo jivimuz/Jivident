@@ -20,14 +20,7 @@ class NativeConfigController extends Controller
     public function index()
     {
         $currentConfig = $this->getCurrentConfig();
-        
-        // Force unconfigured state on fresh startup if no real DB connection has been verified or tested yet,
-        // so it presents a true Setup Wizard UI rather than assuming localhost defaults.
-        $dbStatus = [
-            'connected' => false,
-            'needsSetup' => true,
-            'message' => 'Selamat datang di Setup Wizard Jivident. Silakan atur koneksi database dan server lisensi Anda.',
-        ];
+        $dbStatus = $this->checkDatabaseStatus();
         
         return view('pages.native-config.index', [
             'config' => $currentConfig,
@@ -120,32 +113,58 @@ class NativeConfigController extends Controller
 
         try {
             $envPath = base_path('.env');
-            $envContent = File::get($envPath);
-            
-            // Update DB settings or SQLite
-            $connectionType = $request->db_connection ?? 'mysql';
-            $replacements = [
-                'DB_CONNECTION' => $connectionType,
-                'DB_HOST' => $connectionType === 'sqlite' ? '' : $request->db_host,
-                'DB_PORT' => $connectionType === 'sqlite' ? '' : $request->db_port,
-                'DB_DATABASE' => $connectionType === 'sqlite' ? database_path('database.sqlite') : $request->db_database,
-                'DB_USERNAME' => $connectionType === 'sqlite' ? '' : $request->db_username,
-                'DB_PASSWORD' => $connectionType === 'sqlite' ? '' : ($request->db_password ?? ''),
-                'AUTH_SERVER' => $request->auth_server ?? 'https://management.antariks.id/api/license/validate',
-                'TYPE_LOCAL_SERVER' => $request->type_local_server,
-            ];
-            
-            foreach ($replacements as $key => $value) {
-                $pattern = "/^{$key}=.*/m";
-                $replacement = "{$key}={$value}";
-                if (preg_match($pattern, $envContent)) {
-                    $envContent = preg_replace($pattern, $replacement, $envContent);
-                } else {
-                    $envContent .= "\n{$replacement}";
+            if (file_exists($envPath)) {
+                $envContent = File::get($envPath);
+                
+                // Update ONLY DB settings in .env (never write TYPE_LOCAL_SERVER or AUTH_SERVER to .env)
+                $replacements = [
+                    'DB_CONNECTION' => $connectionType,
+                    'DB_HOST' => $connectionType === 'sqlite' ? '' : $request->db_host,
+                    'DB_PORT' => $connectionType === 'sqlite' ? '' : $request->db_port,
+                    'DB_DATABASE' => $connectionType === 'sqlite' ? database_path('database.sqlite') : $request->db_database,
+                    'DB_USERNAME' => $connectionType === 'sqlite' ? '' : $request->db_username,
+                    'DB_PASSWORD' => $connectionType === 'sqlite' ? '' : ($request->db_password ?? ''),
+                ];
+                
+                foreach ($replacements as $key => $value) {
+                    $pattern = "/^{$key}=.*/m";
+                    $replacement = "{$key}={$value}";
+                    if (preg_match($pattern, $envContent)) {
+                        $envContent = preg_replace($pattern, $replacement, $envContent);
+                    } else {
+                        $envContent .= "\n{$replacement}";
+                    }
                 }
+                
+                // Remove legacy TYPE_LOCAL_SERVER and AUTH_SERVER from .env
+                $envContent = preg_replace('/^TYPE_LOCAL_SERVER=.*\n?/m', '', $envContent);
+                $envContent = preg_replace('/^AUTH_SERVER=.*\n?/m', '', $envContent);
+
+                File::put($envPath, $envContent);
             }
             
-            File::put($envPath, $envContent);
+            // Save configuration to JSON file in storage ("file buatan": storage/app/native_config.json)
+            $configData = [
+                'db_connection' => $connectionType,
+                'db_host' => $connectionType === 'sqlite' ? '' : $request->db_host,
+                'db_port' => $connectionType === 'sqlite' ? '' : $request->db_port,
+                'db_database' => $connectionType === 'sqlite' ? database_path('database.sqlite') : $request->db_database,
+                'db_username' => $connectionType === 'sqlite' ? '' : $request->db_username,
+                'db_password' => $connectionType === 'sqlite' ? '' : ($request->db_password ?? ''),
+                'auth_server' => $request->auth_server ?? 'https://management.antariks.id/api/license/validate',
+                'type_local_server' => (int) $request->type_local_server,
+            ];
+            
+            $configDir = storage_path('app');
+            if (!file_exists($configDir)) {
+                mkdir($configDir, 0755, true);
+            }
+            File::put(storage_path('app/native_config.json'), json_encode($configData, JSON_PRETTY_PRINT));
+
+            // Write values to .env and immediately clear config cache so runtime picks it up
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
             
             // Reload config based on connection type
             Config::set('database.default', $connectionType);
@@ -158,13 +177,13 @@ class NativeConfigController extends Controller
                 Config::set('database.connections.mysql.username', $request->db_username);
                 Config::set('database.connections.mysql.password', $request->db_password ?? '');
             }
-            Config::set('license.auth_server', $request->auth_server ?? 'https://management.antariks.id/api/license/validate');
-            Config::set('license.type_local_server', (int)$request->type_local_server);
+            Config::set('license.auth_server', $configData['auth_server']);
+            Config::set('license.type_local_server', $configData['type_local_server']);
             
             // Purge connections
             DB::purge('mysql');
             DB::purge('sqlite');
-            
+
             // Test new connection
             $testResult = $this->testConnectionWithConfig($request->all());
             
@@ -174,18 +193,26 @@ class NativeConfigController extends Controller
                 
                 if ($dbStatus['needsSetup']) {
                     $migrateResult = $this->runMigrationsAndSeed();
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Konfigurasi disimpan dan database diinisialisasi!',
-                        'migrated' => true,
-                        'migrateOutput' => $migrateResult,
-                    ]);
                 }
-                
+
+                // Ensure type_local_server and auth_server are set in m_setting
+                try {
+                    \App\Models\Setting::updateOrCreate(
+                        ['parameter' => 'type_local_server'],
+                        ['name' => 'Type Local Server', 'value' => (string)$request->type_local_server, 'type' => 'number']
+                    );
+                    \App\Models\Setting::updateOrCreate(
+                        ['parameter' => 'auth_server'],
+                        ['name' => 'Auth Server URL', 'value' => (string)($request->auth_server ?? 'https://management.antariks.id/api/license/validate'), 'type' => 'text']
+                    );
+                } catch (\Throwable $e) {
+                    // Ignore
+                }
+
                 return response()->json([
                     'success' => true,
-                    'message' => 'Konfigurasi disimpan dan koneksi berhasil!',
-                    'migrated' => false,
+                    'message' => 'Konfigurasi disimpan dan database diinisialisasi!',
+                    'migrated' => true,
                 ]);
             }
             
@@ -241,18 +268,48 @@ class NativeConfigController extends Controller
     }
 
     /**
-     * Get current configuration from .env.
+     * Get current configuration from native_config.json or database.
      */
     private function getCurrentConfig(): array
     {
+        $configPath = storage_path('app/native_config.json');
+        $savedConfig = [];
+        if (file_exists($configPath)) {
+            try {
+                $savedConfig = json_decode(file_get_contents($configPath), true) ?? [];
+            } catch (\Throwable $e) {}
+        }
+
+        $typeLocalServer = $savedConfig['type_local_server'] ?? 0;
+        $authServer = $savedConfig['auth_server'] ?? 'https://management.antariks.id/api/license/validate';
+
+        try {
+            $settingType = \App\Models\Setting::where('parameter', 'type_local_server')->first();
+            if ($settingType && $settingType->value !== null) {
+                $typeLocalServer = $settingType->value;
+            }
+        } catch (\Throwable $e) {
+            // Fallback if table not ready
+        }
+
+        try {
+            $settingAuth = \App\Models\Setting::where('parameter', 'auth_server')->first();
+            if ($settingAuth && $settingAuth->value !== null) {
+                $authServer = $settingAuth->value;
+            }
+        } catch (\Throwable $e) {
+            // Fallback
+        }
+
         return [
-            'db_host' => env('DB_HOST', '127.0.0.1'),
-            'db_port' => env('DB_PORT', 3306),
-            'db_database' => env('DB_DATABASE', 'jivident'),
-            'db_username' => env('DB_USERNAME', 'root'),
-            'db_password' => env('DB_PASSWORD', ''),
-            'auth_server' => env('AUTH_SERVER', 'https://management.antariks.id/api/license/validate'),
-            'type_local_server' => (int)env('TYPE_LOCAL_SERVER', 0),
+            'db_connection' => $savedConfig['db_connection'] ?? env('DB_CONNECTION', 'mysql'),
+            'db_host' => $savedConfig['db_host'] ?? env('DB_HOST', '127.0.0.1'),
+            'db_port' => $savedConfig['db_port'] ?? env('DB_PORT', 3306),
+            'db_database' => $savedConfig['db_database'] ?? env('DB_DATABASE', 'jivident'),
+            'db_username' => $savedConfig['db_username'] ?? env('DB_USERNAME', 'root'),
+            'db_password' => $savedConfig['db_password'] ?? env('DB_PASSWORD', ''),
+            'auth_server' => $authServer,
+            'type_local_server' => (int) $typeLocalServer,
         ];
     }
 
@@ -265,8 +322,12 @@ class NativeConfigController extends Controller
             // Try to connect
             DB::connection()->getPdo();
             
-            // Check if migrations table exists
-            $tables = DB::select("SHOW TABLES LIKE 'migrations'");
+            $driver = DB::connection()->getDriverName();
+            if ($driver === 'sqlite') {
+                $tables = DB::select("SELECT name FROM sqlite_master WHERE type='table' AND name='migrations'");
+            } else {
+                $tables = DB::select("SHOW TABLES LIKE 'migrations'");
+            }
             
             if (empty($tables)) {
                 return [

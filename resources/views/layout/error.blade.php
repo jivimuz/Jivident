@@ -1,3 +1,8 @@
+<?php
+use App\Models\Setting;
+$app_name = Setting::where('parameter', 'app_name')->first()?->value ?: 'JiviDent';
+$company_icon = Setting::where('parameter', 'company_icon')->first()?->value ? url(Setting::where('parameter', 'company_icon')->first()->value) : url('/assets/favicon.ico');
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -14,8 +19,10 @@
         content="admin template,  admin template, dashboard template, flat admin template, responsive admin template, web app"
         name="keywords">
     <meta content="la-themes" name="author">
-    <link href="{{ url('') }}/assets/images/logo/favicon.png" rel="icon" type="image/x-icon">
-    <link href="{{ url('') }}/assets/images/logo/favicon.png" rel="shortcut icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="shortcut icon" type="image/x-icon">
+
+    <title>{{ $app_name }} - Error</title>
 
 
     <!--font-awesome-css-->
