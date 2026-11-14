@@ -3,6 +3,8 @@
 <?php
 use App\Models\Setting;
 $company_name = Setting::where('parameter', 'company_name')->first()->value ?? 'Klinik';
+$logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/assets/logo.png');
+$company_icon = Setting::where('parameter', 'company_icon')->first()?->value ? url(Setting::where('parameter', 'company_icon')->first()->value) : url('/assets/favicon.ico');
 ?>
 
 <head>
@@ -10,10 +12,12 @@ $company_name = Setting::where('parameter', 'company_name')->first()->value ?? '
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#2F49C7">
     <title>Portal Pasien - {{ $company_name }}</title>
-    <link href="{{ url('') }}/assets/favicon.ico" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="shortcut icon" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Lexend:wght@400;500;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Lexend:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
         :root {
@@ -188,14 +192,9 @@ $company_name = Setting::where('parameter', 'company_name')->first()->value ?? '
 
 <body>
     <div class="login-card">
-        <div class="login-mark">
-            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 2.5 3 5.5v4c0 5 3 7.5 7 8 4-.5 7-3 7-8v-4L10 2.5Z" />
-                <path d="M10 7v6M7 10h6" />
-            </svg>
-        </div>
-        <h1>{{ $company_name }}</h1>
+        <a href="{{ url('') }}" class="logo d-inline-block align-middle">
+            <img alt="#" src="{{ $logo }}" width="250" class="mx-auto ">
+        </a>
         <p class="subtitle">Portal pasien — lihat riwayat kunjungan, resep, tagihan, dan atur jadwal dokter Anda.</p>
 
         @if ($errors->any())
@@ -205,7 +204,8 @@ $company_name = Setting::where('parameter', 'company_name')->first()->value ?? '
         <form method="POST" action="{{ url('portal/login') }}">
             @csrf
             <label for="norm">No. Rekam Medis (RM)</label>
-            <input type="text" name="norm" id="norm" value="{{ old('norm') }}" placeholder="Contoh: JD0010001" required>
+            <input type="text" name="norm" id="norm" value="{{ old('norm') }}"
+                placeholder="Contoh: JD0010001" required>
 
             <label for="tanggal_lahir">Tanggal Lahir</label>
             <input type="date" name="tanggal_lahir" id="tanggal_lahir" value="{{ old('tanggal_lahir') }}" required>

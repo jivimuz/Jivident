@@ -82,7 +82,7 @@ class OdontogramDiagnosisControllerTest extends TestCase
         OdontogramDiagnosis::create(['klienfk' => 1, 'kategori' => '3d', 'nama' => 'Milik Cabang 1', 'warna' => '#111111']);
         OdontogramDiagnosis::create(['klienfk' => 2, 'kategori' => '3d', 'nama' => 'Milik Cabang 2', 'warna' => '#222222']);
 
-        $response = $this->actingAs($user)->post('/odontogram-diagnosis/getList');
+        $response = $this->actingAs($user)->post('/odontogram-diagnosis/getList', ['length' => 100]);
 
         $response->assertOk();
         $response->assertJsonFragment(['nama' => 'Milik Cabang 1']);

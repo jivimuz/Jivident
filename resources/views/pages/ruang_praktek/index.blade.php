@@ -81,8 +81,8 @@
                     data.data.map((item) => {
                         a += `
                             <div class="col col-sm-4 col-lg-3 col-xxl-2 mb-4 position-relative">
-                                <div class="box-shadow-box box-shadow-21  p-3"
-                                    style="background-color:  #${bgnum}">
+                                <div class="box-shadow-box box-shadow-21  p-3 color-pd"
+                                    >
                                     <!-- Tombol Edit & Delete -->
                                     <div class="position-absolute top-0 mt-2 me-2 d-flex gap-2" style="right: 10px;"
                                         id="btnr-${item.id}">

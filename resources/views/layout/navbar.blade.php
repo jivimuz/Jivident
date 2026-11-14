@@ -5,8 +5,9 @@ use Illuminate\Support\Facades\Request;
 
 $AccessList = explode(',', auth()->user()->access);
 
-$logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/assets/logo.png');
-$app_name = Setting::where('parameter', 'app_name')->first()->value ?: 'AppName';
+$logo = Setting::where('parameter', 'company_logo')->first()?->value ?: url('/assets/logo.png');
+$icon = Setting::where('parameter', 'company_icon')->first()?->value ?: url('/assets/favicon.ico');
+$app_name = Setting::where('parameter', 'app_name')->first()?->value ?: 'AppName';
 $menu = [];
 $menuList = Module::where('isheader', 1)->where('isactive', true)->orderBy('list_no', 'asc')->get();
 foreach ($menuList as $i) {
@@ -29,7 +30,10 @@ $currentRouteName = Request::getPathInfo();
     <div class="app-logo border-b">
         <a class="logo d-inline-block" href="/"
             style="text-align: center;align-content: center;align-items: center; width: 100%">
-            <img alt="#" class="mx-auto" style="align-self: center;" src="{{ $logo }}">
+            <img alt="Logo" class="mx-auto logo-full" style="align-self: center; max-height: 45px;"
+                src="{{ $logo }}">
+            <img alt="Icon" class="mx-auto logo-icon" style="align-self: center; max-height: 40px; display: none;"
+                src="{{ $icon }}">
         </a>
 
         <span class="bg-light-primary toggle-semi-nav">

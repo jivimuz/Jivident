@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthApiMiddleware;
 use App\Http\Middleware\CheckModuleAccess;
+use App\Http\Middleware\EnsureOfflineDatabaseConfig;
 use App\Http\Middleware\PortalAuth;
 use App\Http\Middleware\VerifyDaftarPasienBranch;
 use Illuminate\Auth\AuthenticationException;
@@ -17,7 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(EnsureOfflineDatabaseConfig::class);
         $middleware->append(AuthApiMiddleware::class);
+        
+        $middleware->validateCsrfTokens(except: [
+            'native-config/*',
+        ]);
+        
         // Add Middleware API
         $middleware->alias([
             'checkAccess' => CheckModuleAccess::class,

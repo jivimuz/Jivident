@@ -4,6 +4,8 @@
 use App\Models\Setting;
 
 $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/assets/logo.png');
+$app_name = Setting::where('parameter', 'app_name')->first()?->value ?: 'JiviDent';
+$company_icon = Setting::where('parameter', 'company_icon')->first()?->value ? url(Setting::where('parameter', 'company_icon')->first()->value) : url('/assets/favicon.ico');
 ?>
 
 <head>
@@ -12,10 +14,10 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
     <meta content="la-themes" name="author">
-    <link href="{{ url('') }}/assets/favicon.ico" rel="icon" type="image/x-icon">
-    <link href="{{ url('') }}/assets/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="shortcut icon" type="image/x-icon">
 
-    <title>Jivident - Login</title>
+    <title>{{ $app_name }} - Login</title>
 
     <!--font-awesome-css-->
     <link href="{{ url('') }}/assets/vendor/fontawesome/css/all.css" rel="stylesheet">
@@ -55,7 +57,7 @@ $logo = Setting::where('parameter', 'company_logo')->first()->value ?: url('/ass
                         <div class="col-12 p-0">
                             <div class="login-form-container">
                                 <div class="mb-4">
-                                    <a class="logo d-inline-block">
+                                    <a href="{{ url('') }}" class="logo d-inline-block">
                                         <img alt="#" src="{{ $logo }}" width="250">
                                     </a>
                                 </div>

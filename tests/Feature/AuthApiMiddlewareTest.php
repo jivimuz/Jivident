@@ -11,8 +11,15 @@ class AuthApiMiddlewareTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        @unlink(storage_path('app/native_config.json'));
+    }
+
     protected function tearDown(): void
     {
+        @unlink(storage_path('app/native_config.json'));
         // Restore the phpunit.xml baseline (not unset!) — unsetting lets the next
         // test's fresh Application boot reload TYPE_LOCAL_SERVER from the real
         // .env file instead, which silently leaks the developer's local value.
@@ -75,6 +82,7 @@ class AuthApiMiddlewareTest extends TestCase
 
     public function test_calls_remote_endpoint_when_never_checked_before(): void
     {
+        $this->setTypeLocalServer('1');
         Http::fake([
             '*' => Http::response(['expires' => now()->addYear()->toDateString()], 200),
         ]);

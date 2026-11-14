@@ -69,6 +69,33 @@ class AuthController extends Controller
 
     public function license()
     {
+        // If type_local_server is 2 (bypass license), redirect away from license page to home
+        $type = (int) env('TYPE_LOCAL_SERVER', 0);
+        if ($type === 0) {
+            try {
+                $configPath = storage_path('app/native_config.json');
+                if (file_exists($configPath)) {
+                    $nativeConfig = json_decode(file_get_contents($configPath), true);
+                    if (isset($nativeConfig['type_local_server'])) {
+                        $type = (int) $nativeConfig['type_local_server'];
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        if ($type === 0) {
+            try {
+                $setting = \App\Models\Setting::where('parameter', 'type_local_server')->first();
+                if ($setting) {
+                    $type = (int) $setting->value;
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        if ($type === 2) {
+            return redirect('/');
+        }
+
         return view('layout/license');
     }
 

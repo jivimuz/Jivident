@@ -1,3 +1,8 @@
+<?php
+use App\Models\Setting;
+$app_name = Setting::where('parameter', 'app_name')->first()?->value ?: 'JiviDent';
+$company_icon = Setting::where('parameter', 'company_icon')->first()?->value ? url(Setting::where('parameter', 'company_icon')->first()->value) : url('/assets/favicon.ico');
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -14,10 +19,10 @@
         content="admin template, axelit admin template, dashboard template, flat admin template, responsive admin template, web app"
         name="keywords">
     <meta content="la-themes" name="author">
-    <link href="{{ url('') }}/assets/favicon.ico" rel="icon" type="image/x-icon">
-    <link href="{{ url('') }}/assets/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="icon" type="image/x-icon">
+    <link href="{{ $company_icon }}" rel="shortcut icon" type="image/x-icon">
 
-    <title>Jivident </title>
+    <title>{{ $app_name }}</title>
 
     <!--font-awesome-css-->
     <link href="{{ url('') }}/assets/vendor/fontawesome/css/all.css" rel="stylesheet">
@@ -54,6 +59,11 @@
                 <div class="col-12 col-md-8 col-lg-5">
                     <div class="card license-card">
                         <div class="card-body p-5 text-center">
+                            <div class="d-flex justify-content-end mb-2">
+                                <a href="{{ url('native-config') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                    <i class="iconoir-settings"></i> Setup DB &amp; Server
+                                </a>
+                            </div>
                             <div class="icon-box">
                                 <i class="iconoir-key-command text-theme" style="font-size: 40px;"></i>
                             </div>
@@ -148,7 +158,8 @@
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Aktivasi Gagal',
-                                text: response.message || 'Lisensi tidak valid.',
+                                html: (response.message || 'Lisensi tidak valid.') + '<br><br><a href="https://wa.me/6282120741970?text=Halo%20Admin,%20lisensi%20Jivident%20saya%20tidak%20valid." target="_blank" class="btn btn-success btn-sm rounded-pill mt-2"><i class="fab fa-whatsapp"></i> Hubungi Admin (+6282120741970)</a>',
+                                confirmButtonText: 'Tutup'
                             });
                             btnSubmit.html(originalText).prop('disabled', false);
                         }
@@ -161,8 +172,9 @@
 
                         Swal.fire({
                             icon: 'error',
-                            title: 'Koneksi Gagal',
-                            text: errorMsg,
+                            title: 'Koneksi / Aktivasi Gagal',
+                            html: errorMsg + '<br><br><a href="https://wa.me/6282120741970?text=Halo%20Admin,%20saya%20mengalami%20kendala%20aktivasi%20lisensi%20Jivident." target="_blank" class="btn btn-success btn-sm rounded-pill mt-2"><i class="fab fa-whatsapp"></i> Hubungi Admin (+6282120741970)</a>',
+                            confirmButtonText: 'Tutup'
                         });
                         btnSubmit.html(originalText).prop('disabled', false);
                     }
